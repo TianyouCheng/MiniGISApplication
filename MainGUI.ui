@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1113</width>
+    <height>776</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>0</y>
+      <width>1091</width>
+      <height>731</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="tsButtonNew">
+         <property name="text">
+          <string>新建</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonOpen">
+         <property name="text">
+          <string>打开</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonSave">
+         <property name="text">
+          <string>保存</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonOperateNone">
+         <property name="text">
+          <string>鼠标指针</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonPan">
+         <property name="text">
+          <string>漫游</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonZoomIn">
+         <property name="text">
+          <string>放大</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonZoomOut">
+         <property name="text">
+          <string>缩小</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonZoomScale">
+         <property name="text">
+          <string>全屏显示</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonNewLayer">
+         <property name="text">
+          <string>创建新图层</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonSelect">
+         <property name="text">
+          <string>选择要素</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonEdit">
+         <property name="text">
+          <string>编辑模式</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonNewGeo">
+         <property name="text">
+          <string>创建新要素</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="tsButtonEditGeo">
+         <property name="text">
+          <string>编辑要素几何</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_4">
+       <item>
+        <widget class="QTreeView" name="treeView">
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QWidget" name="widget" native="true">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>500</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color:rgb(255, 255, 255);
+border:1px solid black;</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableView" name="tableView"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1113</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>文件</string>
+    </property>
+    <addaction name="menuItemNewMap"/>
+    <addaction name="menuItemOpen"/>
+    <addaction name="menuItemSave"/>
+    <addaction name="MenuItemSaveLayer"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>编辑</string>
+    </property>
+    <addaction name="menuItemEditMode"/>
+    <addaction name="menuItemNewGeo"/>
+    <addaction name="menuItemEditGeo"/>
+   </widget>
+   <widget class="QMenu" name="menuLayer">
+    <property name="title">
+     <string>图层</string>
+    </property>
+    <addaction name="menuItemNewLayer"/>
+    <addaction name="menuItemDelLayer"/>
+    <addaction name="menuItemLayerTable"/>
+    <addaction name="menuItemLayerAttr"/>
+    <addaction name="menuItemLayerUp"/>
+    <addaction name="menuItemLayerDown"/>
+   </widget>
+   <widget class="QMenu" name="menuSelect">
+    <property name="title">
+     <string>选择</string>
+    </property>
+    <addaction name="menuItemSelectMouse"/>
+    <addaction name="menuItemSelectStr"/>
+    <addaction name="MenuItemShowSelected"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuLayer"/>
+   <addaction name="menuSelect"/>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="menuItemNewMap">
+   <property name="text">
+    <string>新建空白地图</string>
+   </property>
+  </action>
+  <action name="menuItemOpen">
+   <property name="text">
+    <string>打开地图</string>
+   </property>
+  </action>
+  <action name="menuItemSave">
+   <property name="text">
+    <string>保存</string>
+   </property>
+  </action>
+  <action name="MenuItemSaveLayer">
+   <property name="text">
+    <string>保存图层</string>
+   </property>
+  </action>
+  <action name="menuItemEditMode">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>编辑模式</string>
+   </property>
+  </action>
+  <action name="menuItemNewGeo">
+   <property name="text">
+    <string>绘制新几何体</string>
+   </property>
+  </action>
+  <action name="menuItemEditGeo">
+   <property name="text">
+    <string>编辑几何体</string>
+   </property>
+  </action>
+  <action name="actionsdf">
+   <property name="text">
+    <string>sdf</string>
+   </property>
+  </action>
+  <action name="menuItemNewLayer">
+   <property name="text">
+    <string>创建新图层</string>
+   </property>
+  </action>
+  <action name="menuItemDelLayer">
+   <property name="text">
+    <string>删除当前图层</string>
+   </property>
+  </action>
+  <action name="menuItemLayerTable">
+   <property name="text">
+    <string>打开属性表</string>
+   </property>
+  </action>
+  <action name="menuItemLayerAttr">
+   <property name="text">
+    <string>设置图层属性</string>
+   </property>
+  </action>
+  <action name="menuItemLayerUp">
+   <property name="text">
+    <string>图层上移</string>
+   </property>
+  </action>
+  <action name="menuItemLayerDown">
+   <property name="text">
+    <string>图层下移</string>
+   </property>
+  </action>
+  <action name="menuItemSelectMouse">
+   <property name="text">
+    <string>鼠标选择几何体</string>
+   </property>
+  </action>
+  <action name="menuItemSelectStr">
+   <property name="text">
+    <string>查询语句选择</string>
+   </property>
+  </action>
+  <action name="MenuItemShowSelected">
+   <property name="text">
+    <string>显示查询结果</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
