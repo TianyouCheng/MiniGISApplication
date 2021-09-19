@@ -60,6 +60,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 if __name__=='__main__':
 
     # test region 使用方法/功能测试
+    """点"""
     # 初始化
     pt1=PointD(0,5,8)#分别为x，y，ID
     pt2=PointD(3,3)#分别为x，y
@@ -86,6 +87,28 @@ if __name__=='__main__':
     # 当前点的最小外接矩阵
     pt.RenewBox()
     print(pt._box)
+
+    """线"""
+    # 初始化，以点的列表形式
+    L1=Polyline([pt,pt1,pt2])
+    print(L1)
+
+    # 求点到直线距离
+    L2 = Polyline([PointD(3, 3), PointD(5, 5), PointD(5, 8)])
+    print(L2.GetDistance(PointD(3,5)))
+
+    # 判断该直线与点的距离是否在给定buffer内
+    print(L2.IsPointOn(PointD(3,5),1))
+
+    # 判断直线上的各点是否在给定矩形内
+    """注意：该算法不是判断线段与给定box相交"""
+    Rec = RectangleD(3,3.5,4.5,5)
+    print(L2.IsWithinBox(Rec))
+
+    # 移动线
+    L2.Move(1,1)
+    print(L2)
+
 
 
 
