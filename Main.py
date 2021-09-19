@@ -16,7 +16,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.setupUi(self)
 
         # 创建画布
-        canvas = QtGui.QPixmap('resource/whitebg.png')
+        canvas = QtGui.QPixmap('UI/whitebg.png')
         self.label.setPixmap(canvas)
 
         # 绘图函数
