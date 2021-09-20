@@ -25,7 +25,6 @@ class Geometry(ABC):
 
     # 属性
     def __init__(self, id=-1):
-        self._needRenewBox = True
         self._box = RectangleD()
         self.ID=id
 
@@ -49,11 +48,6 @@ class Geometry(ABC):
     # 框选一该box是否能选中几何体
     @abstractmethod
     def IsWithinBox(self,box):pass
-
-    # 指示几何体需更新外包矩形
-    @abstractmethod
-    def NeedRenewBox(self):
-        self._needRenewBox=True
 
     @abstractmethod
     def GetDistance(self,MouseLocation):pass
@@ -276,6 +270,8 @@ class Polygon(Geometry):
         self._box.MinX = MinXY.X
         self._box.MinY = MinXY.Y
 
+    def GetDistance(self, MouseLocation):pass
+
     def __str__(self):
         s='Polygon:\n'
         for i in range(len(self.data)):
@@ -346,6 +342,9 @@ class MultiPolyline(Geometry):
         self._box.MaxX=maxX
         self._box.MaxY=maxY
 
+    def GetDistance(self, MouseLocation):
+        pass
+
     def __str__(self):
         s=''
         for i in range(len(self.data)):
@@ -408,6 +407,9 @@ class MultiPolygon(Geometry):
         self._box.MinY=minY
         self._box.MaxX=maxX
         self._box.MaxY=maxY
+
+    def GetDistance(self, MouseLocation):
+        pass
 
     def __str__(self):
         s = ''
