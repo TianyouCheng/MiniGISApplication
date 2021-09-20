@@ -76,7 +76,10 @@ class Geometry(object):
         return outputP
 
     def IfHasPoint(self,point,startP,endP):
-        """point在两点构成的上三角形内"""
+        """
+        :return：True为point在两点构成的上三角形内
+        :exception 可以处理平行的情况
+        """
         maxY=max(startP.Y,endP.Y)
         minY=min(startP.Y,endP.Y)
         if point.Y>minY and point.Y<=maxY:
@@ -216,11 +219,12 @@ class Polygon(Geometry):
         self.RenewBox()
 
     # 方法
-    def IsPointOn(self,point,BufferDist):
-        self._box.MinX -= BufferDist
-        self._box.MinY -= BufferDist
-        self._box.MaxX += BufferDist
-        self._box.MaxY += BufferDist
+    def IsPointOn(self,point):
+        """判断点是否在多边形内
+            看待测点是否在两点连线之上
+            即通过这个点划一条水平射线，看该射线与多边形相交几次
+            可以处理平行的情况
+        """
         if(self._box.IsPointOn(point)):# 先用box判断
             NumOfPointIntersection=0
             for i in range(len(self.data)-1):
@@ -235,6 +239,173 @@ class Polygon(Geometry):
                 return True
         else:
             return False
-        # !!!!!!!!!!!!!!!!!!!研究一下这个算法
 
+    def IsWithinBox(self,box):
+        """
+        判断矩形是否与多边形相交
+        :param box:待判断矩形
+        :return:布尔变量
+        """
+        if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
+            return True
+        for i in range(len(self.data)):
+            if self.data[i].IsWithinBox(box):return True
+        boxP=[PointD(box.MinX,box.MinY),PointD(box.MinX,box.MaxY),PointD(box.MaxX,box.MinY),PointD(box.MaxX,box.MaxY)]
+        for i in range(4):
+            if self.IsPointOn(boxP[i]):return True
+        return False
+
+    def Move(self,deltaX,deltaY):
+        for i in range(len(self.data)):
+            self.data[i].X+=deltaX
+            self.data[i].Y+=deltaY
         self.RenewBox()
+
+    def RenewBox(self):
+        MaxXY = self.FindMaxXY(self.data)
+        MinXY = self.FindMinXY(self.data)
+        self._box.MaxX = MaxXY.X
+        self._box.MaxY = MaxXY.Y
+        self._box.MinX = MinXY.X
+        self._box.MinY = MinXY.Y
+
+    def __str__(self):
+        s='Polygon:\n'
+        for i in range(len(self.data)):
+            s+='Point{}({},{})\n'.format(i+1,self.data[i].X,self.data[i].Y)
+        return s
+# endregion
+
+# region 子类——多线
+class MultiPolyline(Geometry):
+    # 属性 data是线构成的List
+    def __init__(self,Data,id=-1):
+        Geometry.__init__(self,id)
+        self.data=Data
+        self.RenewBox()
+
+    # 方法
+    def IsPointOn(self,point,BufferDist):
+        """
+        判断点是否在多线的Buffer范围内
+        :param point: PointD类型待测点
+        :param BufferDist: int类型
+        :return: 布尔变量
+        """
+        result=False
+        if not(self._box.IsPointOn(point)):return False
+        for i in range(len(self.data)):
+            dis=0
+            dis=self.data[i].GetDistance(point)
+            if dis<=BufferDist:
+                result=True
+                break
+        return result
+
+    def IsWithinBox(self,box):
+        """
+        判断多线上的各点是否在给定box内
+        同样，无法判断相交
+        :param box: RectangleD类型
+        :return:布尔变量
+        """
+        if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
+            return True
+        for i in range(len(self.data)):
+            if self.data[i].IsWithinBox(box): return True
+        return False
+
+    def Move(self,deltaX,deltaY):
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i].data)):
+                self.data[i].data[j].X+=deltaX
+                self.data[i].data[j].Y+=deltaY
+
+    def RenewBox(self):
+        if len(self.data)==0:
+            self._box=RectangleD()
+            return
+        maxX=self.data[0]._box.MaxX
+        maxY=self.data[0]._box.MaxY
+        minX=self.data[0]._box.MinX
+        minY=self.data[0]._box.MinY
+        for i in range(1,len(self.data)):
+            if self.data[i]._box.MaxX>maxX:maxX=self.data[i]._box.MaxX
+            if self.data[i]._box.MaxY > maxY: maxY = self.data[i]._box.MaxY
+            if self.data[i]._box.MinX < minX: minX = self.data[i]._box.MinX
+            if self.data[i]._box.MinY < minY: minY = self.data[i]._box.MinY
+        self._box.MinX=minX
+        self._box.MinY=minY
+        self._box.MaxX=maxX
+        self._box.MaxY=maxY
+
+    def __str__(self):
+        s=''
+        for i in range(len(self.data)):
+            s+='Polyline {}:\n'.format(i+1)
+            for j in range(len(self.data[i].data)):
+                s+='Point{}({},{})\n'.format(j+1,self.data[i].data[j].X,self.data[i].data[j].Y)
+        return s
+# endregion
+
+# region 子类——多多边形
+class MultiPolygon(Geometry):
+    # 属性 data是面构成的List
+    def __init__(self,Data,id=-1):
+        Geometry.__init__(self,id)
+        self.data=Data
+        self.RenewBox()
+
+    # 方法
+    def IsPointOn(self,point):
+        result=False
+        if not(self._box.IsPointOn(point)):return False
+        for i in range(len(self.data)):
+            if self.data[i].IsPointOn(point):
+                result=True
+                break
+        return result
+
+    def IsWithinBox(self,box):
+        """
+        判断矩形是否与多边形相交
+        :param box:待判断矩形
+        :return:布尔变量
+        """
+        if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
+            return True
+        for i in range(len(self.data)):
+            if self.data[i].IsWithinBox(box):return True
+        return False
+
+    def Move(self,deltaX,deltaY):
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i].data)):
+                self.data[i].data[j].X+=deltaX
+                self.data[i].data[j].Y+=deltaY
+
+    def RenewBox(self):
+        if len(self.data)==0:
+            self._box=RectangleD()
+            return
+        maxX=self.data[0]._box.MaxX
+        maxY=self.data[0]._box.MaxY
+        minX=self.data[0]._box.MinX
+        minY=self.data[0]._box.MinY
+        for i in range(1,len(self.data)):
+            if self.data[i]._box.MaxX>maxX:maxX=self.data[i]._box.MaxX
+            if self.data[i]._box.MaxY > maxY: maxY = self.data[i]._box.MaxY
+            if self.data[i]._box.MinX < minX: minX = self.data[i]._box.MinX
+            if self.data[i]._box.MinY < minY: minY = self.data[i]._box.MinY
+        self._box.MinX=minX
+        self._box.MinY=minY
+        self._box.MaxX=maxX
+        self._box.MaxY=maxY
+
+    def __str__(self):
+        s = ''
+        for i in range(len(self.data)):
+            s += 'Polygon {}:\n'.format(i + 1)
+            for j in range(len(self.data[i].data)):
+                s += 'Point{}({},{})\n'.format(j + 1, self.data[i].data[j].X, self.data[i].data[j].Y)
+        return s

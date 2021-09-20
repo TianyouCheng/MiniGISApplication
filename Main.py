@@ -109,13 +109,24 @@ if __name__=='__main__':
     L2.Move(1,1)
     print(L2)
 
+    """面"""
+    '''方法都一样，就不再测试（若有Bug再找我= =）'''
+    Po1=Polygon([pt,pt1,pt2])
+    print(Po1)
 
+    """多线"""
+    MulL1=MultiPolyline([L1,L2])
+    print(MulL1)
 
-
+    """多面"""
+    Polygon1=Polygon([pt,pt2,pt2])
+    Polygon2=Polygon([PointD(10,10),PointD(30,10),PointD(30,30)])
+    PPolygon=MultiPolygon([Polygon1,Polygon2])
+    print(PPolygon)
     # endregion 可以把这段删掉
 
 
     myapp=QApplication(sys.argv)
     myDlg=Main_exe()
-    # myDlg.show()
+    myDlg.show()
     sys.exit(myapp.exec_())
