@@ -2,6 +2,7 @@
 几何相关类+外包矩阵类
 '''
 import math
+from abc import ABC, abstractmethod
 # region 矩阵类——外包矩阵、框选矩阵
 class RectangleD(object):
     def __init__(self,minx=0,miny=0,maxx=0,maxy=0):
@@ -20,38 +21,46 @@ class RectangleD(object):
 # endregion
 
 # region 集合类——基类
-class Geometry(object):
-    _needRenewBox=True
-    _box=RectangleD()
+class Geometry(ABC):
 
     # 属性
     def __init__(self, id=-1):
+        self._needRenewBox = True
+        self._box = RectangleD()
         self.ID=id
 
+    @property
     def box(self):
         return self._box
 
+    @box.setter
     def box(self,value):
         self._box=value
 
     # 方法
     # 图像整体平移
+    @abstractmethod
     def Move(self,deltaX,deltaY):pass
 
     # 点选一该Point是否能选中几何体
+    @abstractmethod
     def IsPointOn(self,point,BufferDist):pass
 
     # 框选一该box是否能选中几何体
+    @abstractmethod
     def IsWithinBox(self,box):pass
 
     # 指示几何体需更新外包矩形
+    @abstractmethod
     def NeedRenewBox(self):
         self._needRenewBox=True
 
+    @abstractmethod
     def GetDistance(self,MouseLocation):pass
 
     # 私有函数
-    def _RenewBox(self):pass
+    @abstractmethod
+    def RenewBox(self):pass
 
     def FindMaxXY(self,data):
         maxX=data[0].X
@@ -77,7 +86,7 @@ class Geometry(object):
 
     def IfHasPoint(self,point,startP,endP):
         """
-        :return：True为point在两点构成的上三角形内
+        :return：True为point向右的射线与(startP, endP)线段相交
         :exception 可以处理平行的情况
         """
         maxY=max(startP.Y,endP.Y)
@@ -146,15 +155,13 @@ class Polyline(Geometry):
         self._box.MinY-=BufferDist
         self._box.MaxX+=BufferDist
         self._box.MaxY+=BufferDist
+        result = False
         if self._box.IsPointOn(point):
             point_dis=self.GetDistance(point)
             if point_dis<=BufferDist:
-                return True
-            else:
-                return False
-        else:
-            return False
+                result = True
         self.RenewBox()
+        return result
 
     def IsWithinBox(self,box):
         if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
@@ -219,7 +226,7 @@ class Polygon(Geometry):
         self.RenewBox()
 
     # 方法
-    def IsPointOn(self,point):
+    def IsPointOn(self,point, BufferDist=0):
         """判断点是否在多边形内
             看待测点是否在两点连线之上
             即通过这个点划一条水平射线，看该射线与多边形相交几次
@@ -357,7 +364,7 @@ class MultiPolygon(Geometry):
         self.RenewBox()
 
     # 方法
-    def IsPointOn(self,point):
+    def IsPointOn(self,point, BufferDist=0):
         result=False
         if not(self._box.IsPointOn(point)):return False
         for i in range(len(self.data)):
