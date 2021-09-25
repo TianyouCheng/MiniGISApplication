@@ -49,6 +49,10 @@ class Geometry(ABC):
     @abstractmethod
     def IsWithinBox(self,box):pass
 
+    # 将几何体转为WKT字符串
+    @abstractmethod
+    def ToWkt(self):pass
+
     @abstractmethod
     def GetDistance(self,MouseLocation):pass
 
@@ -132,6 +136,10 @@ class PointD(Geometry):
     # 重写print
     def __str__(self):
         return ("Point:\nX={}; Y={}; ID={}".format(self.X,self.Y,self.ID))
+
+    # 覆盖基类的ToWkt，将几何体转为WKT字符串
+    def ToWkt(self):
+        pass
 # endregion
 
 # region 子类——线
@@ -209,14 +217,20 @@ class Polyline(Geometry):
         for i in range(len(self.data)):
             s+='Point{}({},{})\n'.format(i+1,self.data[i].X,self.data[i].Y)
         return s
+
+    # 覆盖基类的ToWkt，将几何体转为WKT字符串
+    def ToWkt(self):
+        pass
 # endregion
 
 # region 子类——多边形
 class Polygon(Geometry):
-    # 属性 data是点构成的List
-    def __init__(self,Data,id=-1):
+    # 属性 data是点构成的List, 表示多边形的外边界
+    # 属性holes是Polygon构成的List（这些Polygon不能再有holes），表示多边形的洞
+    def __init__(self,Data,holes=None, id=-1):
         Geometry.__init__(self,id)
         self.data=Data
+        self.holes = holes
         self.RenewBox()
 
     # 方法
@@ -226,6 +240,8 @@ class Polygon(Geometry):
             即通过这个点划一条水平射线，看该射线与多边形相交几次
             可以处理平行的情况
         """
+        flag = False
+        # 先判断是否在多边形外边界内
         if(self._box.IsPointOn(point)):# 先用box判断
             NumOfPointIntersection=0
             for i in range(len(self.data)-1):
@@ -234,12 +250,15 @@ class Polygon(Geometry):
             # 首尾连接线的交点判断
             if self.IfHasPoint(point,self.data[0],self.data[len(self.data)-1]):
                 NumOfPointIntersection+=1
-            if NumOfPointIntersection%2==0:
-                return False
-            else:
-                return True
-        else:
-            return False
+            if NumOfPointIntersection%2==1:
+                flag = True
+                # 判断完外边界，判断内边界
+                if self.holes is not None:
+                    for hole in self.holes:
+                        if hole.IsPointOn(point, BufferDist):
+                            flag = False
+                            break
+        return flag
 
     def IsWithinBox(self,box):
         """
@@ -260,6 +279,9 @@ class Polygon(Geometry):
         for i in range(len(self.data)):
             self.data[i].X+=deltaX
             self.data[i].Y+=deltaY
+        if self.holes is not None:
+            for hole in self.holes:
+                hole.Move(deltaX, deltaY)
         self.RenewBox()
 
     def RenewBox(self):
@@ -277,6 +299,10 @@ class Polygon(Geometry):
         for i in range(len(self.data)):
             s+='Point{}({},{})\n'.format(i+1,self.data[i].X,self.data[i].Y)
         return s
+
+    # 覆盖基类的ToWkt，将几何体转为WKT字符串
+    def ToWkt(self):
+        pass
 # endregion
 
 # region 子类——多线
@@ -418,3 +444,7 @@ class MultiPolygon(Geometry):
             for j in range(len(self.data[i].data)):
                 s += 'Point{}({},{})\n'.format(j + 1, self.data[i].data[j].X, self.data[i].data[j].Y)
         return s
+
+    # 覆盖基类的ToWkt，将几何体转为WKT字符串
+    def ToWkt(self):
+        pass
