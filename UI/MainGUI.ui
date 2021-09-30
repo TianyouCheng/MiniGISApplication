@@ -134,7 +134,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QTreeView" name="treeView">
+        <widget class="QTreeWidget" name="treeWidget">
          <property name="minimumSize">
           <size>
            <width>200</width>
@@ -147,6 +147,11 @@
            <height>16777215</height>
           </size>
          </property>
+         <column>
+          <property name="text">
+           <string notr="true">1</string>
+          </property>
+         </column>
         </widget>
        </item>
        <item>
@@ -172,7 +177,21 @@ border:1px solid black;</string>
           </widget>
          </item>
          <item>
-          <widget class="QTableView" name="tableView"/>
+          <widget class="QPushButton" name="pushButtonAdd">
+           <property name="text">
+            <string>添加</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonDel">
+           <property name="text">
+            <string>删除</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableWidget" name="tableWidget"/>
          </item>
         </layout>
        </item>
