@@ -4,25 +4,20 @@ For GIS presentation
 文件说明
 ----
 ### UI文件夹
-* 界面文件
+* 界面文件,包括.UI和一些图像文件
 * 把界面`.ui`和`.py`文件放入UI文件夹，然后在`__init__.py`中添加引用，即可在`Main.py`中直接使用。
 ### Function文件夹
 * 函数功能文件
-* 目前已包括Geometry几何类文件，后续需要可以在该文件夹或主函数文件中添加功能
+* 目前包括Geometry几何类，Layer图层类，Map地图类，Op_TableView,OP_TreeView控件操作函数
 ### Main文件
 * 主函数文件，包括界面启动及基本功能
 ### .gitignore文件
-* 忽视了使用Pycharm开发时自动生成的.idea文件夹
+* 忽视了使用Pycharm开发时自动生成的.idea，venv文件夹
 ### README文件
-* 无需多说
 
 绘图参考
 ----
     https://www.pythonguis.com/tutorials/bitmap-graphics/
-
-无关紧要的事项
-----
-绘图工具太垃圾了，要交互只能用label来绘图，所以窗口大小是固定的，所以背景要引用图片。
 
 使用简要说明
 ----
