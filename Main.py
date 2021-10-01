@@ -18,6 +18,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         # 属性
         self.EditStatus=False # 是否启用编辑
+        self.LayerIndex = 1 # 每层的id
 
         # 绑定信号与槽函数
         self.slot_connect()
@@ -37,10 +38,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 设置TreeView
         TreeView_Init(self)
 
+
+
+
     # region 功能函数
     # 绑定信号与槽函数
     def slot_connect(self):
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
+        self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -74,16 +79,80 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             painter.drawPoint(point.x(), point.y())
             painter.end()
             self.update()
-
     # endregion
 
     # region 信号与槽函数
     def bt_edit_clicked(self):
-        self.EditStatus=not(self.EditStatus)
-        if self.EditStatus:self.tsButtonEdit.setText("正在编辑")
-        elif not self.EditStatus:self.tsButtonEdit.setText("编辑模式")
+        node=self.treeWidget.currentItem()
+        if not(node):
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先选择要编辑的图层。\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+        else:
+            self.EditStatus=not(self.EditStatus)
+            if self.EditStatus:
+                msgBox = QMessageBox()
+                msgBox.setWindowTitle(u'提示')
+                txtname = self.treeWidget.currentItem().text(0)
+                txttype = self.treeWidget.currentItem().child(0).text(0)
+                msgBox.setText(u"\n您现在编辑的是：\n" + txtname + txttype + "对象图层。\n")
+                msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+                # 隐藏ok按钮
+                msgBox.addButton(QMessageBox.Ok)
+                # 模态对话框
+                msgBox.exec_()
+                self.tsButtonEdit.setText("正在编辑")
+
+            elif not self.EditStatus:self.tsButtonEdit.setText("编辑模式")
+
+    def bt_newlayer_clicked(self):
+        self.Winnewlayer=WinNewLayer()
+        # 设置Combox
+        self.Winnewlayer.comboBox.setItemIcon(0,QIcon('./UI/Point.png'))
+        self.Winnewlayer.comboBox.setItemIcon(1, QIcon('./UI/Line.png'))
+        self.Winnewlayer.comboBox.setItemIcon(2, QIcon('./UI/Polygon.png'))
+        self.Winnewlayer.show()
+        self.Winnewlayer.bt_OK.clicked.connect(self.NewLayer)
+        self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
+        # txt=self.treeWidget.currentItem().text(0)
+
+
+    def NewLayer(self):
+        txtName=self.Winnewlayer.lineEdit.text()
+        txtType=self.Winnewlayer.comboBox.currentText()
+        item=self.treeWidget.findItems('Layers',Qt.MatchStartsWith)[0]
+        NewL=QTreeWidgetItem(item, [txtName])
+        if txtType=='点':
+            NewLchild=QTreeWidgetItem(NewL,[txtType])
+            NewLchild.setIcon(0,QIcon('./UI/Point.png'))
+            NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
+        elif txtType=='线':
+            NewLchild=QTreeWidgetItem(NewL,[txtType])
+            NewLchild.setIcon(0,QIcon('./UI/Line.png'))
+            NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
+        elif txtType=='面':
+            NewLchild=QTreeWidgetItem(NewL,[txtType])
+            NewLchild.setIcon(0,QIcon('./UI/Polygon.png'))
+            NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
+        self.treeWidget.expandAll()
+
+        self.Winnewlayer.close()
     # endregion
 
+
+# region 子窗体
+class WinNewLayer(QWidget,Ui_Win_NewLayer):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+
+
+# endregion
 
 # 作为主窗体运行
 if __name__=='__main__':

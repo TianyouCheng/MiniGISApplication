@@ -5,13 +5,14 @@ from PyQt5.QtWidgets import QTreeWidgetItem
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
 def prs():
-    print('111')
+    print('TODO: selection changed')
 
 def TreeView_Init(self):
     # TREEVIEW
 
 
     pitem1 = QTreeWidgetItem(self.treeWidget, ['Layers'])
+    pitem1.setFlags(pitem1.flags() & ~Qt.ItemIsSelectable)
     citem1 = QTreeWidgetItem(pitem1, ['Mountain'])
     citem11 = QTreeWidgetItem(citem1, ['Mountain Symbol'])
     citem11.setIcon(0, QIcon('./UI/icon1.png'))
