@@ -34,25 +34,61 @@ class Map(object):
                 if layer.box.MaxY > self.box.MaxY:
                     self.box.MaxY = layer.box.MaxY
 
-    def GeoPointToScreen(self, point, screenSize):
+    def GeoToScreen(self, geometry, screenSize):
         '''
         将地理坐标转化为屏幕坐标
-        :param point: 地理坐标的点（PointD类型）
+        :param geometry: 地理坐标的几何体（Geometry的子类）
         :param screenSize: 屏幕大小[width, height]列表
-        :return: 转化为屏幕坐标的点（PointD类型）
+        :return: 转化为屏幕坐标的几何体（Geometry的子类）
         '''
-        return PointD(x=(point.X - self.offsetX) / self.scale + screenSize[0] / 2,
-                      y=(self.offsetY - point.Y) / self.scale + screenSize[1] / 2)
+        if isinstance(geometry, PointD):
+            return PointD(x=(geometry.X - self.offsetX) / self.scale + screenSize[0] / 2,
+                          y=(self.offsetY - geometry.Y) / self.scale + screenSize[1] / 2,
+                          id=geometry.ID)
+        elif isinstance(geometry, Polyline):
+            data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
+            return Polyline(data, id=geometry.ID)
+        elif isinstance(geometry, Polygon):
+            data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
+            holes = None if geometry.holes is None else \
+                [self.GeoToScreen(geo, screenSize) for geo in geometry.holes]
+            return Polygon(data, holes=holes, id=geometry.ID)
+        elif isinstance(geometry, Polyline):
+            data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
+            return MultiPolyline(data, id=geometry.ID)
+        elif isinstance(geometry, Polyline):
+            data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
+            return MultiPolygon(data, id=geometry.ID)
+        else:
+            raise ValueError('geometry not supported.')
 
-    def ScreenPointToGeo(self, point, screenSize):
+    def ScreenToGeo(self, geometry, screenSize):
         '''
         将屏幕坐标转化为地理坐标
-        :param point: 屏幕坐标的点（PointD类型）
+        :param geometry: 屏幕坐标的几何体（Geometry的子类）
         :param screenSize: 屏幕大小[width, height]列表
-        :return: 转化为地理坐标的点（PointD类型）
+        :return: 转化为地理坐标的几何体（Geometry的子类）
         '''
-        return PointD(x=(point.X - screenSize[0] / 2) * self.scale + self.offsetX,
-                      y=self.offsetY - (point.Y - screenSize[1] / 2) * self.scale)
+        if isinstance(geometry, PointD):
+            return PointD(x=(geometry.X - screenSize[0] / 2) * self.scale + self.offsetX,
+                          y=self.offsetY - (geometry.Y - screenSize[1] / 2) * self.scale,
+                          id=geometry.ID)
+        elif isinstance(geometry, Polyline):
+            data = [self.ScreenToGeo(geo, screenSize) for geo in geometry.data]
+            return Polyline(data, id=geometry.ID)
+        elif isinstance(geometry, Polygon):
+            data = [self.ScreenToGeo(geo, screenSize) for geo in geometry.data]
+            holes = None if geometry.holes is None else \
+                [self.ScreenToGeo(geo, screenSize) for geo in geometry.holes]
+            return Polygon(data, holes=holes, id=geometry.ID)
+        elif isinstance(geometry, Polyline):
+            data = [self.ScreenToGeo(geo, screenSize) for geo in geometry.data]
+            return MultiPolyline(data, id=geometry.ID)
+        elif isinstance(geometry, Polyline):
+            data = [self.ScreenToGeo(geo, screenSize) for geo in geometry.data]
+            return MultiPolygon(data, id=geometry.ID)
+        else:
+            raise ValueError('geometry not supported.')
 
     def GeoDistToScreen(self, distance):
         '''
@@ -103,6 +139,7 @@ class Map(object):
         :param pos: 图层的位置，0为最顶层
         '''
         self.layers.insert(pos, layer)
+        self.RefreshBox()
 
     def DelLayer(self, index):
         '''删除指定下标的图层'''
@@ -110,6 +147,7 @@ class Map(object):
         # 删除被选择的图层，默认将被选择图层转为最顶层
         if self.selectedLayer == index:
             self.selectedLayer = 0 if len(self.layers) > 0 else -1
+        self.RefreshBox()
 
     def ClearLayers(self):
         '''清除所有图层'''

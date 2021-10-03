@@ -30,6 +30,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.LayerIndex = 1 # 每层的id
         self.mousePressed = False # 标题栏拖动标识
         self.StyleOn=False # 是否启用样式表
+        self.map = Map()
 
         # 绑定信号与槽函数
         self.slot_connect()
