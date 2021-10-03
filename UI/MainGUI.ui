@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1206</width>
-    <height>787</height>
+    <width>1239</width>
+    <height>867</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -28,339 +28,19 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetDefaultConstraint</enum>
-      </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
-       <widget class="QWidget" name="widget" native="true">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>30</height>
-         </size>
-        </property>
-        <widget class="QPushButton" name="bt_min">
-         <property name="geometry">
-          <rect>
-           <x>1070</x>
-           <y>0</y>
-           <width>30</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="bt_max">
-         <property name="geometry">
-          <rect>
-           <x>1110</x>
-           <y>0</y>
-           <width>30</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-        <widget class="QPushButton" name="bt_close">
-         <property name="geometry">
-          <rect>
-           <x>1150</x>
-           <y>0</y>
-           <width>30</width>
-           <height>30</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>PushButton</string>
-         </property>
-        </widget>
-       </widget>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout">
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QPushButton" name="tsButtonNew">
+         <widget class="QWidget" name="widget_2" native="true">
           <property name="minimumSize">
            <size>
             <width>0</width>
-            <height>35</height>
+            <height>225</height>
            </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>新建</string>
           </property>
          </widget>
         </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonOpen">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>打开</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonSave">
-          <property name="minimumSize">
-           <size>
-            <width>35</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>35</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>保存</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonOperateNone">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>鼠标指针</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonPan">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>漫游</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonZoomIn">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>放大</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonZoomOut">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>缩小</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonZoomScale">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>全屏显示</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonNewLayer">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>创建新图层</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonSelect">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>选择要素</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonEdit">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>编辑模式</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonNewGeo">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>创建新要素</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="tsButtonEditGeo">
-          <property name="minimumSize">
-           <size>
-            <width>0</width>
-            <height>35</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>40</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>编辑要素几何</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonAdd">
-          <property name="text">
-           <string>添加</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButtonDel">
-          <property name="text">
-           <string>删除</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>80</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
          <widget class="QTreeWidget" name="treeWidget">
           <property name="minimumSize">
@@ -382,19 +62,90 @@
           </column>
          </widget>
         </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
+         <widget class="QWidget" name="widget" native="true">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <widget class="QPushButton" name="bt_min">
+           <property name="geometry">
+            <rect>
+             <x>890</x>
+             <y>-1</y>
+             <width>18</width>
+             <height>18</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="bt_max">
+           <property name="geometry">
+            <rect>
+             <x>940</x>
+             <y>-1</y>
+             <width>18</width>
+             <height>18</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+          <widget class="QPushButton" name="bt_close">
+           <property name="geometry">
+            <rect>
+             <x>990</x>
+             <y>-1</y>
+             <width>18</width>
+             <height>18</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLabel" name="Drawlabel">
+           <widget class="QWidget" name="widget_3" native="true">
             <property name="minimumSize">
              <size>
-              <width>0</width>
-              <height>450</height>
+              <width>5</width>
+              <height>0</height>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">background-color:white;
-border:1px solid black;</string>
+             <string notr="true">background-color:transparent</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonNew">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="text">
              <string/>
@@ -402,7 +153,309 @@ border:1px solid black;</string>
            </widget>
           </item>
           <item>
-           <widget class="QTableWidget" name="tableWidget"/>
+           <widget class="QPushButton" name="tsButtonOpen">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonSave">
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonOperateNone">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonPan">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonZoomIn">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonZoomOut">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonZoomScale">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonNewLayer">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonSelect">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonEdit">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonNewGeo">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color:transparent</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="tsButtonEditGeo">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">background-color:transparent</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonAdd">
+            <property name="styleSheet">
+             <string notr="true">background-color:transparent</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonDel">
+            <property name="styleSheet">
+             <string notr="true">background-color:transparent</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>80</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QLabel" name="Drawlabel">
+              <property name="minimumSize">
+               <size>
+                <width>1000</width>
+                <height>480</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color:white;
+border: 1px solid rgb(0,0,0,0.3)</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QWidget" name="widget_4" native="true">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>23</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTableWidget" name="tableWidget"/>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>

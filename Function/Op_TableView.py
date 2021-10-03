@@ -2,7 +2,7 @@
 表格控件的相关操作函数
 '''
 from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont,QColor,QBrush
 import random
 
 def TableView_Init(self,nColumn):
@@ -46,6 +46,11 @@ def TableViewAdd(self):
     self.tableWidget.setItem(row, 2, QTableWidgetItem(age))
     self.tableWidget.setItem(row, 3, QTableWidgetItem(add))
     self.tableWidget.setItem(row, 4, QTableWidgetItem(score))
+    self.tableWidget.item(row,0).setForeground(QBrush(QColor(255,255,255)))
+    self.tableWidget.item(row, 1).setForeground(QBrush(QColor(255, 255, 255)))
+    self.tableWidget.item(row, 2).setForeground(QBrush(QColor(255, 255, 255)))
+    self.tableWidget.item(row, 3).setForeground(QBrush(QColor(255, 255, 255)))
+    self.tableWidget.item(row, 4).setForeground(QBrush(QColor(255, 255, 255)))
     self.id += 1
     self.lines.append([id, name, age, add, score])
 
