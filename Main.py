@@ -2,7 +2,6 @@ import os,sys,random,cgitb
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
-from time import sleep
 
 #region 引入窗体及函数
 from UI import *
@@ -21,6 +20,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.LayerIndex = 1 # 每层的id
         self.mousePressed = False # 标题栏拖动标识
         self.StyleOn=True # 是否启用样式表
+        self.map = Map()
 
         # 自定义标题栏设置
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
@@ -40,6 +40,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonNewLayer.setToolTip('创建新图层')
         self.tsButtonSelect.setToolTip('选择要素')
         self.tsButtonEdit.setToolTip('编辑模式')
+
 
         # 绑定信号与槽函数
         self.slot_connect()

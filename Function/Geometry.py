@@ -15,6 +15,11 @@ class RectangleD(object):
     def IsPointOn(self, point):
         return point.X>=self.MinX and point.Y>=self.MinY and point.X<=self.MaxX and point.Y<=self.MaxY
 
+    # 判断两个矩形是否相交
+    def IsIntersectBox(self, box):
+        return not (self.MaxX < box.MinX or self.MaxY < box.MinY or
+                    self.MinX > box.MaxX or self.MinY > box.MaxY)
+
     # 重写print
     def __str__(self):
         return ("Box:\nMinX={}; MinY={}; MaxX={}; MaxY={}".format(self.MinX,self.MinY,self.MaxX,self.MaxY))
