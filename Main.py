@@ -19,14 +19,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.EditStatus=False # 是否启用编辑
         self.LayerIndex = 1 # 每层的id
         self.mousePressed = False # 标题栏拖动标识
-        self.StyleOn=True # 是否启用样式表
+        self.StyleOn=False # 是否启用样式表
         self.map = Map()
 
         # 自定义标题栏设置
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
         # TODO: 最大化disabled
         self.bt_close.clicked.connect(self.close)
-        self.setWindowFlags(Qt.FramelessWindowHint)# 设置窗口无边框
+
 
         # 鼠标悬停在按钮上显示信息
         self.tsButtonNew.setToolTip('新建')
@@ -59,12 +59,18 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         # 设置qss样式
         if self.StyleOn:
-            with open('./UI/style.qss') as f:
-                qss=f.read()
+            self.setWindowFlags(Qt.FramelessWindowHint)  # 设置窗口无边框
+            with open('./UI/style.qss') as f1:
+                qss=f1.read()
             self.setStyleSheet(qss)
             # self.tableWidget.horizontalHeader().setStyleSheet("QHeaderView::section{background-color:rgb(255,255,255,0.3);font:10pt '宋体';color: white;}")
             self.tableWidget.horizontalHeader().setVisible(False)
             self.tableWidget.verticalHeader().setVisible(False)
+            with open('./UI/Scrollbar.qss') as f2:
+                qss=f2.read()
+            self.tableWidget.verticalScrollBar().setStyleSheet(qss)
+        else:
+            defaultUI(self)
 
         # 设置TabelView,必须设置有几列
         TableView_Init(self,5)
@@ -167,38 +173,12 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.comboBox.setItemIcon(1, QIcon('./UI/images/Line.png'))
         self.Winnewlayer.comboBox.setItemIcon(2, QIcon('./UI/images/Polygon.png'))
         self.Winnewlayer.show()
-        self.Winnewlayer.bt_OK.clicked.connect(self.NewLayer)
+        self.Winnewlayer.bt_OK.clicked.connect(lambda:NewLayer(self))
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
         # txt=self.treeWidget.currentItem().text(0)
 
 
-    def NewLayer(self):
-        txtName=self.Winnewlayer.lineEdit.text()
-        txtType=self.Winnewlayer.comboBox.currentText()
-        item=self.treeWidget.findItems('Layers',Qt.MatchStartsWith)[0]
-        NewL=QTreeWidgetItem(item, [txtName])
-        NewL.setForeground(0, Qt.white)
-        if txtType=='点':
-            NewLchild=QTreeWidgetItem(NewL,[txtType])
-            NewLchild.setIcon(0,QIcon('./UI/images/Point.png'))
-            NewLchild.setForeground(0, Qt.white)
-            NewL.setCheckState(0, Qt.Checked)
-            NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
-        elif txtType=='线':
-            NewLchild=QTreeWidgetItem(NewL,[txtType])
-            NewLchild.setIcon(0,QIcon('./UI/images/Line.png'))
-            NewLchild.setForeground(0, Qt.white)
-            NewL.setCheckState(0, Qt.Checked)
-            NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
-        elif txtType=='面':
-            NewLchild=QTreeWidgetItem(NewL,[txtType])
-            NewLchild.setIcon(0,QIcon('./UI/images/Polygon.png'))
-            NewLchild.setForeground(0, Qt.white)
-            NewL.setCheckState(0, Qt.Checked)
-            NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
-        self.treeWidget.expandAll()
 
-        self.Winnewlayer.close()
     # endregion
 
 

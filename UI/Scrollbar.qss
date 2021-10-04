@@ -1,0 +1,23 @@
+QScrollBar::sub-line:vertical{
+border-image:url(UI/images/Trans.png)
+}
+QScrollBar::add-line:vertical{
+border-image:url(UI/images/Trans.png)
+}
+QScrollBar:vertical{
+margin-top:0px;
+margin-left:1px;
+margin-right:1px;
+background:rgb(255,255,255,0.3);
+}
+QScrollBar::add-page:vertical
+{
+    background:rgb(255,255,255,0.3);
+}
+QScrollBar::sub-page:vertical
+{
+    background:rgb(255,255,255,0.3);
+}
+QScrollBar::handle:vertical{
+background:rgb(145,182,181,0.3);
+}

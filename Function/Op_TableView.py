@@ -46,11 +46,12 @@ def TableViewAdd(self):
     self.tableWidget.setItem(row, 2, QTableWidgetItem(age))
     self.tableWidget.setItem(row, 3, QTableWidgetItem(add))
     self.tableWidget.setItem(row, 4, QTableWidgetItem(score))
-    self.tableWidget.item(row,0).setForeground(QBrush(QColor(255,255,255)))
-    self.tableWidget.item(row, 1).setForeground(QBrush(QColor(255, 255, 255)))
-    self.tableWidget.item(row, 2).setForeground(QBrush(QColor(255, 255, 255)))
-    self.tableWidget.item(row, 3).setForeground(QBrush(QColor(255, 255, 255)))
-    self.tableWidget.item(row, 4).setForeground(QBrush(QColor(255, 255, 255)))
+    if self.StyleOn:
+        self.tableWidget.item(row,0).setForeground(QBrush(QColor(255,255,255)))
+        self.tableWidget.item(row, 1).setForeground(QBrush(QColor(255, 255, 255)))
+        self.tableWidget.item(row, 2).setForeground(QBrush(QColor(255, 255, 255)))
+        self.tableWidget.item(row, 3).setForeground(QBrush(QColor(255, 255, 255)))
+        self.tableWidget.item(row, 4).setForeground(QBrush(QColor(255, 255, 255)))
     self.id += 1
     self.lines.append([id, name, age, add, score])
 
