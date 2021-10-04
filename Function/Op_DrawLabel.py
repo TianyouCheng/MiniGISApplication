@@ -3,16 +3,23 @@
 '''
 
 from PyQt5.QtWidgets import QLabel
-from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent, QPen, QColor
+from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent, QPen, QColor, QMouseEvent
 from PyQt5.QtCore import QPoint, QSize
 from . import DrawSomething as DS
 from .Geometry import *
 from .Layer import Layer
 from .Map import Map
+from .MapTool import MapTool
+from Main import Main_exe
 
 
-def Refresh(label: QLabel, map: Map, mouseLoc: QPoint):
-    '''绘制事件触发'''
+def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None):
+    '''
+    绘制事件触发
+    :param new_geo: 可能的新几何体（添加几何体模式）
+    '''
+    label = main_exe.Drawlabel
+    map = main_exe.map
     pixmap = label.pixmap()
     pixmap.fill(QColor('white'))
     painter = QPainter(label.pixmap())
@@ -36,14 +43,6 @@ def Refresh(label: QLabel, map: Map, mouseLoc: QPoint):
             pen.setWidth(2)
             pen.setColor(QColor('red'))
             painter.setPen(pen)
-            '''
-           def draw(painter,object=None,list=[]):
-            判断传入几何体的类型并绘制全部或list中的部分; 适用于所有自定义的几何类
-           :param painter: 画笔
-           :param object: 几何体对象
-           :param list: 对于多线和多面，具体绘制哪些（可选）; 传索引不是传序号（即从0开始）
-           :return: None
-           '''
             # 绘制每个几何体
             for geometry in layer.geometries:
                 if not geometry.box.IsIntersectBox(screen_geobox):
@@ -56,5 +55,37 @@ def Refresh(label: QLabel, map: Map, mouseLoc: QPoint):
                     draw_index = [index for index, part in enumerate(geometry)
                                   if part.box.IsIntersectBox(screen_geobox)]
                 DS.draw(painter, screen_geo, list=draw_index)
+
+    if map.selectedLayer != -1:
+        # “添加几何体”模式，绘制待添加的几何体
+        if main_exe.tool == MapTool.AddGeometry:
+            pass
+        # “编辑几何体”模式，绘制正在编辑的几何体
+        elif main_exe.tool == MapTool.EditGeometry:
+            pass
+        # “选择”模式，绘制被选择的几何体
+        elif main_exe.tool == MapTool.Select:
+            DrawSelectedGeo(painter, map)
     painter.end()
     label.update()
+
+
+def DrawSelectedGeo(painter: QPainter, map: Map):
+    '''绘制被选择的多边形'''
+    layer = map.layers[map.selectedLayer]
+    origin_pen = painter.pen()
+    # 设置被选择时的样式
+    new_pen = QPen(brush=QColor('cyan'), width=2)
+    painter.setPen(new_pen)
+    selected = set(layer.selectedItems)
+    for item in layer.geometries:
+        if item.ID in selected:
+            screen_geo = map.GeoToScreen(item, (painter.device().width(),
+                                                painter.device().height()))
+            DS.draw(painter, screen_geo)
+    painter.setPen(origin_pen)
+
+
+def LabelMousePress(main_exe: Main_exe, event: QMouseEvent):
+    '''处理鼠标按下，且鼠标位置在画布内的事件'''
+    event.button()

@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 #region 引入窗体及函数
 from UI import *
 from Function import *
+from unit_test import create_map
 #endregion
 
 # 主窗体操作
@@ -20,7 +21,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.LayerIndex = 1 # 每层的id
         self.mousePressed = False # 标题栏拖动标识
         self.StyleOn=False # 是否启用样式表
-        self.map = Map()
+        self.map = create_map()    # 当前地图
+        self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
 
         # 自定义标题栏设置
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
@@ -85,6 +87,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         if event.pos() in Titlerect:
             self.mousePressed=True
         self.move_DragPosition=event.globalPos()-self.pos()
+
+        # 处理点击画布时发生的事件
+        canvas_pos = self.ConvertCor(event)
+        if 0 <= canvas_pos.x() <= self.Drawlabel.width() \
+                and 0 <= canvas_pos.y() <= self.Drawlabel.height():
+            LabelMousePress(self, event)
+
         event.accept()
 
     # 重写鼠标松开事件
@@ -93,6 +102,11 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     # 绑定信号与槽函数
     def slot_connect(self):
+        self.tsButtonOperateNone.clicked.connect(self.bt_operateNone_clicked)
+        self.tsButtonPan.clicked.connect(self.bt_pan_clicked)
+        self.tsButtonZoomIn.clicked.connect(self.bt_zoomIn_clicked)
+        self.tsButtonZoomOut.clicked.connect(self.bt_zoomOut_clicked)
+        self.tsButtonZoomScale.clicked.connect(self.bt_zoomScale_clicked)
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
 
@@ -137,6 +151,27 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     # endregion
 
     # region 信号与槽函数
+    def bt_operateNone_clicked(self):
+        '''按下“鼠标指针”按钮'''
+        self.tool = MapTool.Null
+
+    def bt_pan_clicked(self):
+        '''按下“漫游”按钮'''
+        self.tool = MapTool.Pan
+
+    def bt_zoomIn_clicked(self):
+        '''按下“放大”按钮'''
+        self.tool = MapTool.ZoomIn
+
+    def bt_zoomOut_clicked(self):
+        '''按下“缩小”按钮'''
+        self.tool = MapTool.ZoomOut
+
+    def bt_zoomScale_clicked(self):
+        '''按下“全屏显示”按钮'''
+        self.map.FullScreen(self.Drawlabel.width(), self.Drawlabel.height())
+        Refresh(self, QCursor.pos())
+
     def bt_edit_clicked(self):
         node=self.treeWidget.currentItem()
         if not(node):
