@@ -141,6 +141,8 @@ class Map(object):
         self.layers.insert(pos, layer)
         if self.selectedLayer == -1:
             self.selectedLayer = pos
+        elif self.selectedLayer >= pos:
+            self.selectedLayer += 1
         self.RefreshBox()
 
     def DelLayer(self, index):
@@ -149,6 +151,8 @@ class Map(object):
         # 删除被选择的图层，默认将被选择图层转为最顶层
         if self.selectedLayer == index:
             self.selectedLayer = 0 if len(self.layers) > 0 else -1
+        elif self.selectedLayer > index:
+            self.selectedLayer -= 1
         self.RefreshBox()
 
     def ClearLayers(self):

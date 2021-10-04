@@ -20,9 +20,11 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.EditStatus=False # 是否启用编辑
         self.LayerIndex = 1 # 每层的id
         self.mousePressed = False # 标题栏拖动标识
+        self.mousePressLoc = QPoint()
         self.StyleOn=False # 是否启用样式表
         self.map = create_map()    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
+        self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
 
         # 自定义标题栏设置
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
@@ -54,7 +56,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         canvas.fill(QColor('white'))
         self.Drawlabel.setPixmap(canvas)
         # 固定窗口大小
-        self.setFixedSize(self.width(), self.height())
+        # self.setFixedSize(self.width(), self.height())
 
         # 绘图函数1
         self.draw_something()
@@ -92,6 +94,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         canvas_pos = self.ConvertCor(event)
         if 0 <= canvas_pos.x() <= self.Drawlabel.width() \
                 and 0 <= canvas_pos.y() <= self.Drawlabel.height():
+            self.mousePressLoc.setX(canvas_pos.x())
+            self.mousePressLoc.setY(canvas_pos.y())
             LabelMousePress(self, event)
 
         event.accept()
@@ -109,6 +113,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonZoomScale.clicked.connect(self.bt_zoomScale_clicked)
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
+        self.Drawlabel.resizeEvent = self.labelResizeEvent
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -212,7 +217,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
         # txt=self.treeWidget.currentItem().text(0)
 
-
+    def labelResizeEvent(self, a0: QtGui.QResizeEvent):
+        '''画布大小改变'''
+        super(QLabel, self.Drawlabel).resizeEvent(a0)
+        canvas = QtGui.QPixmap(a0.size())
+        canvas.fill(QColor('white'))
+        self.Drawlabel.setPixmap(canvas)
+        Refresh(self, QCursor.pos())
 
     # endregion
 
