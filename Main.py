@@ -19,11 +19,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 属性
         self.EditStatus=False # 是否启用编辑
         self.LayerIndex = 1 # 每层的id
-        self.mousePressed = False # 标题栏拖动标识
-        self.mousePressLoc = QPoint()
+        self.mouseDrag = False # 标题栏拖动标识
+        self.mouseLeftPress = False     # 鼠标左键是否处于按下状态
+        self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
+        self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
         self.StyleOn=False # 是否启用样式表
         self.map = create_map()    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
+        self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
 
         # 自定义标题栏设置
@@ -55,11 +58,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         canvas = QtGui.QPixmap(QtCore.QSize(1000, self.Drawlabel.size().height()))
         canvas.fill(QColor('white'))
         self.Drawlabel.setPixmap(canvas)
+        self.basePixmap = QPixmap(canvas)
         # 固定窗口大小
         # self.setFixedSize(self.width(), self.height())
-
-        # 绘图函数1
-        self.draw_something()
 
         # 设置qss样式
         if self.StyleOn:
@@ -87,22 +88,31 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def mousePressEvent(self, event):
         Titlerect = self.widget.rect()
         if event.pos() in Titlerect:
-            self.mousePressed=True
+            self.mouseDrag=True
         self.move_DragPosition=event.globalPos()-self.pos()
 
         # 处理点击画布时发生的事件
         canvas_pos = self.ConvertCor(event)
         if 0 <= canvas_pos.x() <= self.Drawlabel.width() \
                 and 0 <= canvas_pos.y() <= self.Drawlabel.height():
-            self.mousePressLoc.setX(canvas_pos.x())
-            self.mousePressLoc.setY(canvas_pos.y())
+            if event.button() == Qt.MouseButton.LeftButton:
+                self.mouseLeftPress = True
+                self.mousePressLoc.setX(canvas_pos.x())
+                self.mousePressLoc.setY(canvas_pos.y())
+                self.mouseLastLoc.setX(canvas_pos.x())
+                self.mouseLastLoc.setY(canvas_pos.y())
             LabelMousePress(self, event)
 
         event.accept()
 
     # 重写鼠标松开事件
     def mouseReleaseEvent(self, event):
-        self.mousePressed = False
+        self.mouseDrag = False
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.mouseLeftPress = False
+
+        # 处理鼠标在画布时发生的事件
+        LabelMouseRelease(self, event)
 
     # 绑定信号与槽函数
     def slot_connect(self):
@@ -111,6 +121,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonZoomIn.clicked.connect(self.bt_zoomIn_clicked)
         self.tsButtonZoomOut.clicked.connect(self.bt_zoomOut_clicked)
         self.tsButtonZoomScale.clicked.connect(self.bt_zoomScale_clicked)
+        self.tsButtonSelect.clicked.connect(self.bt_select_clicked)
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
         self.Drawlabel.resizeEvent = self.labelResizeEvent
@@ -121,38 +132,27 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         point = self.Drawlabel.mapFromGlobal(point)
         return point
 
-    # 绘图
-    def draw_something(self,object='null'):
-        painter = QtGui.QPainter(self.Drawlabel.pixmap())
-        pen = QtGui.QPen()
-        pen.setWidth(2)
-        pen.setColor(QtGui.QColor('red'))
-        painter.setPen(pen)
-        '''
-       def draw(painter,object=None,list=[]):
-        判断传入几何体的类型并绘制全部或list中的部分; 适用于所有自定义的几何类
-       :param painter: 画笔
-       :param object: 几何体对象
-       :param list: 对于多线和多面，具体绘制哪些（可选）; 传索引不是传序号（即从0开始）
-       :return: None
-       '''
-        draw(painter,PointD(50,50))
-        painter.end()
-
     # 重写鼠标移动事件
     def mouseMoveEvent(self, e):
         # 移动标题栏操作
-        if self.mousePressed:
+        if self.mouseDrag:
             self.move(e.globalPos()-self.move_DragPosition)
             e.accept()
+        # 处理在画布移动时发生的事件
+        canvas_pos = self.ConvertCor(e)
+        if 0 <= canvas_pos.x() <= self.Drawlabel.width() \
+                and 0 <= canvas_pos.y() <= self.Drawlabel.height():
+            LabelMouseMove(self, e)
 
         painter = QtGui.QPainter(self.Drawlabel.pixmap())
         # painter.setPen(QtGui.QColor('white'))
-        point=self.ConvertCor(e)
         if self.EditStatus:
-            painter.drawPoint(point.x(), point.y())
+            painter.drawPoint(canvas_pos.x(), canvas_pos.y())
             painter.end()
             self.update()
+
+        self.mouseLastLoc.setX(canvas_pos.x())
+        self.mouseLastLoc.setY(canvas_pos.y())
     # endregion
 
     # region 信号与槽函数
@@ -176,6 +176,10 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         '''按下“全屏显示”按钮'''
         self.map.FullScreen(self.Drawlabel.width(), self.Drawlabel.height())
         Refresh(self, QCursor.pos())
+
+    def bt_select_clicked(self):
+        '''按下“选择要素”按钮'''
+        self.tool = MapTool.Select
 
     def bt_edit_clicked(self):
         node=self.treeWidget.currentItem()

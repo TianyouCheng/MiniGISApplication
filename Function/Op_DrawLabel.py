@@ -13,29 +13,57 @@ from .MapTool import MapTool
 from Main import Main_exe
 
 
-def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None):
+def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None, use_base=False):
     '''
     绘制事件触发
     :param new_geo: 可能的新几何体（添加几何体模式）
+    :param use_base: 若为True，则使用main_exe.basePixMap绘制底层，
+                     否则重新绘制底层并覆盖原来的basePixMap
     '''
-    label = main_exe.Drawlabel
     map = main_exe.map
-    pixmap = label.pixmap()
-    pixmap.fill(QColor('white'))
-    painter = QPainter(label.pixmap())
+    pixmap = main_exe.Drawlabel.pixmap()
+    painter = QPainter(pixmap)
     # 计算屏幕、鼠标位置的地理坐标范围
-    width = label.pixmap().width()
-    height = label.pixmap().height()
-    screen_minP = map.ScreenToGeo(PointD(0, height), (width, height))
-    screen_maxP = map.ScreenToGeo(PointD(width, 0), (width, height))
-    screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
+    width = pixmap.width()
+    height = pixmap.height()
     mouse_screenloc = PointD(mouseLoc.x(), mouseLoc.y())
     mouse_geoloc = map.ScreenToGeo(mouse_screenloc, (width, height))
+    if use_base:
+        painter.drawPixmap(0, 0, main_exe.basePixmap)
+    else:
+        pixmap.fill(QColor('white'))
+        RefreshBasePixmap(painter, map, (width, height))
+        main_exe.basePixmap = QPixmap(pixmap)
+
+    if map.selectedLayer != -1:
+        DrawSelectedGeo(painter, map)
+        # “添加几何体”模式，绘制待添加的几何体
+        if main_exe.tool == MapTool.AddGeometry:
+            pass
+        # “编辑几何体”模式，绘制正在编辑的几何体
+        elif main_exe.tool == MapTool.EditGeometry:
+            pass
+        # “选择”模式，绘制选择框
+        elif main_exe.tool == MapTool.Select and main_exe.mouseLeftPress:
+            pen = QPen(QColor('black'), 1, Qt.PenStyle.DashLine)
+            painter.setPen(pen)
+            rect = QRect(mouseLoc, main_exe.mousePressLoc)
+            painter.fillRect(rect, QColor(0, 162, 232, 64))
+            painter.drawRect(rect)
+    painter.end()
+    main_exe.Drawlabel.update()
+
+
+def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
+    '''重新绘制地理底图'''
+    screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
+    screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
+    screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
     # 若地图工程在显示范围内，则绘制
-    if map.box.IsIntersectBox(screen_geobox):
+    if map_.box.IsIntersectBox(screen_geobox):
         # 图层倒序绘制
-        for i in range(len(map.layers) - 1, -1, -1):
-            layer = map.layers[i]
+        for i in range(len(map_.layers) - 1, -1, -1):
+            layer = map_.layers[i]
             # 判断该图层是否在屏幕范围内
             if len(layer.geometries) == 0 or \
                     not layer.box.IsIntersectBox(screen_geobox):
@@ -50,24 +78,13 @@ def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None):
                 if not geometry.box.IsIntersectBox(screen_geobox):
                     continue
                 # 坐标转换
-                screen_geo = map.GeoToScreen(geometry, (width, height))
+                screen_geo = map_.GeoToScreen(geometry, screen_size)
                 draw_index = []
                 if isinstance(geometry, MultiPolyline) or \
                         isinstance(geometry, MultiPolygon):
-                    draw_index = [index for index, part in enumerate(geometry)
+                    draw_index = [index for index, part in enumerate(geometry.data)
                                   if part.box.IsIntersectBox(screen_geobox)]
                 DS.draw(painter, screen_geo, list=draw_index)
-
-    if map.selectedLayer != -1:
-        DrawSelectedGeo(painter, map)
-        # “添加几何体”模式，绘制待添加的几何体
-        if main_exe.tool == MapTool.AddGeometry:
-            pass
-        # “编辑几何体”模式，绘制正在编辑的几何体
-        elif main_exe.tool == MapTool.EditGeometry:
-            pass
-    painter.end()
-    label.update()
 
 
 def DrawSelectedGeo(painter: QPainter, map: Map):
@@ -92,7 +109,7 @@ def LabelMousePress(main_exe: Main_exe, event: QMouseEvent):
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
-    mouse_loc = main_exe.mousePressLoc
+    mouse_loc = main_exe.ConvertCor(event)
     if event.button() == Qt.MouseButton.LeftButton:
         # 在“放大”模式下按下左键
         if main_exe.tool == MapTool.ZoomIn:
@@ -104,3 +121,34 @@ def LabelMousePress(main_exe: Main_exe, event: QMouseEvent):
             map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
                              map_.scale * main_exe.zoomRatio)
             Refresh(main_exe, mouse_loc)
+
+
+def LabelMouseMove(main_exe: Main_exe, event: QMouseEvent):
+    '''处理鼠标移动，且鼠标位置在画布内的事件'''
+    map_ = main_exe.map
+    width = main_exe.Drawlabel.pixmap().width()
+    height = main_exe.Drawlabel.pixmap().height()
+    mouse_loc = main_exe.ConvertCor(event)
+    if main_exe.mouseLeftPress:
+        # 在“漫游”模式下按住左键拖动
+        if main_exe.tool == MapTool.Pan:
+            now_geoloc = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
+            old_geoloc = map_.ScreenToGeo(PointD(main_exe.mouseLastLoc.x(),
+                                                 main_exe.mouseLastLoc.y()), (width, height))
+            map_.offsetX += old_geoloc.X - now_geoloc.X
+            map_.offsetY += old_geoloc.Y - now_geoloc.Y
+            Refresh(main_exe, mouse_loc)
+        # 鼠标框选移动
+        elif main_exe.tool == MapTool.Select:
+            Refresh(main_exe, mouse_loc, use_base=True)
+
+
+def LabelMouseRelease(main_exe: Main_exe, event: QMouseEvent):
+    '''处理与画布有关的、鼠标松开的事件'''
+    map_ = main_exe.map
+    width = main_exe.Drawlabel.pixmap().width()
+    height = main_exe.Drawlabel.pixmap().height()
+    mouse_loc = main_exe.ConvertCor(event)
+    # 鼠标选择完成
+    if main_exe.tool == MapTool.Select:
+        pass
