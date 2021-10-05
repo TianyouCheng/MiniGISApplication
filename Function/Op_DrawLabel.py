@@ -36,7 +36,7 @@ def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None, use_base=False):
         main_exe.basePixmap = QPixmap(pixmap)
 
     if map.selectedLayer != -1:
-        DrawSelectedGeo(painter, map)
+        DrawSelectedGeo(painter, map, (width, height))
         # “添加几何体”模式，绘制待添加的几何体
         if main_exe.tool == MapTool.AddGeometry:
             pass
@@ -75,6 +75,7 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
             painter.setPen(pen)
             # 绘制每个几何体
             for geometry in layer.geometries:
+                # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了
                 if not geometry.box.IsIntersectBox(screen_geobox):
                     continue
                 # 坐标转换
@@ -87,19 +88,21 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
                 DS.draw(painter, screen_geo, list=draw_index)
 
 
-def DrawSelectedGeo(painter: QPainter, map: Map):
+def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
     '''绘制被选择的多边形'''
-    layer = map.layers[map.selectedLayer]
+    layer = map_.layers[map_.selectedLayer]
     origin_pen = painter.pen()
-    width = painter.device().width()
-    height = painter.device().height()
+    screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
+    screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
+    screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
     # 设置被选择时的样式
     new_pen = QPen(QColor('cyan'), 2)
     painter.setPen(new_pen)
     selected = set(layer.selectedItems)
     for item in layer.geometries:
-        if item.ID in selected:
-            screen_geo = map.GeoToScreen(item, (width, height))
+        # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了
+        if item.ID in selected and item.box.IsIntersectBox(screen_geobox):
+            screen_geo = map_.GeoToScreen(item, screen_size)
             DS.draw(painter, screen_geo)
     painter.setPen(origin_pen)
 
@@ -150,5 +153,21 @@ def LabelMouseRelease(main_exe: Main_exe, event: QMouseEvent):
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
     # 鼠标选择完成
-    if main_exe.tool == MapTool.Select:
-        pass
+    if main_exe.tool == MapTool.Select and map_.selectedLayer != -1:
+        # 点选模式
+        if (main_exe.mousePressLoc.x() - mouse_loc.x()) ** 2 + \
+                (main_exe.mousePressLoc.y() - mouse_loc.y()) ** 2 < \
+                main_exe.bufferRadius ** 2:
+            center_p = (QPointF(main_exe.mousePressLoc) + QPointF(mouse_loc)) / 2
+            query = map_.ScreenToGeo(PointD(center_p.x(), center_p.y()), (width, height))
+        # 框选模式
+        else:
+            rect_screen = RectangleD(min(main_exe.mousePressLoc.x(), mouse_loc.x()),
+                                     min(main_exe.mousePressLoc.y(), mouse_loc.y()),
+                                     max(main_exe.mousePressLoc.x(), mouse_loc.x()),
+                                     max(main_exe.mousePressLoc.y(), mouse_loc.y()))
+            query = map_.ScreenToGeo(rect_screen, (width, height))
+        buffer = map_.ScreenDistToGeo(main_exe.bufferRadius)
+        result = map_.layers[map_.selectedLayer].Query(query, buffer)
+        map_.layers[map_.selectedLayer].selectedItems = result
+        Refresh(main_exe, mouse_loc, use_base=True)

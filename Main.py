@@ -93,8 +93,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         # 处理点击画布时发生的事件
         canvas_pos = self.ConvertCor(event)
-        if 0 <= canvas_pos.x() <= self.Drawlabel.width() \
-                and 0 <= canvas_pos.y() <= self.Drawlabel.height():
+        if self.Drawlabel.rect().contains(canvas_pos):
             if event.button() == Qt.MouseButton.LeftButton:
                 self.mouseLeftPress = True
                 self.mousePressLoc.setX(canvas_pos.x())
@@ -140,8 +139,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             e.accept()
         # 处理在画布移动时发生的事件
         canvas_pos = self.ConvertCor(e)
-        if 0 <= canvas_pos.x() <= self.Drawlabel.width() \
-                and 0 <= canvas_pos.y() <= self.Drawlabel.height():
+        if self.Drawlabel.rect().contains(canvas_pos):
             LabelMouseMove(self, e)
 
         painter = QtGui.QPainter(self.Drawlabel.pixmap())

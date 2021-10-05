@@ -37,9 +37,9 @@ class Map(object):
     def GeoToScreen(self, geometry, screenSize):
         '''
         将地理坐标转化为屏幕坐标
-        :param geometry: 地理坐标的几何体（Geometry的子类）
+        :param geometry: 地理坐标的几何体（Geometry的子类、或RectangleD）
         :param screenSize: 屏幕大小[width, height]列表
-        :return: 转化为屏幕坐标的几何体（Geometry的子类）
+        :return: 转化为屏幕坐标的几何体（Geometry的子类、或RectangleD）
         '''
         if isinstance(geometry, PointD):
             return PointD(x=(geometry.X - self.offsetX) / self.scale + screenSize[0] / 2,
@@ -59,15 +59,19 @@ class Map(object):
         elif isinstance(geometry, Polyline):
             data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
             return MultiPolygon(data, id=geometry.ID)
+        elif isinstance(geometry, RectangleD):
+            p_min = self.GeoToScreen(PointD(geometry.MinX, geometry.MaxY), screenSize)
+            p_max = self.GeoToScreen(PointD(geometry.MaxX, geometry.MinY), screenSize)
+            return RectangleD(minx=p_min.X, miny=p_min.Y, maxx=p_max.X, maxy=p_max.Y)
         else:
             raise ValueError('geometry not supported.')
 
     def ScreenToGeo(self, geometry, screenSize):
         '''
         将屏幕坐标转化为地理坐标
-        :param geometry: 屏幕坐标的几何体（Geometry的子类）
+        :param geometry: 屏幕坐标的几何体（Geometry的子类、或RectangleD）
         :param screenSize: 屏幕大小[width, height]列表
-        :return: 转化为地理坐标的几何体（Geometry的子类）
+        :return: 转化为地理坐标的几何体（Geometry的子类、或RectangleD）
         '''
         if isinstance(geometry, PointD):
             return PointD(x=(geometry.X - screenSize[0] / 2) * self.scale + self.offsetX,
@@ -87,6 +91,10 @@ class Map(object):
         elif isinstance(geometry, Polyline):
             data = [self.ScreenToGeo(geo, screenSize) for geo in geometry.data]
             return MultiPolygon(data, id=geometry.ID)
+        elif isinstance(geometry, RectangleD):
+            p_min = self.ScreenToGeo(PointD(geometry.MinX, geometry.MaxY), screenSize)
+            p_max = self.ScreenToGeo(PointD(geometry.MaxX, geometry.MinY), screenSize)
+            return RectangleD(minx=p_min.X, miny=p_min.Y, maxx=p_max.X, maxy=p_max.Y)
         else:
             raise ValueError('geometry not supported.')
 

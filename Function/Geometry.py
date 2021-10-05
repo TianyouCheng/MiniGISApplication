@@ -52,7 +52,7 @@ class Geometry(ABC):
 
     # 框选一该box是否能选中几何体
     @abstractmethod
-    def IsWithinBox(self,box):pass
+    def IsIntersectBox(self, box):pass
 
     # 将几何体转为WKT字符串
     @abstractmethod
@@ -119,7 +119,7 @@ class PointD(Geometry):
         else:
             return False
 
-    def IsWithinBox(self,box):
+    def IsIntersectBox(self, box):
         if box.IsPointOn(self):
             return True
         else:
@@ -167,14 +167,40 @@ class Polyline(Geometry):
             point_dis=self.GetDistance(point)
             if point_dis<=BufferDist:
                 result = True
-        self.RenewBox()
+        self._box.MinX += BufferDist
+        self._box.MinY += BufferDist
+        self._box.MaxX -= BufferDist
+        self._box.MaxY -= BufferDist
         return result
 
-    def IsWithinBox(self,box):
+    def IsIntersectBox(self, box):
+        if not self._box.IsIntersectBox(box):
+            return False
         if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
             return True
         for i in range(len(self.data)):
-            if self.data[i].IsWithinBox(box):
+            if self.data[i].IsIntersectBox(box):
+                return True
+
+        def IsLineIntersect(pa1, pa2, pb1, pb2):
+            '''
+            判断两“线段”是否相交：
+            若相交，则线段1的两端点在线段2两侧，同时线段2的两端点在线段1两侧
+            算法：向量(OB x OA)(OC x OA) < 0，则B、C两点在OA两侧
+            '''
+            z1 = (pb1.X - pa1.X) * (pa2.Y - pa1.Y) - (pa2.X - pa1.X) * (pb1.Y - pa1.Y)
+            z2 = (pb2.X - pa1.X) * (pa2.Y - pa1.Y) - (pa2.X - pa1.X) * (pb2.Y - pa1.Y)
+            z3 = (pa1.X - pb1.X) * (pb2.Y - pb1.Y) - (pb2.X - pb1.X) * (pa1.Y - pb1.Y)
+            z4 = (pa2.X - pb1.X) * (pb2.Y - pb1.Y) - (pb2.X - pb1.X) * (pa2.Y - pb1.Y)
+            return z1 * z2 < 0 and z3 * z4 < 0
+
+        # 剩下的可能情形：折线每个端点都不在矩形内，却有可能与矩形相交
+        # 这种相交一定会跟矩形的对角线相交
+        for i in range(len(self.data) - 1):
+            if IsLineIntersect(self.data[i], self.data[i + 1],
+                               PointD(box.MinX, box.MinY), PointD(box.MaxX, box.MaxY)) \
+                    or IsLineIntersect(self.data[i], self.data[i + 1],
+                                       PointD(box.MaxX, box.MinY), PointD(box.MinX, box.MaxY)):
                 return True
         return False
 
@@ -265,16 +291,18 @@ class Polygon(Geometry):
                             break
         return flag
 
-    def IsWithinBox(self,box):
+    def IsIntersectBox(self, box):
         """
         判断矩形是否与多边形相交
         :param box:待判断矩形
         :return:布尔变量
         """
+        if not self._box.IsIntersectBox(box):
+            return False
         if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
             return True
         for i in range(len(self.data)):
-            if self.data[i].IsWithinBox(box):return True
+            if self.data[i].IsIntersectBox(box):return True
         boxP=[PointD(box.MinX,box.MinY),PointD(box.MinX,box.MaxY),PointD(box.MaxX,box.MinY),PointD(box.MaxX,box.MaxY)]
         for i in range(4):
             if self.IsPointOn(boxP[i]):return True
@@ -336,17 +364,19 @@ class MultiPolyline(Geometry):
                 break
         return result
 
-    def IsWithinBox(self,box):
+    def IsIntersectBox(self, box):
         """
         判断多线上的各点是否在给定box内
         同样，无法判断相交
         :param box: RectangleD类型
         :return:布尔变量
         """
+        if not self._box.IsIntersectBox(box):
+            return False
         if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
             return True
         for i in range(len(self.data)):
-            if self.data[i].IsWithinBox(box): return True
+            if self.data[i].IsIntersectBox(box): return True
         return False
 
     def Move(self,deltaX,deltaY):
@@ -359,11 +389,13 @@ class MultiPolyline(Geometry):
         if len(self.data)==0:
             self._box=RectangleD()
             return
+        self.data[0].RenewBox()
         maxX=self.data[0]._box.MaxX
         maxY=self.data[0]._box.MaxY
         minX=self.data[0]._box.MinX
         minY=self.data[0]._box.MinY
         for i in range(1,len(self.data)):
+            self.data[i].RenewBox()
             if self.data[i]._box.MaxX>maxX:maxX=self.data[i]._box.MaxX
             if self.data[i]._box.MaxY > maxY: maxY = self.data[i]._box.MaxY
             if self.data[i]._box.MinX < minX: minX = self.data[i]._box.MinX
@@ -403,16 +435,18 @@ class MultiPolygon(Geometry):
                 break
         return result
 
-    def IsWithinBox(self,box):
+    def IsIntersectBox(self, box):
         """
         判断矩形是否与多边形相交
         :param box:待判断矩形
         :return:布尔变量
         """
+        if not self._box.IsIntersectBox(box):
+            return False
         if self._box.MaxX<=box.MaxX and self._box.MaxY<=box.MaxY and self._box.MinX>box.MinX and self._box.MinY>box.MinY:
             return True
         for i in range(len(self.data)):
-            if self.data[i].IsWithinBox(box):return True
+            if self.data[i].IsIntersectBox(box):return True
         return False
 
     def Move(self,deltaX,deltaY):
@@ -425,11 +459,13 @@ class MultiPolygon(Geometry):
         if len(self.data)==0:
             self._box=RectangleD()
             return
+        self.data[0].RenewBox()
         maxX=self.data[0]._box.MaxX
         maxY=self.data[0]._box.MaxY
         minX=self.data[0]._box.MinX
         minY=self.data[0]._box.MinY
         for i in range(1,len(self.data)):
+            self.data[i].RenewBox()
             if self.data[i]._box.MaxX>maxX:maxX=self.data[i]._box.MaxX
             if self.data[i]._box.MaxY > maxY: maxY = self.data[i]._box.MaxY
             if self.data[i]._box.MinX < minX: minX = self.data[i]._box.MinX

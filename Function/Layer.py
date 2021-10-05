@@ -100,7 +100,7 @@ class Layer(object):
         if not (self.box.MinX > box.MaxX or self.box.MinY > box.MaxY or
                 self.box.MaxX < box.MinX or self.box.MaxY < box.MaxY):
             for geometry in self.geometries:
-                if geometry.IsWithinBox(box):
+                if geometry.IsIntersectBox(box):
                     selected.append(geometry.ID)
         return selected
 
