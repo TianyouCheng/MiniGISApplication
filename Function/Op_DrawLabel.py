@@ -64,8 +64,8 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
         # 图层倒序绘制
         for i in range(len(map_.layers) - 1, -1, -1):
             layer = map_.layers[i]
-            # 判断该图层是否在屏幕范围内
-            if len(layer.geometries) == 0 or \
+            # 判断该图层是否显示、且在屏幕范围内
+            if not layer.visible or len(layer.geometries) == 0 or \
                     not layer.box.IsIntersectBox(screen_geobox):
                 continue
             # 设置绘制样式，TODO 渲染样式在这里读取，修改

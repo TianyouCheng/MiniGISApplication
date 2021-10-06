@@ -48,7 +48,7 @@ class Layer(object):
         :param row: 可选，该行的属性数据
         '''
         if not isinstance(geometry, self.type):
-            raise ValueError('添加几何体类型与图层类型不匹配')
+            raise TypeError('添加几何体类型与图层类型不匹配')
         self.geometries.append(geometry)
         # TODO 记得给几何体分配ID，并在属性表中添加该几何体的属性信息
         self.RefreshBox()
