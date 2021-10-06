@@ -24,35 +24,40 @@ class DBM:
         """
         self.cur.execute(sql)
         # self.layer_list= self.cur.fetchall()
-        return self.layer_list
+        return self.cur.fetchall()
 
     def add_layer_from_memory(self,layer:Layer):
         if layer.name in self.get_layers_list():
             self.cur.execute(f"drop table {layer.name}")
         self.create_table(layer.name,layer.type,layer.srid,layer.attr_desp_dict)
         for geometry in layer.geometries:
-            wkt=geometry.ToWKT()
-            self.cur.execute(f"""insert into {layer.name}(geom,{','.join([k for k in layer.attr_desp_dict.keys()])}) 
-            values({wkt},{geometry.other_attr})""")
-            pass
-        self.cur.commit()
-        pass
+            self.insert_geometry(layer,geometry)
+        self.conn.commit()
 
     def add_layer_from_shp(self):
         pass
 
     def create_table(self,tablename,geom_type,srid,**kwargs):
-        self.cur.execute(f"""
+        sql=f"""
             create table {tablename}(
-                sid serial primary key,
-                geom Geometry({geom_type},{srid}),
-                {''.join([f"{attr_name} {attr_type},\n" for attr_name,attr_type in kwargs])}
-            )
-        """)
+                gid int primary key,
+                geom Geometry({geom_type},{srid})
+                {''.join([f',{attr_name} {attr_type}' for attr_name,attr_type in kwargs])}
+            );
+        """
+        self.cur.execute(sql)
     
-    def insert_geometry(self,geomtry):
+    def insert_geometry(self,layer:Layer,geomtry:Geometry):
+        wkt=geomtry.ToWkt()
+        sql=f"""
+            insert into {layer.name}(id,geom,{','.join([k for k in layer.attr_desp_dict.keys()])})
+            values({geomtry.ID},{wkt},{layer.get_attr(geomtry.ID)});
+        """
+        self.cur.execute(sql)
+    
+    def load_layer(self,layer_name):
+        self.cur.execute(f"select ")
         pass
-    
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
 
@@ -60,15 +65,21 @@ class DBM:
     #     self.cur.commit()
 
     def test(self):
+        # self.create_table('test','POINT',3857)
+        # self.conn.commit()
         # self.cur.execute("""
-        #     select * from spatial_ref_sys limit 10;
+        #     insert into test values(2,st_geometryfromtext(\'POINT(1 1)\',3857));
         # """)
+        # self.conn.commit()
+        self.cur.execute("""
+            select f_geometry_column,srid,type from geometry_columns as gc where f_table_name='test';
+        """)
         rows=self.cur.fetchall()
         return rows
 
 
 if __name__=="__main__":
     dbm=DBM()
-    dbm.get_layers_list()
+    print(dbm.get_layers_list())
     a=dbm.test()
     print(a)

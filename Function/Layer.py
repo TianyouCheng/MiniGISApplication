@@ -1,7 +1,7 @@
 '''
 图层类别及相关操作
 '''
-from .Geometry import *
+from Geometry import *
 
 
 class Layer(object):
@@ -115,6 +115,14 @@ class Layer(object):
         '''
         pass
 
-    @getattr
+    @property
     def Count(self):
         return len(self.geometries)
+
+
+    #假设属性表用的pandas，根据geom id查询其属性，一般返回所有属性值构成的列表，当指定name时返回单个属性值构成的列表。也可以是字典
+    def get_attr(self,id,attr_name=None):
+        pass
+
+if __name__=='__main__':
+    print(1)

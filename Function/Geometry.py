@@ -253,14 +253,15 @@ class Polyline(Geometry):
 
     # 覆盖基类的ToWkt，将几何体转为WKT字符串
     def ToWkt(self):
-        pass
+        wkt=f"LINESTRING({','.join([f'{p.X} {p.Y}' for p in self.data])})"
+        return wkt
 # endregion
 
 # region 子类——多边形
 class Polygon(Geometry):
     # 属性 data是点构成的List, 表示多边形的外边界
     # 属性holes是Polygon构成的List（这些Polygon不能再有holes），表示多边形的洞
-    def __init__(self,Data,holes=None, id=-1):
+    def __init__(self,Data,holes=[], id=-1):
         Geometry.__init__(self,id)
         self.data=Data
         self.holes = holes
@@ -337,7 +338,8 @@ class Polygon(Geometry):
 
     # 覆盖基类的ToWkt，将几何体转为WKT字符串
     def ToWkt(self):
-        pass
+        wkt=f"POLYGON(({','.join([f'{p.X} {p.Y}' for p in self.data])}){''.join([',({})'.format(','.join([f'{p.X} {p.Y}' for p in hole.data])) for hole in self.holes])})"
+        return wkt
 # endregion
 
 # region 子类——多线
@@ -417,6 +419,10 @@ class MultiPolyline(Geometry):
             for j in range(len(self.data[i].data)):
                 s+='Point{}({},{})\n'.format(j+1,self.data[i].data[j].X,self.data[i].data[j].Y)
         return s
+
+    def ToWkt(self):
+        wkt=f"MULTILINESTRING({','.join([l.ToWKT()[10:] for l in self.data])})"
+        return wkt
 # endregion
 
 # region 子类——多多边形
@@ -490,4 +496,10 @@ class MultiPolygon(Geometry):
 
     # 覆盖基类的ToWkt，将几何体转为WKT字符串
     def ToWkt(self):
-        pass
+        wkt=f"MULTIPOLYGON({','.join([pg.ToWkt()[7:] for pg in self.data])})"
+        return wkt
+
+if __name__=='__main__':
+    pg=Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)],[Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)])])
+    mpg=MultiPolygon([pg,pg])
+    print(mpg.ToWkt())
