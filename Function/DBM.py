@@ -51,12 +51,16 @@ class DBM:
         wkt=geomtry.ToWkt()
         sql=f"""
             insert into {layer.name}(id,geom,{','.join([k for k in layer.attr_desp_dict.keys()])})
-            values({geomtry.ID},{wkt},{layer.get_attr(geomtry.ID)});
+            values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{layer.srid}),{','.join(layer.get_attr(geomtry.ID))});
         """
         self.cur.execute(sql)
     
     def load_layer(self,layer_name):
-        self.cur.execute(f"select ")
+        self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name='{layer_name}'; ")
+        col_name,layer_srid,layer_type=self.cur.fetchall()[0]
+        cur_layer=Layer(layer_type,layer_name,layer_srid)
+        #for layer.addgeometry
+        #add attr table
         pass
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
@@ -82,4 +86,4 @@ if __name__=="__main__":
     dbm=DBM()
     print(dbm.get_layers_list())
     a=dbm.test()
-    print(a)
+    print(a[0])
