@@ -1,11 +1,15 @@
 '''
 树形控件的相关操作函数
 '''
-from PyQt5.QtWidgets import QTreeWidgetItem
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt
-def prs():
-    print('TODO: selection changed')
+from .Map import Map
+from .Geometry import *
+
+def prs(item: QTreeWidgetItem, column):
+    index = item.parent().indexOfChild(item)
+    print(index, item.checkState(0))
 
 def TreeView_Init(self):
     # TREEVIEW
@@ -72,3 +76,41 @@ def NewLayer(self):
     self.treeWidget.expandAll()
 
     self.Winnewlayer.close()
+
+
+def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
+    '''
+    更新图层列表
+    :param tree: 树状视图
+    :param map_: 地图
+    :param style_on: bool，是否启用样式表
+    '''
+    layersItem = tree.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+    layersItem.takeChildren()
+    for layer in map_.layers:
+        newline = QTreeWidgetItem(layersItem)
+        if style_on:
+            newline.setForeground(0, Qt.GlobalColor.white)
+        newline.setCheckState(0, Qt.CheckState.Checked if layer.visible
+                              else ~Qt.CheckState.Checked)
+        # 点图层
+        if layer.type == PointD:
+            icon = QIcon('./UI/images/Point.png' if style_on
+                         else './UI/images/Point_G.png')
+            typetxt = '点'
+        # 线、多线图层
+        elif layer.type in (Polyline, MultiPolyline):
+            icon = QIcon('./UI/images/Line.png' if style_on
+                         else './UI/images/Line_G.png')
+            typetxt = '线' if layer.type == Polyline else '多线'
+        # 面、多面图层
+        elif layer.type in (Polygon, MultiPolygon):
+            icon = QIcon('./UI/images/Polygon.png' if style_on
+                         else './UI/images/Polygon_G.png')
+            typetxt = '面' if layer.type == Polygon else '多面'
+        else:
+            raise TypeError('图层类型错误')
+        newline.setCheckState(0, Qt.CheckState.Checked)
+        newline.setIcon(0, icon)
+        newline.setText(0, f'{typetxt}: {layer.name}')
+    tree.expandAll()

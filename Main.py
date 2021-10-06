@@ -58,6 +58,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         canvas = QtGui.QPixmap(QtCore.QSize(1000, self.Drawlabel.size().height()))
         canvas.fill(QColor('white'))
         self.Drawlabel.setPixmap(canvas)
+        # 已经渲染好的地理底图（若在编辑、选择几何体模式可直接在底图上覆盖绘制）
         self.basePixmap = QPixmap(canvas)
         # 固定窗口大小
         # self.setFixedSize(self.width(), self.height())
@@ -82,6 +83,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         # 设置TreeView
         TreeView_Init(self)
+        TreeViewUpdateList(self.treeWidget, self.map, self.StyleOn)
 
     # region 功能函数
     # 重写鼠标点击事件
