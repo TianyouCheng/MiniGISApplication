@@ -17,6 +17,7 @@ class Layer(object):
         self.box = RectangleD()     # 图层外包矩形
         self.selectedItems = []     # 被选中的几何体ID（为了使选中几何体和属性表结合）
 
+        self.srid=3857
         self.attr_desp_dict={}      # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
         self.table = None           # 属性表，TODO 属性表的实现方法待定
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……

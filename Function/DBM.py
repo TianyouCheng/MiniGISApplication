@@ -1,5 +1,6 @@
 import psycopg2
 from Layer import *
+from Geometry import *
 
 """
 矢量数据的属性字段，支持varchar，
@@ -14,7 +15,7 @@ class DBM:
         self.conn=psycopg2.connect(database="minigis",user="minigiser",password="minigis",host="47.104.149.94",port="5432")
         self.cur=self.conn.cursor()
 
-    def get_layers(self):
+    def get_layers_list(self):
         sql=f"""
             select tablename from pg_tables
             where tablename not like 'pg_%'
@@ -26,11 +27,13 @@ class DBM:
         return self.layer_list
 
     def add_layer_from_memory(self,layer:Layer):
-        if layer.name in self.get_layers():
+        if layer.name in self.get_layers_list():
             self.cur.execute(f"drop table {layer.name}")
-        self.create_table(layer.name,layer.attr_desp_dict)
+        self.create_table(layer.name,layer.type,layer.srid,layer.attr_desp_dict)
         for geometry in layer.geometries:
-            self.cur.execute()
+            wkt=geometry.ToWKT()
+            self.cur.execute(f"""insert into {layer.name}(geom,{','.join([k for k in layer.attr_desp_dict.keys()])}) 
+            values({wkt},{geometry.other_attr})""")
             pass
         self.cur.commit()
         pass
@@ -38,13 +41,12 @@ class DBM:
     def add_layer_from_shp(self):
         pass
 
-    def create_table(self,tablename,**kwargs):
+    def create_table(self,tablename,geom_type,srid,**kwargs):
         self.cur.execute(f"""
             create table {tablename}(
                 sid serial primary key,
-                geom_type varchar(20),
-                geom geometry,
-                {str.join([f"{attr_name} {attr_type},\n" for (attr_name,attr_type) in kwargs])}
+                geom Geometry({geom_type},{srid}),
+                {''.join([f"{attr_name} {attr_type},\n" for attr_name,attr_type in kwargs])}
             )
         """)
     
@@ -64,8 +66,9 @@ class DBM:
         rows=self.cur.fetchall()
         return rows
 
+
 if __name__=="__main__":
     dbm=DBM()
-    dbm.get_layers()
+    dbm.get_layers_list()
     a=dbm.test()
     print(a)

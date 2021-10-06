@@ -100,6 +100,7 @@ class Geometry(ABC):
             return cx>=point.X
         else:
             return False
+
 # endregion
 
 # region 子类——点
@@ -144,7 +145,8 @@ class PointD(Geometry):
 
     # 覆盖基类的ToWkt，将几何体转为WKT字符串
     def ToWkt(self):
-        pass
+        wkt=f"POINT({self.X} {self.Y})"
+        return wkt
 # endregion
 
 # region 子类——线
