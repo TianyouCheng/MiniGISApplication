@@ -22,5 +22,13 @@ def create_map() -> Map:
     layer2.AddGeometry(PointD(0, 4, id=2))
     layer2.AddGeometry(PointD(3, 2, id=3))
     map.AddLayer(layer2)
+
+    layer3 = Layer(Polygon, name='polygons')
+    layer3.AddGeometry(Polygon([PointD(6, 1), PointD(7, 2), PointD(6, 2.5)], id=0))
+    layer3.AddGeometry(Polygon([PointD(5, 1.5), PointD(6, 3), PointD(7, 2.5), PointD(6, 4)], id=1))
+    layer3.AddGeometry(Polygon([PointD(4, 4.5), PointD(7, 4), PointD(9, 5), PointD(7, 5), PointD(4, 7), PointD(5, 5)], id=2))
+    layer3.selectedItems.append(1)
+    map.AddLayer(layer3, 2)
+    map.selectedLayer = 2
     map.FullScreen(1010, 566)
     return map

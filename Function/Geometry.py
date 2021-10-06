@@ -20,6 +20,15 @@ class RectangleD(object):
         return not (self.MaxX < box.MinX or self.MaxY < box.MinY or
                     self.MinX > box.MaxX or self.MinY > box.MaxY)
 
+    def Expand(self, radius):
+        '''
+        将矩形按照radius半径扩张，即四个边向外移动radius距离。返回一个新的矩形。
+        :param radius: 扩张半径
+        :return: 扩张后的矩形
+        '''
+        return RectangleD(minx=self.MinX - radius, miny=self.MinY - radius,
+                          maxx=self.MaxX + radius, maxy=self.MaxY + radius)
+
     # 重写print
     def __str__(self):
         return ("Box:\nMinX={}; MinY={}; MaxX={}; MaxY={}".format(self.MinX,self.MinY,self.MaxX,self.MaxY))
@@ -65,7 +74,8 @@ class Geometry(ABC):
     @abstractmethod
     def RenewBox(self):pass
 
-    def FindMaxXY(self,data):
+    @staticmethod
+    def FindMaxXY(data):
         maxX=data[0].X
         maxY=data[0].Y
         for i in range(len(data)):
@@ -76,7 +86,8 @@ class Geometry(ABC):
         outputP=PointD(maxX,maxY)
         return outputP
 
-    def FindMinXY(self,data):
+    @staticmethod
+    def FindMinXY(data):
         minX = data[0].X
         minY = data[0].Y
         for i in range(len(data)):
@@ -87,7 +98,8 @@ class Geometry(ABC):
         outputP = PointD(minX, minY)
         return outputP
 
-    def IfHasPoint(self,point,startP,endP):
+    @staticmethod
+    def IfHasPoint(point,startP,endP):
         """
         :return：True为point向右的射线与(startP, endP)线段相交
         :exception 可以处理平行的情况
@@ -96,10 +108,22 @@ class Geometry(ABC):
         minY=min(startP.Y,endP.Y)
         if point.Y>minY and point.Y<=maxY:
             cx=(startP.X-endP.X)/(startP.Y-endP.Y)*(point.Y-endP.Y)+endP.X
-            print(cx)
             return cx>=point.X
         else:
             return False
+
+    @staticmethod
+    def IsLineIntersect(pa1, pa2, pb1, pb2):
+        '''
+        判断两“线段”是否相交：
+        若相交，则线段1的两端点在线段2两侧，同时线段2的两端点在线段1两侧
+        算法：向量(OB x OA)(OC x OA) < 0，则B、C两点在OA两侧
+        '''
+        z1 = (pb1.X - pa1.X) * (pa2.Y - pa1.Y) - (pa2.X - pa1.X) * (pb1.Y - pa1.Y)
+        z2 = (pb2.X - pa1.X) * (pa2.Y - pa1.Y) - (pa2.X - pa1.X) * (pb2.Y - pa1.Y)
+        z3 = (pa1.X - pb1.X) * (pb2.Y - pb1.Y) - (pb2.X - pb1.X) * (pa1.Y - pb1.Y)
+        z4 = (pa2.X - pb1.X) * (pb2.Y - pb1.Y) - (pb2.X - pb1.X) * (pa2.Y - pb1.Y)
+        return z1 * z2 < 0 and z3 * z4 < 0
 
 # endregion
 
@@ -115,6 +139,9 @@ class PointD(Geometry):
     # 方法
     # 点选——缓冲区4*4
     def IsPointOn(self,point,BufferDist):
+        buffer_box = self._box.Expand(BufferDist)
+        if not buffer_box.IsPointOn(point):
+            return False
         if self.GetDistance(point)<=BufferDist:
             return True
         else:
@@ -160,20 +187,12 @@ class Polyline(Geometry):
     # 方法
     def IsPointOn(self,point,BufferDist):
         """用盒子判断前要先扩展盒子"""
-        self._box.MinX-=BufferDist
-        self._box.MinY-=BufferDist
-        self._box.MaxX+=BufferDist
-        self._box.MaxY+=BufferDist
-        result = False
-        if self._box.IsPointOn(point):
+        buffer = self._box.Expand(BufferDist)
+        if buffer.IsPointOn(point):
             point_dis=self.GetDistance(point)
             if point_dis<=BufferDist:
-                result = True
-        self._box.MinX += BufferDist
-        self._box.MinY += BufferDist
-        self._box.MaxX -= BufferDist
-        self._box.MaxY -= BufferDist
-        return result
+                return True
+        return False
 
     def IsIntersectBox(self, box):
         if not self._box.IsIntersectBox(box):
@@ -183,25 +202,12 @@ class Polyline(Geometry):
         for i in range(len(self.data)):
             if self.data[i].IsIntersectBox(box):
                 return True
-
-        def IsLineIntersect(pa1, pa2, pb1, pb2):
-            '''
-            判断两“线段”是否相交：
-            若相交，则线段1的两端点在线段2两侧，同时线段2的两端点在线段1两侧
-            算法：向量(OB x OA)(OC x OA) < 0，则B、C两点在OA两侧
-            '''
-            z1 = (pb1.X - pa1.X) * (pa2.Y - pa1.Y) - (pa2.X - pa1.X) * (pb1.Y - pa1.Y)
-            z2 = (pb2.X - pa1.X) * (pa2.Y - pa1.Y) - (pa2.X - pa1.X) * (pb2.Y - pa1.Y)
-            z3 = (pa1.X - pb1.X) * (pb2.Y - pb1.Y) - (pb2.X - pb1.X) * (pa1.Y - pb1.Y)
-            z4 = (pa2.X - pb1.X) * (pb2.Y - pb1.Y) - (pb2.X - pb1.X) * (pa2.Y - pb1.Y)
-            return z1 * z2 < 0 and z3 * z4 < 0
-
         # 剩下的可能情形：折线每个端点都不在矩形内，却有可能与矩形相交
         # 这种相交一定会跟矩形的对角线相交
         for i in range(len(self.data) - 1):
-            if IsLineIntersect(self.data[i], self.data[i + 1],
+            if self.IsLineIntersect(self.data[i], self.data[i + 1],
                                PointD(box.MinX, box.MinY), PointD(box.MaxX, box.MaxY)) \
-                    or IsLineIntersect(self.data[i], self.data[i + 1],
+                    or self.IsLineIntersect(self.data[i], self.data[i + 1],
                                        PointD(box.MaxX, box.MinY), PointD(box.MinX, box.MaxY)):
                 return True
         return False
@@ -309,6 +315,14 @@ class Polygon(Geometry):
         boxP=[PointD(box.MinX,box.MinY),PointD(box.MinX,box.MaxY),PointD(box.MaxX,box.MinY),PointD(box.MaxX,box.MaxY)]
         for i in range(4):
             if self.IsPointOn(boxP[i]):return True
+        # 剩下的可能情形：折线每个端点都不在矩形内，却有可能与矩形相交
+        # 这种相交一定会跟矩形的对角线相交
+        for i in range(len(self.data) - 1):
+            if self.IsLineIntersect(self.data[i], self.data[i + 1],
+                                    PointD(box.MinX, box.MinY), PointD(box.MaxX, box.MaxY)) \
+                    or self.IsLineIntersect(self.data[i], self.data[i + 1],
+                                            PointD(box.MaxX, box.MinY), PointD(box.MinX, box.MaxY)):
+                return True
         return False
 
     def Move(self,deltaX,deltaY):
@@ -359,9 +373,12 @@ class MultiPolyline(Geometry):
         :return: 布尔变量
         """
         result=False
-        if not(self._box.IsPointOn(point)):return False
+        buffer_box = self._box.Expand(BufferDist)
+        if not(buffer_box.IsPointOn(point)):return False
         for i in range(len(self.data)):
-            dis=0
+            buffer_box = self.data[i].box.Expand(BufferDist)
+            if not buffer_box.IsPointOn(point):
+                continue
             dis=self.data[i].GetDistance(point)
             if dis<=BufferDist:
                 result=True

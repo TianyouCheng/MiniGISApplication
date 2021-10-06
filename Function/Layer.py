@@ -87,7 +87,8 @@ class Layer(object):
         :return: 被选中的几何体ID集合（注：未更新self.selectedItems）
         '''
         selected = []
-        if self.box.IsPointOn(point):
+        buffer_box = self.box.Expand(buffer)
+        if buffer_box.IsPointOn(point):
             for geometry in self.geometries:
                 if geometry.IsPointOn(point, buffer):
                     selected.append(geometry.ID)
@@ -100,8 +101,7 @@ class Layer(object):
         :return: 被选中的几何体ID集合（注：未更新self.selectedItems）
         '''
         selected = []
-        if not (self.box.MinX > box.MaxX or self.box.MinY > box.MaxY or
-                self.box.MaxX < box.MinX or self.box.MaxY < box.MaxY):
+        if self.box.IsIntersectBox(box):
             for geometry in self.geometries:
                 if geometry.IsIntersectBox(box):
                     selected.append(geometry.ID)

@@ -1,8 +1,11 @@
 '''
 绘图函数
 '''
+from PyQt5.QtGui import QPainter, QPainterPath
+from PyQt5.QtCore import QPointF
 from .Geometry import *
-def draw(painter,object=None,list=[]):
+
+def draw(painter: QPainter,object=None,list=[]):
     '''
     判断传入几何体的类型并绘制全部或list中的部分; 适用于所有自定义的几何类
     :param painter: 画笔
@@ -11,10 +14,12 @@ def draw(painter,object=None,list=[]):
     :return: None
     '''
     if isinstance(object, PointD):
-        painter.drawPoint(object.X,object.Y)
+        painter.drawPoint(QPointF(object.X, object.Y))
+        painter.drawEllipse(QPointF(object.X, object.Y), 2.0, 2.0)
     elif isinstance(object, Polyline):
         for i in range(len(object.data)-1):
-            painter.drawLine(object.data[i].X,object.data[i].Y,object.data[i+1].X,object.data[i+1].Y)
+            painter.drawLine(QPointF(object.data[i].X,object.data[i].Y),
+                             QPointF(object.data[i+1].X,object.data[i+1].Y))
     elif isinstance(object, Polygon):
         painter.drawLine(object.data[len(object.data)-1].X, object.data[len(object.data)-1].Y, object.data[0].X, object.data[0].Y)
         for i in range(len(object.data)-1):
@@ -24,7 +29,8 @@ def draw(painter,object=None,list=[]):
         if len(list)!=0:mylist=list
         for i in mylist:
             for j in range(len(object.data[i].data) - 1):
-                painter.drawLine(object.data[i].data[j].X, object.data[i].data[j].Y, object.data[i].data[j+1].X, object.data[i].data[j+1].Y)
+                painter.drawLine(QPointF(object.data[i].data[j].X, object.data[i].data[j].Y),
+                                 QPointF(object.data[i].data[j+1].X, object.data[i].data[j+1].Y))
     elif isinstance(object, MultiPolygon):
         mylist = [i for i in range(len(object.data))]
         if len(list) != 0: mylist = list

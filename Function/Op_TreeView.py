@@ -2,14 +2,27 @@
 树形控件的相关操作函数
 '''
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QCursor
 from PyQt5.QtCore import Qt
 from .Map import Map
+from .Layer import Layer
 from .Geometry import *
+from .Op_DrawLabel import Refresh
 
-def prs(item: QTreeWidgetItem, column):
+def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
+    '''图层可见性发生变化，即列表勾选改变'''
     index = item.parent().indexOfChild(item)
-    print(index, item.checkState(0))
+    main_exe.map.layers[index].visible = item.checkState(column) == Qt.CheckState.Checked
+    Refresh(main_exe, QCursor.pos())
+
+
+def treeCurrentItemChanged(current, main_exe):
+    '''选择的当前操作图层发生变化'''
+    index = -1 if current is None or current.parent() is None \
+        else current.parent().indexOfChild(current)
+    main_exe.map.selectedLayer = index
+    Refresh(main_exe, QCursor.pos(), use_base=True)
+
 
 def TreeView_Init(self):
     # TREEVIEW
@@ -37,12 +50,16 @@ def TreeView_Init(self):
     # citem2.setCheckState(0, Qt.Checked)
     # citem3.setCheckState(0, Qt.Checked)
     # citem4.setCheckState(0, Qt.Checked)
-    self.treeWidget.itemChanged.connect(prs)
+    self.treeWidget.itemChanged.connect(lambda item, column:
+                                        treeCheckedChange(item, column, self))
+    self.treeWidget.currentItemChanged.connect(lambda current, previous:
+                                               treeCurrentItemChanged(current, self))
 
     self.treeWidget.header().setVisible(False)
     self.treeWidget.expandAll()
 
 def NewLayer(self):
+    '''
     txtName=self.Winnewlayer.lineEdit.text()
     txtType=self.Winnewlayer.comboBox.currentText()
     item=self.treeWidget.findItems('Layers',Qt.MatchStartsWith)[0]
@@ -76,6 +93,24 @@ def NewLayer(self):
     self.treeWidget.expandAll()
 
     self.Winnewlayer.close()
+    '''
+    txtName = self.Winnewlayer.lineEdit.text()
+    layersItem = self.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+    if txtName.replace(' ', '') == '':
+        txtName = f'layer {layersItem.childCount()}'
+    txtType = self.Winnewlayer.comboBox.currentText()
+    if txtType == '点':
+        layer = Layer(PointD, txtName)
+    elif txtType == '线':
+        layer = Layer(Polyline, txtName)
+    elif txtType == '面':
+        layer = Layer(Polygon, txtName)
+    else:
+        raise TypeError('图层类型错误')
+    pos = self.map.selectedLayer if self.map.selectedLayer != -1 else 0
+    self.map.AddLayer(layer, pos)
+    self.Winnewlayer.close()
+    TreeViewUpdateList(self.treeWidget, self.map, self.StyleOn)
 
 
 def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
@@ -114,3 +149,5 @@ def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
         newline.setIcon(0, icon)
         newline.setText(0, f'{typetxt}: {layer.name}')
     tree.expandAll()
+    tree.setCurrentItem(layersItem if map_.selectedLayer == -1
+                        else layersItem.child(map_.selectedLayer))

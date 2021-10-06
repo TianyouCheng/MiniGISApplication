@@ -91,12 +91,14 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
 def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
     '''绘制被选择的多边形'''
     layer = map_.layers[map_.selectedLayer]
+    if not layer.visible:
+        return
     origin_pen = painter.pen()
     screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
     screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
     screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
     # 设置被选择时的样式
-    new_pen = QPen(QColor('cyan'), 2)
+    new_pen = QPen(QColor('cyan'), 3)
     painter.setPen(new_pen)
     selected = set(layer.selectedItems)
     for item in layer.geometries:

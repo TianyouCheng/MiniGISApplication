@@ -147,10 +147,7 @@ class Map(object):
         :param pos: 图层的位置，0为最顶层
         '''
         self.layers.insert(pos, layer)
-        if self.selectedLayer == -1:
-            self.selectedLayer = pos
-        elif self.selectedLayer >= pos:
-            self.selectedLayer += 1
+        self.selectedLayer = pos
         self.RefreshBox()
 
     def DelLayer(self, index):
