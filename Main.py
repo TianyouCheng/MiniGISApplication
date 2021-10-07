@@ -15,6 +15,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 创建窗体
         super(Main_exe,self).__init__()
         self.setupUi(self)
+        # 初始化属性窗体
+        initAttr(self)
 
         # 属性
         self.EditStatus=False # 是否启用编辑
@@ -24,6 +26,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
         self.StyleOn=False # 是否启用样式表
+        self.IsAttr=False # 当前界面是否为属性窗体
         self.map = create_map()    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
@@ -61,7 +64,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 已经渲染好的地理底图（若在编辑、选择几何体模式可直接在底图上覆盖绘制）
         self.basePixmap = QPixmap(canvas)
         # 固定窗口大小
-        # self.setFixedSize(self.width(), self.height())
+        self.setFixedSize(self.width(), self.height())
 
         # 设置qss样式
         if self.StyleOn:
@@ -126,6 +129,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
         self.Drawlabel.resizeEvent = self.labelResizeEvent
+        self.tsButtonAttr.clicked.connect(lambda:Switch(self,self.IsAttr,self.StyleOn))
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
