@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>670</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QWidget" name="widget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>30</y>
+     <width>200</width>
+     <height>594</height>
+    </rect>
+   </property>
+   <widget class="QLabel" name="Attrlabel_Symbol">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>54</width>
+      <height>12</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>符号</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Soutliecolor">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>90</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>OutlineColor</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Soutlinestyle">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>120</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>OutlineStyle</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Soutlinewidth">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>150</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>OutlineWidth</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Ssymbolcoor">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>180</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SymbolColor</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Mark">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>210</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>注记</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Mvisible">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>240</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>可见性</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Mfield">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>270</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>绑定字段</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Mxoffset">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>300</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>水平偏移</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Myoffset">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>330</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>垂直偏移</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Msymbolcolor">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>360</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>SymbolColor</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Msize">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>390</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>字体大小</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="Attrlabel_Mcolor">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>420</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>字体颜色</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
