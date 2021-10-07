@@ -59,8 +59,27 @@ class DBM:
         self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name='{layer_name}'; ")
         col_name,layer_srid,layer_type=self.cur.fetchall()[0]
         cur_layer=Layer(layer_type,layer_name,layer_srid)
-        #for layer.addgeometry
-        #add attr table
+        #获取属性字段元数据
+        # self.cur.execute(f"select * from {layer_name};")#geometry转为其他类型
+        # geoms=self.cur.fetchall()
+        #根据不同数据类型读取几何信息，addgeomtry
+        if layer_type=='POINT':
+            self.cur.execute(f"select * from {layer_name};")
+            cur_geom=PointD()
+        elif layer_type=='LINESTRING':
+            pass
+        elif layer_type=='POLYGON':
+            pass
+        elif layer_type=='MULTIPOLYGON':
+            pass
+        elif layer_type=='MULTILINESTRING':
+            pass
+        else:
+            pass
+        # for geom in geoms:
+        #     cur_geom=None
+            
+        #     cur_layer.AddGeometry()
         pass
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
