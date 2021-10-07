@@ -1,7 +1,7 @@
 '''
 图层类别及相关操作
 '''
-from Geometry import *
+from .Geometry import *
 
 
 class Layer(object):

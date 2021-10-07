@@ -312,6 +312,13 @@ class Polygon(Geometry):
             return True
         for i in range(len(self.data)):
             if self.data[i].IsIntersectBox(box):return True
+        if self.holes is not None:
+            for hole in self.holes:
+                if not hole.box.IsIntersectBox(box):
+                    continue
+                for hole_point in hole.data:
+                    if hole_point.IsIntersectBox(box):
+                        return True
         boxP=[PointD(box.MinX,box.MinY),PointD(box.MinX,box.MaxY),PointD(box.MaxX,box.MinY),PointD(box.MaxX,box.MaxY)]
         for i in range(4):
             if self.IsPointOn(boxP[i]):return True
