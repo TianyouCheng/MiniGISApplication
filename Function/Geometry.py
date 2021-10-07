@@ -3,6 +3,7 @@
 '''
 import math
 from abc import ABC, abstractmethod
+import re
 # region 矩阵类——外包矩阵、框选矩阵
 class RectangleD(object):
     def __init__(self,minx=0,miny=0,maxx=0,maxy=0):
@@ -132,9 +133,22 @@ class PointD(Geometry):
     # 属性
     def __init__(self,x=0,y=0,id=-1):
         Geometry.__init__(self,id)
-        self.X=x
-        self.Y=y
+        if type(x)==str:
+            wkt_find=re.compile(r'\(\S+ \S+\)')
+            find_rslt=wkt_find.findall(x)
+            if find_rslt:
+                match_rslt=re.match('^\((\S+) (\S+)\)$',find_rslt[0])
+                if match_rslt:
+                    self.X=float( match_rslt.group(1))
+                    self.Y=float(match_rslt.group(2))
+            else:
+                self.X=0
+                self.Y=0
+        else:
+            self.X=x
+            self.Y=y
         self.RenewBox()
+
 
     # 方法
     # 点选——缓冲区4*4
@@ -181,8 +195,20 @@ class Polyline(Geometry):
     # 属性 data是点构成的List
     def __init__(self,Data,id=-1):
         Geometry.__init__(self,id)
-        self.data=Data
+        if type(Data)==str:
+            wkt_find=re.compile(r'[!\(\)\, ]+ [!\(\)\, ]+\)')
+            find_rslt=wkt_find.findall(Data)
+            data=[]
+            if find_rslt:
+                for p in find_rslt:
+                    match_rslt=re.match('^\((\S+) (\S+)\)$',p)
+                    if match_rslt:
+                        data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
+            self.data=data
+        else:
+            self.data=Data
         self.RenewBox()
+
 
     # 方法
     def IsPointOn(self,point,BufferDist):
@@ -269,9 +295,35 @@ class Polygon(Geometry):
     # 属性holes是Polygon构成的List（这些Polygon不能再有holes），表示多边形的洞
     def __init__(self,Data,holes=[], id=-1):
         Geometry.__init__(self,id)
-        self.data=Data
-        self.holes = holes
+        if type(Data)==str:
+            wkt_find=re.compile(r'\(\(\S+ \S+\)(,\(\S+ \S+\))+\)')
+            find_rslt=wkt_find.findall(Data)
+            data=[]
+            holes=[]
+            if find_rslt:
+                wkt_find_line=re.compile(r'\(\S+ \S+\)')
+                find_rslt_line=wkt_find_line.findall(find_rslt[0])
+                if find_rslt_line:
+                    for p in find_rslt_line:
+                        match_rslt=re.match('^\((\S+) (\S+)\)$',p)
+                        if match_rslt:
+                            data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
+                for hole_line in find_rslt[1:]:
+                    find_rslt_line=wkt_find_line.findall(hole_line)
+                    hole_data=[]
+                    if find_rslt_line:
+                        for p in find_rslt_line:
+                            match_rslt=re.match('^\((\S+) (\S+)\)$',p)
+                            if match_rslt:
+                                hole_data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
+                    holes.append(Polygon(hole_data))
+            self.data=data
+            self.holes=holes
+        else:
+            self.data=Data
+            self.holes = holes
         self.RenewBox()
+
 
     # 方法
     def IsPointOn(self,point, BufferDist=0):
@@ -524,6 +576,8 @@ class MultiPolygon(Geometry):
         return wkt
 
 if __name__=='__main__':
-    pg=Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)],[Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)])])
-    mpg=MultiPolygon([pg,pg])
-    print(mpg.ToWkt())
+    # pg=Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)],[Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)])])
+    # mpg=MultiPolygon([pg,pg])
+    # print(mpg.ToWkt())
+    pd=Polyline('LINESTRING(1.2 -1,2 2,3 3)')
+    print(pd)
