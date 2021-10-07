@@ -69,10 +69,8 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
                     not layer.box.IsIntersectBox(screen_geobox):
                 continue
             # 设置绘制样式，TODO 渲染样式在这里读取，修改
-            pen = QPen(QColor('red'), 2)
-            painter.setPen(pen)
-            brush = QBrush(QColor(255, 201, 14))
-            painter.setBrush(brush)
+            painter.setPen(QPen(QColor('red'), 2))
+            painter.setBrush(QBrush(QColor(255, 201, 14)))
             # 绘制每个几何体
             for geometry in layer.geometries:
                 # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了
@@ -98,8 +96,8 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
     screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
     screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
     # 设置被选择时的样式
-    new_pen = QPen(QColor('cyan'), 3)
-    painter.setPen(new_pen)
+    painter.setPen(QPen(QColor('cyan'), 3))
+    painter.setBrush(QBrush(QColor('cyan'), Qt.BrushStyle.Dense7Pattern))
     selected = set(layer.selectedItems)
     for item in layer.geometries:
         # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了
@@ -173,3 +171,22 @@ def LabelMouseRelease(main_exe: Main_exe, event: QMouseEvent):
         result = map_.layers[map_.selectedLayer].Query(query, buffer)
         map_.layers[map_.selectedLayer].selectedItems = result
         Refresh(main_exe, mouse_loc, use_base=True)
+
+
+def LabelMouseWheel(main_exe: Main_exe, event: QWheelEvent):
+    '''处理画布内的鼠标滚轮事件，可用滚轮放大缩小'''
+    map_ = main_exe.map
+    width = main_exe.Drawlabel.pixmap().width()
+    height = main_exe.Drawlabel.pixmap().height()
+    mouse_loc = main_exe.ConvertCor(event)
+    # 注：鼠标滚1格一般是120度
+    angle = event.angleDelta().y()
+    # angle > 0表示鼠标滚轮向前滚，应该放大
+    if angle > 0:
+        map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
+                         map_.scale / (1 + (main_exe.zoomRatio - 1) * angle / 120))
+    else:
+        map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
+                         map_.scale * (1 + (main_exe.zoomRatio - 1) * -angle / 120))
+    Refresh(main_exe, mouse_loc)
+    # main_exe.zoomRatio

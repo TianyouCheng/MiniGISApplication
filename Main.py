@@ -157,6 +157,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         self.mouseLastLoc.setX(canvas_pos.x())
         self.mouseLastLoc.setY(canvas_pos.y())
+
+    # 鼠标滚轮事件
+    def wheelEvent(self, e):
+        canvas_pos = self.ConvertCor(e)
+        if self.Drawlabel.rect().contains(canvas_pos):
+            LabelMouseWheel(self, e)
+
     # endregion
 
     # region 信号与槽函数
@@ -202,17 +209,23 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 msgBox = QMessageBox()
                 msgBox.setWindowTitle(u'提示')
                 txtname = self.treeWidget.currentItem().text(0)
-                txttype = self.treeWidget.currentItem().child(0).text(0)
-                msgBox.setText(u"\n您现在编辑的是：\n" + txtname + txttype + "对象图层。\n")
+                # txttype = self.treeWidget.currentItem().child(0).text(0)
+                # msgBox.setText(u"\n您现在编辑的是：\n" + txtname + txttype + "对象图层。\n")
+                msgBox.setText(u"\n您现在编辑的是：\n" + txtname + "图层。\n")
                 msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
                 # 隐藏ok按钮
                 msgBox.addButton(QMessageBox.Ok)
                 # 模态对话框
                 msgBox.exec_()
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
+                self.treeWidget.setEnabled(False)
+                map_ = self.map
+                map_.layers[map_.selectedLayer].selectedItems.clear()
+                Refresh(self, QCursor.pos(), use_base=True)
 
             elif not self.EditStatus:
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
+                self.treeWidget.setEnabled(True)
 
     def bt_newlayer_clicked(self):
         self.Winnewlayer=WinNewLayer()
