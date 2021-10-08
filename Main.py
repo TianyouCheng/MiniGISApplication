@@ -2,6 +2,8 @@ import os,sys,random,cgitb
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
+from osgeo import gdal
+from osgeo import ogr
 
 #region 引入窗体及函数
 from UI import *
@@ -23,7 +25,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLeftPress = False     # 鼠标左键是否处于按下状态
         self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
-        self.StyleOn=False # 是否启用样式表
+        self.StyleOn=True # 是否启用样式表
         self.map = create_map()    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
@@ -183,7 +185,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     def bt_edit_clicked(self):
         node=self.treeWidget.currentItem()
-        if not(node):
+        if not node:
             msgBox = QMessageBox()
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n请先选择要编辑的图层。\n")
@@ -207,13 +209,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 msgBox.exec_()
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
 
-            elif not self.EditStatus:
+            else:
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
 
     def bt_newlayer_clicked(self):
         self.Winnewlayer=WinNewLayer()
         # 设置Combox
-        self.Winnewlayer.comboBox.setItemIcon(0,QIcon('./UI/images/Point.png'))
+        self.Winnewlayer.comboBox.setItemIcon(0, QIcon('./UI/images/Point.png'))
         self.Winnewlayer.comboBox.setItemIcon(1, QIcon('./UI/images/Line.png'))
         self.Winnewlayer.comboBox.setItemIcon(2, QIcon('./UI/images/Polygon.png'))
         self.Winnewlayer.show()
@@ -228,7 +230,35 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         canvas.fill(QColor('white'))
         self.Drawlabel.setPixmap(canvas)
         Refresh(self, QCursor.pos())
+    def importSHP(self, path):
+        driver = ogr.GetDriverByName('ESRI Shapefile')
+        data_source = driver.Open(path, 0)
+        if data_source is None:
+            msgBox = QMessageBox()
+            msgBox.setText("未找到符合要求的shp文件")
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
+        type_dict = {ogr.wkbPoint : PointD, ogr.wkbLineString : Polyline, ogr.wkbPolygon : Polygon}
+        ori_layer = data_source.GetLayer(0)
+        layer_name = path.split('\\')[-1].split('.')[0]
+        geo_type = type_dict[ori_layer.GetGeomType()]
+        new_layer = Layer(geo_type, layer_name, )
+    def SaveToSHP(self, layer, path):
 
+    def SHP_to_wkt(self, path):#可以考虑直接导出一个列表
+        driver = ogr.GetDriverByName('ESRI Shapefile')
+        data_source = driver.Open(path, 0)
+        if data_source is None:
+            msgBox = QMessageBox()
+            msgBox.setText("未找到符合要求的shp文件")
+            return
+        ori_layer = data_source.GetLayer(0)
+        wkt_list = list()
+        feat = ori_layer.GetNextFeature()
+        while feat:
+            wkt_list.append(feat.geometry().ExportToWkt())
+        return wkt_list
     # endregion
 
 
