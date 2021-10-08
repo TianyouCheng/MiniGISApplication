@@ -44,6 +44,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonNew.setToolTip('新建')
         self.tsButtonOpen.setToolTip('打开')
         self.tsButtonSave.setToolTip('保存')
+        self.tsButtonImportshp.setToolTip("导入shapefile文件至新图层")
+        self.tsButtonExportshp.setToolTip("图层导出shapefile文件")
         self.tsButtonOperateNone.setToolTip('鼠标指针')
         self.tsButtonPan.setToolTip('漫游')
         self.tsButtonZoomIn.setToolTip('放大')
@@ -132,6 +134,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
         # self.Drawlabel.resizeEvent = self.labelResizeEvent
         self.tsButtonAttr.clicked.connect(lambda:Switch(self,self.IsAttr,self.StyleOn))
+        self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
+        self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -258,6 +262,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
         # txt=self.treeWidget.currentItem().text(0)
 
+    def bt_import_shp_clicked(self):
+        ofd = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'ALL(*.*);;Shapefile文件(*.shp)')
+        self.importSHP(self, ofd)
+
+    def bt_export_shp_clicked(self):
+        sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')
+        self.SaveToSHP(self, self.map_.layers[self.map_.selectedLayer], sfd)
+
     # def labelResizeEvent(self, a0: QtGui.QResizeEvent):
         '''画布大小改变'''
         # super(QLabel, self.Drawlabel).resizeEvent(a0)
@@ -276,17 +288,35 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             return
         type_dict = {ogr.wkbPoint : PointD, ogr.wkbLineString : Polyline, ogr.wkbPolygon : Polygon}
         ori_layer = data_source.GetLayer(0)
-        layer_name = path.split('\\')[-1].split('.')[0]
+        layer_name = path.split('/')[-1].split('.')[0]
         geo_type = type_dict[ori_layer.GetGeomType()]
-        #new_layer = Layer(geo_type, layer_name, )
+        spatial_ref = ori_layer.GetSpatialRef()
+        new_layer = Layer(geo_type, layer_name, spatial_ref)
+
     def SaveToSHP(self, layer, path):
-        pass
+        file_name = path.split('/')[-1]
+        oDriver = ogr.GetDriverByName('ESRI Shapefile')
+        if oDriver is None:
+            msgBox = QMessageBox()
+            msgBox.setText("驱动不可用")
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
+        oDs = oDriver.CreateDataSource(file_name)
+        if oDs is None:
+            msgBox = QMessageBox()
+            msgBox.setText("无法创建文件：" + file_name)
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
+
     def SHP_to_wkt(self, path):#可以考虑直接导出一个列表
         driver = ogr.GetDriverByName('ESRI Shapefile')
         data_source = driver.Open(path, 0)
         if data_source is None:
             msgBox = QMessageBox()
             msgBox.setText("未找到符合要求的shp文件")
+            msgBox.exec_()
             return
         ori_layer = data_source.GetLayer(0)
         wkt_list = list()
