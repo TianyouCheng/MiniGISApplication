@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1239, 867)
+        MainWindow.resize(1234, 869)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -95,6 +95,16 @@ class Ui_MainWindow(object):
         self.tsButtonSave.setText("")
         self.tsButtonSave.setObjectName("tsButtonSave")
         self.horizontalLayout.addWidget(self.tsButtonSave)
+        self.tsButtonImportshp = QtWidgets.QPushButton(self.centralwidget)
+        self.tsButtonImportshp.setMinimumSize(QtCore.QSize(35, 35))
+        self.tsButtonImportshp.setMaximumSize(QtCore.QSize(35, 35))
+        self.tsButtonImportshp.setObjectName("tsButtonImportshp")
+        self.horizontalLayout.addWidget(self.tsButtonImportshp)
+        self.tsButtonExportshp = QtWidgets.QPushButton(self.centralwidget)
+        self.tsButtonExportshp.setMinimumSize(QtCore.QSize(35, 35))
+        self.tsButtonExportshp.setMaximumSize(QtCore.QSize(35, 35))
+        self.tsButtonExportshp.setObjectName("tsButtonExportshp")
+        self.horizontalLayout.addWidget(self.tsButtonExportshp)
         self.tsButtonOperateNone = QtWidgets.QPushButton(self.centralwidget)
         self.tsButtonOperateNone.setMinimumSize(QtCore.QSize(35, 35))
         self.tsButtonOperateNone.setMaximumSize(QtCore.QSize(35, 35))
@@ -143,6 +153,11 @@ class Ui_MainWindow(object):
         self.tsButtonEdit.setText("")
         self.tsButtonEdit.setObjectName("tsButtonEdit")
         self.horizontalLayout.addWidget(self.tsButtonEdit)
+        self.tsButtonDel = QtWidgets.QPushButton(self.centralwidget)
+        self.tsButtonDel.setMinimumSize(QtCore.QSize(35, 35))
+        self.tsButtonDel.setMaximumSize(QtCore.QSize(35, 35))
+        self.tsButtonDel.setObjectName("tsButtonDel")
+        self.horizontalLayout.addWidget(self.tsButtonDel)
         self.tsButtonAttr = QtWidgets.QPushButton(self.centralwidget)
         self.tsButtonAttr.setMinimumSize(QtCore.QSize(35, 35))
         self.tsButtonAttr.setMaximumSize(QtCore.QSize(35, 35))
@@ -230,6 +245,12 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.tsButtonImportshp.setText(_translate("MainWindow", "导入\n"
+"shp"))
+        self.tsButtonExportshp.setText(_translate("MainWindow", "导出\n"
+"shp"))
+        self.tsButtonDel.setText(_translate("MainWindow", "删除\n"
+"要素"))
         self.tsButtonAttr.setText(_translate("MainWindow", "属性\n"
 "窗体"))
         self.pushButtonAdd.setText(_translate("MainWindow", "增加"))

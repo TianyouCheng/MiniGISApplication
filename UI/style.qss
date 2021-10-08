@@ -23,10 +23,10 @@ QPushButton#tsButtonOperateNone:pressed{
 border-image:url(UI/icon/mouse_p.png)
 }
 QPushButton#tsButtonPan{
-border-image:url(UI/icon/pan.png)
+border-image:url(UI/icon/pan1.png)
 }
 QPushButton#tsButtonPan:pressed{
-border-image:url(UI/icon/pan_p.png)
+border-image:url(UI/icon/pan1_p.png)
 }
 QPushButton#tsButtonZoomIn{
 border-image:url(UI/icon/zoomin.png)
