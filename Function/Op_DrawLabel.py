@@ -23,6 +23,7 @@ def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None, use_base=False):
     map = main_exe.map
     pixmap = main_exe.Drawlabel.pixmap()
     painter = QPainter(pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     # 计算屏幕、鼠标位置的地理坐标范围
     width = pixmap.width()
     height = pixmap.height()
@@ -47,8 +48,9 @@ def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None, use_base=False):
         elif main_exe.tool == MapTool.Select and main_exe.mouseLeftPress:
             pen = QPen(QColor('black'), 1, Qt.PenStyle.DashLine)
             painter.setPen(pen)
+            painter.setBrush(QBrush(QColor(0, 162, 232, 64)))
             rect = QRect(mouseLoc, main_exe.mousePressLoc)
-            painter.fillRect(rect, QColor(0, 162, 232, 64))
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, False)
             painter.drawRect(rect)
     painter.end()
     main_exe.Drawlabel.update()
@@ -69,7 +71,7 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
                     not layer.box.IsIntersectBox(screen_geobox):
                 continue
             # 设置绘制样式，TODO 渲染样式在这里读取，修改
-            painter.setPen(QPen(QColor('red'), 2))
+            painter.setPen(QPen(QColor('red'), 1.5))
             painter.setBrush(QBrush(QColor(255, 201, 14)))
             # 绘制每个几何体
             for geometry in layer.geometries:
@@ -92,11 +94,12 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
     if not layer.visible:
         return
     origin_pen = painter.pen()
+    origin_brush = painter.brush()
     screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
     screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
     screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
     # 设置被选择时的样式
-    painter.setPen(QPen(QColor('cyan'), 3))
+    painter.setPen(QPen(QColor('cyan'), 2.5))
     painter.setBrush(QBrush(QColor('cyan'), Qt.BrushStyle.Dense7Pattern))
     selected = set(layer.selectedItems)
     for item in layer.geometries:
@@ -105,6 +108,7 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
             screen_geo = map_.GeoToScreen(item, screen_size)
             DS.draw(painter, screen_geo)
     painter.setPen(origin_pen)
+    painter.setBrush(origin_brush)
 
 
 def LabelMousePress(main_exe: Main_exe, event: QMouseEvent):

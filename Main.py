@@ -161,9 +161,11 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLastLoc.setX(canvas_pos.x())
         self.mouseLastLoc.setY(canvas_pos.y())
 
-        # 状态栏显示信息。目前只能在鼠标按下时更新，不知道为什么
-        # TODO: 考虑删除状态栏用label代替
-        self.statusBar.showMessage('x:{},y:{}'.format(canvas_pos.x(),canvas_pos.y()))
+        # 状态栏显示信息。事件驱动问题已解决，可以在鼠标移动时接收事件
+        # TODO: 考虑删除状态栏用label代替，HJJ建议显示地理坐标
+        geo_p = self.map.ScreenToGeo(PointD(canvas_pos.x(),canvas_pos.y()),
+                                     (self.Drawlabel.width(), self.Drawlabel.height()))
+        self.statusBar.showMessage('x: {:.6g},  y: {:.6g}'.format(geo_p.X, geo_p.Y))
 
     # 鼠标滚轮事件
     def wheelEvent(self, e):

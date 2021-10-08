@@ -22,7 +22,9 @@ class Ui_MainWindow(object):
         MainWindow.setSizePolicy(sizePolicy)
         MainWindow.setMinimumSize(QtCore.QSize(0, 0))
         MainWindow.setMaximumSize(QtCore.QSize(99999, 99999))
+        MainWindow.setMouseTracking(True)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setMouseTracking(True)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -180,6 +182,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.Drawlabel = QtWidgets.QLabel(self.centralwidget)
         self.Drawlabel.setMinimumSize(QtCore.QSize(1000, 480))
+        self.Drawlabel.setMouseTracking(True)
         self.Drawlabel.setStyleSheet("background-color:white;\n"
 "border: 1px solid rgb(0,0,0,0.3)")
         self.Drawlabel.setText("")
