@@ -196,12 +196,12 @@ class Polyline(Geometry):
     def __init__(self,Data,id=-1):
         Geometry.__init__(self,id)
         if type(Data)==str:
-            wkt_find=re.compile(r'[!\(\)\, ]+ [!\(\)\, ]+\)')
+            wkt_find=re.compile(r'[^\(\)\, ]+ [^\(\)\, ]+')
             find_rslt=wkt_find.findall(Data)
             data=[]
             if find_rslt:
                 for p in find_rslt:
-                    match_rslt=re.match('^\((\S+) (\S+)\)$',p)
+                    match_rslt=re.match('^(\S+) (\S+)$',p)
                     if match_rslt:
                         data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
             self.data=data
@@ -296,16 +296,17 @@ class Polygon(Geometry):
     def __init__(self,Data,holes=[], id=-1):
         Geometry.__init__(self,id)
         if type(Data)==str:
-            wkt_find=re.compile(r'\(\(\S+ \S+\)(,\(\S+ \S+\))+\)')
+            wkt_find=re.compile(r'\([^\(\)\, ]+ [^\(\)\, ]+(?:\,[^\(\)\, ]+ [^\(\)\, ]+)+\)')
+            # wkt_find=re.compile(r'[^\(\)\, ]+ [^\(\)\, ]+')
             find_rslt=wkt_find.findall(Data)
             data=[]
             holes=[]
             if find_rslt:
-                wkt_find_line=re.compile(r'\(\S+ \S+\)')
+                wkt_find_line=re.compile(r'[^\(\)\, ]+ [^\(\)\, ]+')
                 find_rslt_line=wkt_find_line.findall(find_rslt[0])
                 if find_rslt_line:
                     for p in find_rslt_line:
-                        match_rslt=re.match('^\((\S+) (\S+)\)$',p)
+                        match_rslt=re.match('^(\S+) (\S+)$',p)
                         if match_rslt:
                             data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
                 for hole_line in find_rslt[1:]:
@@ -313,7 +314,7 @@ class Polygon(Geometry):
                     hole_data=[]
                     if find_rslt_line:
                         for p in find_rslt_line:
-                            match_rslt=re.match('^\((\S+) (\S+)\)$',p)
+                            match_rslt=re.match('^(\S+) (\S+)$',p)
                             if match_rslt:
                                 hole_data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
                     holes.append(Polygon(hole_data))
@@ -420,6 +421,16 @@ class MultiPolyline(Geometry):
     # 属性 data是线构成的List
     def __init__(self,Data,id=-1):
         Geometry.__init__(self,id)
+        if type(Data)==str:
+            wkt_find=re.compile(r'\([^\(\)\, ]+ [^\(\)\, ]+(?:\,[^\(\)\, ]+ [^\(\)\, ]+)+\)')
+            find_rslt=wkt_find.findall(Data)
+            data=[]
+            if find_rslt:
+                for line in find_rslt:
+                    data.append(Polyline(line))
+            self.data=data
+        else:
+            self.data=Data
         self.data=Data
         self.RenewBox()
 
@@ -506,7 +517,16 @@ class MultiPolygon(Geometry):
     # 属性 data是面构成的List
     def __init__(self,Data,id=-1):
         Geometry.__init__(self,id)
-        self.data=Data
+        if type(Data)==str:
+            wkt_find=re.compile(r'\(\([^\(\)\, ]+ [^\(\)\, ]+(?:\,[^\(\)\, ]+ [^\(\)\, ]+)+\)(?:\,\([^\(\)\, ]+ [^\(\)\, ]+(?:\,[^\(\)\, ]+ [^\(\)\, ]+)+\))*\)')
+            find_rslt=wkt_find.findall(Data)
+            data=[]
+            if find_rslt:
+                for pg in find_rslt:
+                    data.append(Polygon(pg))
+            self.data=data
+        else:
+            self.data=Data
         self.RenewBox()
 
     # 方法
@@ -579,5 +599,7 @@ if __name__=='__main__':
     # pg=Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)],[Polygon([PointD(1,1),PointD(1,2),PointD(1,3),PointD(1,1)])])
     # mpg=MultiPolygon([pg,pg])
     # print(mpg.ToWkt())
-    pd=Polyline('LINESTRING(1.2 -1,2 2,3 3)')
+    pt=PointD('POINT(1 2)')
+    pl=Polyline('LINESTRING(1.2 -1,2 2,3 3,)')
+    pd=MultiPolygon('MULTIPOLYGON(((1.2 -1,2 2,3 3,1.2 -1)),((1.2 -1,2 2,3 3,1.2 -1)))')
     print(pd)
