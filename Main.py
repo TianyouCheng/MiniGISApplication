@@ -17,6 +17,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 创建窗体
         super(Main_exe,self).__init__()
         self.setupUi(self)
+        # 初始化属性窗体
+        initAttr(self)
 
         # 属性
         self.EditStatus=False # 是否启用编辑
@@ -25,7 +27,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLeftPress = False     # 鼠标左键是否处于按下状态
         self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
-        self.StyleOn=True # 是否启用样式表
+        self.StyleOn=False # 是否启用样式表
+        self.IsAttr=False # 当前界面是否为属性窗体
         self.map = create_map()    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
@@ -63,7 +66,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 已经渲染好的地理底图（若在编辑、选择几何体模式可直接在底图上覆盖绘制）
         self.basePixmap = QPixmap(canvas)
         # 固定窗口大小
-        # self.setFixedSize(self.width(), self.height())
+        self.setFixedSize(self.width(), self.height())
 
         # 设置qss样式
         if self.StyleOn:
@@ -127,7 +130,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonSelect.clicked.connect(self.bt_select_clicked)
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
-        self.Drawlabel.resizeEvent = self.labelResizeEvent
+        # self.Drawlabel.resizeEvent = self.labelResizeEvent
+        self.tsButtonAttr.clicked.connect(lambda:Switch(self,self.IsAttr,self.StyleOn))
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -137,12 +141,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     # 重写鼠标移动事件
     def mouseMoveEvent(self, e):
+        canvas_pos = self.ConvertCor(e)
         # 移动标题栏操作
         if self.mouseDrag:
             self.move(e.globalPos()-self.move_DragPosition)
             e.accept()
         # 处理在画布移动时发生的事件
-        canvas_pos = self.ConvertCor(e)
+
         if self.Drawlabel.rect().contains(canvas_pos):
             LabelMouseMove(self, e)
 
@@ -155,24 +160,46 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         self.mouseLastLoc.setX(canvas_pos.x())
         self.mouseLastLoc.setY(canvas_pos.y())
+
+        # 状态栏显示信息。目前只能在鼠标按下时更新，不知道为什么
+        # TODO: 考虑删除状态栏用label代替
+        self.statusBar.showMessage('x:{},y:{}'.format(canvas_pos.x(),canvas_pos.y()))
+
+    # 鼠标滚轮事件
+    def wheelEvent(self, e):
+        canvas_pos = self.ConvertCor(e)
+        if self.Drawlabel.rect().contains(canvas_pos):
+            LabelMouseWheel(self, e)
+
     # endregion
 
     # region 信号与槽函数
     def bt_operateNone_clicked(self):
         '''按下“鼠标指针”按钮'''
         self.tool = MapTool.Null
+        cursor = QCursor()
+        self.Drawlabel.setCursor(cursor)
 
     def bt_pan_clicked(self):
         '''按下“漫游”按钮'''
         self.tool = MapTool.Pan
+        pixmap=QPixmap(r'./UI/icon/cursor_pan.png').scaled(30,30)
+        cursor=QCursor(pixmap)
+        self.Drawlabel.setCursor(cursor)
 
     def bt_zoomIn_clicked(self):
         '''按下“放大”按钮'''
         self.tool = MapTool.ZoomIn
+        pixmap = QPixmap(r'./UI/icon/cursor_zomout.png').scaled(30, 30)
+        cursor = QCursor(pixmap)
+        self.Drawlabel.setCursor(cursor)
 
     def bt_zoomOut_clicked(self):
         '''按下“缩小”按钮'''
         self.tool = MapTool.ZoomOut
+        pixmap = QPixmap(r'./UI/icon/cursor_zomin.png').scaled(30, 30)
+        cursor = QCursor(pixmap)
+        self.Drawlabel.setCursor(cursor)
 
     def bt_zoomScale_clicked(self):
         '''按下“全屏显示”按钮'''
@@ -200,17 +227,23 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 msgBox = QMessageBox()
                 msgBox.setWindowTitle(u'提示')
                 txtname = self.treeWidget.currentItem().text(0)
-                txttype = self.treeWidget.currentItem().child(0).text(0)
-                msgBox.setText(u"\n您现在编辑的是：\n" + txtname + txttype + "对象图层。\n")
+                # txttype = self.treeWidget.currentItem().child(0).text(0)
+                # msgBox.setText(u"\n您现在编辑的是：\n" + txtname + txttype + "对象图层。\n")
+                msgBox.setText(u"\n您现在编辑的是：\n" + txtname + "图层。\n")
                 msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
                 # 隐藏ok按钮
                 msgBox.addButton(QMessageBox.Ok)
                 # 模态对话框
                 msgBox.exec_()
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
+                self.treeWidget.setEnabled(False)
+                map_ = self.map
+                map_.layers[map_.selectedLayer].selectedItems.clear()
+                Refresh(self, QCursor.pos(), use_base=True)
 
             else:
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
+                self.treeWidget.setEnabled(True)
 
     def bt_newlayer_clicked(self):
         self.Winnewlayer=WinNewLayer()
@@ -223,13 +256,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
         # txt=self.treeWidget.currentItem().text(0)
 
-    def labelResizeEvent(self, a0: QtGui.QResizeEvent):
+    # def labelResizeEvent(self, a0: QtGui.QResizeEvent):
         '''画布大小改变'''
-        super(QLabel, self.Drawlabel).resizeEvent(a0)
-        canvas = QtGui.QPixmap(a0.size())
-        canvas.fill(QColor('white'))
-        self.Drawlabel.setPixmap(canvas)
-        Refresh(self, QCursor.pos())
+        # super(QLabel, self.Drawlabel).resizeEvent(a0)
+        # canvas = QtGui.QPixmap(a0.size())
+        # canvas.fill(QColor('white'))
+        # self.Drawlabel.setPixmap(canvas)
+        # Refresh(self, QCursor.pos())
     def importSHP(self, path):
         driver = ogr.GetDriverByName('ESRI Shapefile')
         data_source = driver.Open(path, 0)
@@ -243,9 +276,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         ori_layer = data_source.GetLayer(0)
         layer_name = path.split('\\')[-1].split('.')[0]
         geo_type = type_dict[ori_layer.GetGeomType()]
-        new_layer = Layer(geo_type, layer_name, )
+        #new_layer = Layer(geo_type, layer_name, )
     def SaveToSHP(self, layer, path):
-
+        pass
     def SHP_to_wkt(self, path):#可以考虑直接导出一个列表
         driver = ogr.GetDriverByName('ESRI Shapefile')
         data_source = driver.Open(path, 0)
@@ -258,7 +291,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         feat = ori_layer.GetNextFeature()
         while feat:
             wkt_list.append(feat.geometry().ExportToWkt())
-        return wkt_list
+        return wkt_list    
     # endregion
 
 

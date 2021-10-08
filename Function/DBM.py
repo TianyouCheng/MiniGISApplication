@@ -1,6 +1,6 @@
 import psycopg2
-from Layer import *
-from Geometry import *
+from .Layer import *
+from .Geometry import *
 
 """
 矢量数据的属性字段，支持varchar，
@@ -64,9 +64,14 @@ class DBM:
         # geoms=self.cur.fetchall()
         #根据不同数据类型读取几何信息，addgeomtry
         if layer_type=='POINT':
-            self.cur.execute(f"select * from {layer_name};")
-            cur_geom=PointD()
+            self.cur.execute(f"select st_x(geom),st_y(geom),* from {layer_name};")
+            points =self.cur.fetchall()
+            for p in points:
+                cur_p=PointD(p[0],p[1],p[2])
+                cur_layer.AddGeometry(cur_p,p[3:])
         elif layer_type=='LINESTRING':
+            self.cur.execute(f"select st_astext(geom),* from {layer_name};")
+            
             pass
         elif layer_type=='POLYGON':
             pass
@@ -94,9 +99,7 @@ class DBM:
         #     insert into test values(2,st_geometryfromtext(\'POINT(1 1)\',3857));
         # """)
         # self.conn.commit()
-        self.cur.execute("""
-            select f_geometry_column,srid,type from geometry_columns as gc where f_table_name='test';
-        """)
+        self.cur.execute(f"select st_x(geom),st_y(geom),* from test;")
         rows=self.cur.fetchall()
         return rows
 

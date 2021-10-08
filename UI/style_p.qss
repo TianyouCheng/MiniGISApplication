@@ -67,7 +67,7 @@ border-image:url(UI/icon/edit_p.png)
 
 QMainWindow{
 border:0px;
-border-image:url(UI/images/background_Green_op05_Title.png)
+border-image:url(UI/images/background_Green_op05_Title1.png)
 }
 
 QMenuBar{
