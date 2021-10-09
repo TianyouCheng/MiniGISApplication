@@ -19,6 +19,7 @@ def defaultUI(self):
     self.bt_close.setStyleSheet('background-color:transparent')
     self.widget_2.setFixedHeight(0)
     self.widget.setFixedHeight(0)
+    self.treeWidget.setFixedHeight(822)
     self.widget_4.setFixedHeight(0)
     self.tsButtonNew.setFixedWidth(50)
     self.tsButtonOpen.setFixedWidth(50)
@@ -31,4 +32,10 @@ def defaultUI(self):
     self.tsButtonNewLayer.setFixedWidth(50)
     self.tsButtonSelect.setFixedWidth(50)
     self.tsButtonEdit.setFixedWidth(50)
+    self.tsButtonImportshp.setFixedWidth(50)
+    self.tsButtonExportshp.setFixedWidth(50)
+    self.tsButtonDel.setFixedWidth(50)
+    self.tsButtonAttr.setFixedWidth(50)
+    self.pushButtonAdd.setFixedWidth(50)
+    self.pushButtonDel.setFixedWidth(50)
 

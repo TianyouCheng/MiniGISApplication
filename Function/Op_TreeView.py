@@ -59,45 +59,10 @@ def TreeView_Init(self):
     self.treeWidget.expandAll()
 
 def NewLayer(self):
-    '''
-    txtName=self.Winnewlayer.lineEdit.text()
-    txtType=self.Winnewlayer.comboBox.currentText()
-    item=self.treeWidget.findItems('Layers',Qt.MatchStartsWith)[0]
-    NewL=QTreeWidgetItem(item, [txtName])
-    if self.StyleOn:
-        NewL.setForeground(0, Qt.white)
-    if txtType=='点':
-        NewLchild=QTreeWidgetItem(NewL,[txtType])
-        NewLchild.setIcon(0, QIcon('./UI/images/Point_G.png'))
-        if self.StyleOn:
-            NewLchild.setForeground(0, Qt.white)
-            NewLchild.setIcon(0, QIcon('./UI/images/Point.png'))
-        NewL.setCheckState(0, Qt.Checked)
-        NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
-    elif txtType=='线':
-        NewLchild=QTreeWidgetItem(NewL,[txtType])
-        NewLchild.setIcon(0, QIcon('./UI/images/Line_G.png'))
-        if self.StyleOn:
-            NewLchild.setForeground(0, Qt.white)
-            NewLchild.setIcon(0, QIcon('./UI/images/Line.png'))
-        NewL.setCheckState(0, Qt.Checked)
-        NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
-    elif txtType=='面':
-        NewLchild=QTreeWidgetItem(NewL,[txtType])
-        NewLchild.setIcon(0, QIcon('./UI/images/Polygon_G.png'))
-        if self.StyleOn:
-            NewLchild.setForeground(0, Qt.white)
-            NewLchild.setIcon(0, QIcon('./UI/images/Polygon.png'))
-        NewL.setCheckState(0, Qt.Checked)
-        NewLchild.setFlags(NewLchild.flags() & ~Qt.ItemIsSelectable)
-    self.treeWidget.expandAll()
-
-    self.Winnewlayer.close()
-    '''
     txtName = self.Winnewlayer.lineEdit.text()
     layersItem = self.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
     if txtName.replace(' ', '') == '':
-        txtName = f'layer {layersItem.childCount()}'
+        txtName = 'layer {}'.format(layersItem.childCount())
     txtType = self.Winnewlayer.comboBox.currentText()
     if txtType == '点':
         layer = Layer(PointD, txtName)
@@ -145,9 +110,16 @@ def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
             typetxt = '面' if layer.type == Polygon else '多面'
         else:
             raise TypeError('图层类型错误')
+
         newline.setCheckState(0, Qt.CheckState.Checked)
-        newline.setIcon(0, icon)
-        newline.setText(0, f'{typetxt}: {layer.name}')
+        newline.setText(0,layer.name)
+        # 设置层级树样式
+        newChildline = QTreeWidgetItem(newline, [typetxt])
+        newChildline.setIcon(0, icon)
+        if style_on:
+            newChildline.setForeground(0, Qt.GlobalColor.white)
+            newChildline.setFlags(newChildline.flags() & ~Qt.ItemIsSelectable)
+
     tree.expandAll()
     tree.setCurrentItem(layersItem if map_.selectedLayer == -1
                         else layersItem.child(map_.selectedLayer))

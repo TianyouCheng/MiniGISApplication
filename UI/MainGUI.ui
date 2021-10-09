@@ -464,6 +464,18 @@ shp</string>
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonAdd">
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
             <property name="styleSheet">
              <string notr="true"/>
             </property>
@@ -474,6 +486,18 @@ shp</string>
           </item>
           <item>
            <widget class="QPushButton" name="pushButtonDel">
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="styleSheet">
              <string notr="true"/>
             </property>
