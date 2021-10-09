@@ -2,6 +2,7 @@
 图层类别及相关操作
 '''
 from .Geometry import *
+import pandas as pd
 
 
 class Layer(object):
@@ -18,8 +19,8 @@ class Layer(object):
         self.selectedItems = []     # 被选中的几何体ID（为了使选中几何体和属性表结合）
 
         self.srid=srid
-        self.attr_desp_dict={}      # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
-        self.table = None           # 属性表，TODO 属性表的实现方法待定
+        self.attr_desp_dict = {'ID': 'int'}         # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
+        self.table = pd.DataFrame(columns=['ID'])   # 属性表，TODO 属性表的实现方法目前就定是pandas了
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……
 
     def RefreshBox(self):
@@ -49,8 +50,17 @@ class Layer(object):
         '''
         if not isinstance(geometry, self.type):
             raise TypeError('添加几何体类型与图层类型不匹配')
+        new_id = 0 if self.table.shape[0] == 0 \
+                else self.table['ID'].max() + 1
         self.geometries.append(geometry)
         # TODO 记得给几何体分配ID，并在属性表中添加该几何体的属性信息
+        geometry.ID = new_id
+        if row is None:
+            row = pd.DataFrame({'ID': [new_id]})
+        else:
+            row['ID'] = new_id
+        self.table = self.table.append(row, ignore_index=True)
+        self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()
 
     def DelGeometry(self, _id):
@@ -62,6 +72,8 @@ class Layer(object):
         if index is not None:
             self.geometries.pop(index)
             # TODO 属性表也要跟着删除
+            self.table.drop(index=self.table[self.table['ID'] == _id].index, inplace=True)
+            self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()
 
     def Query(self, query, *args):
@@ -122,7 +134,14 @@ class Layer(object):
 
     #假设属性表用的pandas，根据geom id查询其属性，一般返回所有属性值构成的列表，当指定name时返回单个属性值构成的列表。也可以是字典
     def get_attr(self,id,attr_name=None):
-        pass
+        result = self.table[self.table['ID'] == id]
+        if result.shape[0] == 0:
+            return None
+        if attr_name is None:
+            return list(result.iloc[0, :])
+        else:
+            return result.iloc[0, attr_name]
+
 
 if __name__=='__main__':
     print(1)

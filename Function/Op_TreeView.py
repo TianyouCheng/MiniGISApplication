@@ -8,20 +8,35 @@ from .Map import Map
 from .Layer import Layer
 from .Geometry import *
 from .Op_DrawLabel import Refresh
+from .Op_TableView import TableUpdate
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
     '''图层可见性发生变化，即列表勾选改变'''
-    index = item.parent().indexOfChild(item)
-    main_exe.map.layers[index].visible = item.checkState(column) == Qt.CheckState.Checked
-    Refresh(main_exe, QCursor.pos())
+    parent = item.parent()
+    if parent is main_exe.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]:
+        index = parent.indexOfChild(item)
+        main_exe.map.layers[index].visible = item.checkState(column) == Qt.CheckState.Checked
+        Refresh(main_exe, QCursor.pos())
 
 
 def treeCurrentItemChanged(current, main_exe):
     '''选择的当前操作图层发生变化'''
+    layersItem = main_exe.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+    # 点到了layer标签，虽然不会显示被点选状态，但是还是触发该事件，需要引导一下
+    if current is None or current.parent() is None:
+        if layersItem.childCount() > 0:
+            main_exe.treeWidget.setCurrentItem(layersItem.child(0))
+            main_exe.update()
+            return
+    # 点到了“点”、“线”...这些图层类型标签同理
+    if current.parent() is not layersItem:
+        main_exe.treeWidget.setCurrentItem(current.parent())
+        return
     index = -1 if current is None or current.parent() is None \
         else current.parent().indexOfChild(current)
     main_exe.map.selectedLayer = index
     Refresh(main_exe, QCursor.pos(), use_base=True)
+    TableUpdate(main_exe.tableWidget, main_exe.map.layers[index], main_exe.StyleOn)
 
 
 def TreeView_Init(self):
@@ -76,6 +91,7 @@ def NewLayer(self):
     self.map.AddLayer(layer, pos)
     self.Winnewlayer.close()
     TreeViewUpdateList(self.treeWidget, self.map, self.StyleOn)
+    self.treeWidget.setCurrentItem(layersItem.child(pos))
 
 
 def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
@@ -111,14 +127,13 @@ def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
         else:
             raise TypeError('图层类型错误')
 
-        newline.setCheckState(0, Qt.CheckState.Checked)
         newline.setText(0,layer.name)
         # 设置层级树样式
         newChildline = QTreeWidgetItem(newline, [typetxt])
         newChildline.setIcon(0, icon)
+        newChildline.setFlags(newChildline.flags() & ~Qt.ItemIsSelectable)
         if style_on:
             newChildline.setForeground(0, Qt.GlobalColor.white)
-            newChildline.setFlags(newChildline.flags() & ~Qt.ItemIsSelectable)
 
     tree.expandAll()
     tree.setCurrentItem(layersItem if map_.selectedLayer == -1
