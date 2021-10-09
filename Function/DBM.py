@@ -7,9 +7,8 @@ from .Geometry import *
 """
 
 class DBM:
-    def __init__(self) -> None:
+    def __init__(self):
         self._connect()
-        pass
 
     def _connect(self):
         self.conn=psycopg2.connect(database="minigis",user="minigiser",password="minigis",host="47.104.149.94",port="5432")
@@ -24,12 +23,24 @@ class DBM:
         """
         self.cur.execute(sql)
         # self.layer_list= self.cur.fetchall()
-        return self.cur.fetchall()
+        return [ln[0] for ln in self.cur.fetchall()]
 
     def add_layer_from_memory(self,layer:Layer):
         if layer.name in self.get_layers_list():
             self.cur.execute(f"drop table {layer.name}")
-        self.create_table(layer.name,layer.type,layer.srid,layer.attr_desp_dict)
+        if layer.type==PointD:
+            layer_type='POINT'
+        elif layer.type==Polyline:
+            layer_type='LINESTRING'
+        elif layer.type==Polygon:
+            layer_type='Polygon'
+        elif layer.type==MultiPolyline:
+            layer_type='MULTILINESTRING'
+        elif layer.type==MultiPolygon:
+            layer_type='MULTIPOLYGON'
+        else:
+            layer_type='POINT'
+        self.create_table(layer.name,layer_type,layer.srid,layer.attr_desp_dict)
         for geometry in layer.geometries:
             self.insert_geometry(layer,geometry)
         self.conn.commit()
@@ -37,12 +48,12 @@ class DBM:
     def add_layer_from_shp(self):
         pass
 
-    def create_table(self,tablename,geom_type,srid,**kwargs):
+    def create_table(self,tablename,geom_type,srid,attr_desp_dict):
         sql=f"""
             create table {tablename}(
                 gid int primary key,
                 geom Geometry({geom_type},{srid})
-                {''.join([f',{attr_name} {attr_type}' for attr_name,attr_type in kwargs])}
+                {''.join([f',{attr_name} {attr_type}' for attr_name,attr_type in attr_desp_dict.items()])}
             );
         """
         self.cur.execute(sql)
@@ -50,15 +61,28 @@ class DBM:
     def insert_geometry(self,layer:Layer,geomtry:Geometry):
         wkt=geomtry.ToWkt()
         sql=f"""
-            insert into {layer.name}(id,geom,{','.join([k for k in layer.attr_desp_dict.keys()])})
-            values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{layer.srid}),{','.join(layer.get_attr(geomtry.ID))});
+            insert into {layer.name}(gid,geom{''.join([f',{k}' for k in layer.attr_desp_dict.keys()])})
+            values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{layer.srid}){''.join([f',{attr}' for attr in  layer.get_attr(geomtry.ID)])});
         """
         self.cur.execute(sql)
     
     def load_layer(self,layer_name):
-        self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name='{layer_name}'; ")
-        col_name,layer_srid,layer_type=self.cur.fetchall()[0]
-        cur_layer=Layer(layer_type,layer_name,layer_srid)
+        self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name=\'{layer_name}\';")
+        slct_rslt=self.cur.fetchall()
+        col_name,layer_srid,layer_type=slct_rslt[0]
+        if layer_type=='POINT':
+            layer_type_class=PointD
+        elif layer_type=='LINESTRING':
+            layer_type_class=Polyline
+        elif layer_type=='POLYGON':
+            layer_type_class=Polygon
+        elif layer_type=='MULTILINESTRING':
+            layer_type_class=MultiPolyline
+        elif layer_type=='MULTIPOLYGON':
+            layer_type_class=MultiPolygon
+        else:
+            layer_type_class=PointD
+        cur_layer=Layer(layer_type_class,layer_name,layer_srid)
         #获取属性字段元数据
         self.cur.execute(f"""
             select ordinal_position as Colorder,column_name as ColumnName,data_type as TypeName,
@@ -79,7 +103,8 @@ class DBM:
             )c on c.attname = information_schema.columns.column_name
             where table_schema='public' and table_name='{layer_name}' order by ordinal_position asc
         """)
-        attr_info=self.cur.fetchall()[3:]
+        slct_rslt=self.cur.fetchall()
+        attr_info=slct_rslt[3:]
         #set layer attr
         # self.cur.execute(f"select * from {layer_name};")#geometry转为其他类型
         # geoms=self.cur.fetchall()
@@ -117,6 +142,7 @@ class DBM:
                 cur_layer.AddGeometry(cur_ml,ml[3:])
         else:
             pass
+        return cur_layer
         
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
@@ -131,26 +157,8 @@ class DBM:
         #     insert into test values(2,st_geometryfromtext(\'POINT(1 1)\',3857));
         # """)
         # self.conn.commit()
-        layer_name='test'
-        self.cur.execute(f"""
-            select ordinal_position as Colorder,column_name as ColumnName,data_type as TypeName,
-            coalesce(character_maximum_length,numeric_precision,-1) as Length
-            from information_schema.columns 
-            left join (
-            select pg_attr.attname as colname,pg_constraint.conname as pk_name from pg_constraint 
-            inner join pg_class on pg_constraint.conrelid = pg_class.oid 
-            inner join pg_attribute pg_attr on pg_attr.attrelid = pg_class.oid and pg_attr.attnum = pg_constraint.conkey[1] 
-            inner join pg_type on pg_type.oid = pg_attr.atttypid
-            where pg_class.relname = '{layer_name}' and pg_constraint.contype='p'
-            ) b on b.colname = information_schema.columns.column_name
-            left join (
-            select attname,description as DeText from pg_class
-            left join pg_attribute pg_attr on pg_attr.attrelid= pg_class.oid
-            left join pg_description pg_desc on pg_desc.objoid = pg_attr.attrelid and pg_desc.objsubid=pg_attr.attnum
-            where pg_attr.attnum>0 and pg_attr.attrelid=pg_class.oid and pg_class.relname='{layer_name}'
-            )c on c.attname = information_schema.columns.column_name
-            where table_schema='public' and table_name='{layer_name}' order by ordinal_position asc
-        """)
+        layer_name='polygons'
+        self.cur.execute(f"select st_astext(geom),* from {layer_name};")
         attr_info=self.cur.fetchall()
         return attr_info
 

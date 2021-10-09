@@ -317,8 +317,8 @@ class Polygon(Geometry):
                             match_rslt=re.match('^(\S+) (\S+)$',p)
                             if match_rslt:
                                 hole_data.append(PointD(float( match_rslt.group(1)),float(match_rslt.group(2))))
-                    holes.append(Polygon(hole_data))
-            self.data=data
+                    holes.append(Polygon(hole_data[:-1]))
+            self.data=data[:-1]
             self.holes=holes
         else:
             self.data=Data
@@ -412,7 +412,7 @@ class Polygon(Geometry):
 
     # 覆盖基类的ToWkt，将几何体转为WKT字符串
     def ToWkt(self):
-        wkt=f"POLYGON(({','.join([f'{p.X} {p.Y}' for p in self.data])}){''.join([',({})'.format(','.join([f'{p.X} {p.Y}' for p in hole.data])) for hole in self.holes])})"
+        wkt=f"POLYGON(({','.join([f'{p.X} {p.Y}' for p in self.data+[self.data[0]]])}){''.join([',({})'.format(','.join([f'{p.X} {p.Y}' for p in hole.data+[hole.data[0]]])) for hole in self.holes])})"
         return wkt
 # endregion
 
