@@ -1,7 +1,7 @@
 '''
 表格控件的相关操作函数
 '''
-from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView
+from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget
 from PyQt5.QtGui import QFont,QColor,QBrush
 import random
 
@@ -18,7 +18,7 @@ def TableView_Init(self,nColumn):
     self.tableWidget.horizontalHeader().setFont(font)  # 设置表头字体
 
     # self.tableWidget.setFrameShape(QFrame.NoFrame)  ##设置无表格的外框
-    self.tableWidget.setSelectionMode(QAbstractItemView.SingleSelection)  # 设置只可以单选，可以使用ExtendedSelection进行多选
+    self.tableWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # 设置只可以单选，可以使用ExtendedSelection进行多选
     self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置不可选择单个单元格，只可选择一行。
     self.tableWidget.setColumnCount(nColumn)  ##设置表格一共有五列
     self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
@@ -62,3 +62,23 @@ def TableViewDel(self):
     if len(selected_items) == 0:
         return
     self.tableWidget.removeRow(self.tableWidget.indexFromItem(selected_items[0]).row())
+
+
+def TableUpdate(tabWid: QTableWidget, layer, style_on):
+    '''更新属性数据的表格内容'''
+    tabWid.clearContents()
+    table = layer.table
+    tabWid.setColumnCount(table.shape[1])
+    tabWid.setRowCount(table.shape[0])
+    tabWid.setHorizontalHeaderLabels(table.columns)
+    selected_rows = []
+    for row in range(table.shape[0]):
+        for col in range(table.shape[1]):
+            item = QTableWidgetItem(str(table.iloc[row, col]))
+            if style_on:
+                item.setForeground(QColor(255, 255, 255))
+            tabWid.setItem(row, col, item)
+        if table.loc[row, 'ID'] in layer.selectedItems:
+            selected_rows.append(row)
+    for row in selected_rows:
+        tabWid.selectRow(row)
