@@ -3,7 +3,8 @@
 '''
 from .Geometry import *
 import pandas as pd
-
+from osgeo import ogr
+from osgeo import gdal
 
 class Layer(object):
     def __init__(self, _type, name='new_layer',srid=3857):
@@ -142,6 +143,58 @@ class Layer(object):
         else:
             return result.iloc[0, attr_name]
 
+    def import_from_shplayer(self, shplayer):
+        ori_type = shplayer.GetGeomType()
+        defn = shplayer.GetLayerDefn()
+        fieldcount = shplayer.GetFieldCount()
+        fields = list()
+        for att in range(fieldcount):
+            field = defn.GetFieldDefn(att)
+            fields.append(field.GetNameRef())
+        if ori_type == ogr.wkbPoint:
+            feat = shplayer.GetNextFeature()
+            while feat:
+                geom = feat.GetGeometryRef()
+                id = int(feat.GetFieldAsString('id'))
+                pt = PointD(geom.GetX(), geom.GetY(), id)
+                field_dict = dict()
+                field_dict['ID'] = [0]
+                for name in fields:
+                    field_dict[name] = [feat.GetFieldAsString(name)]
+                self.AddGeometry(pt, pd.DataFrame(field_dict))
+                feat = shplayer.GetNextFeature()
+        elif ori_type == ogr.wkbLineString:
+            feat = shplayer.GetNextFeature()
+            while feat:
+                geom = shplayer.GetGeometryRef()
+                ptnum = geom.GetPointCount()
+                data = list()
+                for i in range(ptnum):
+                    data.append(PointD(geom.GetX(i), geom.GetY(i)))
+                id = int(feat.GetFieldAsString('id'))
+                pl = Polyline(data, id)
+                field_dict = dict()
+                field_dict['ID'] = [0]
+                for name in fields:
+                    field_dict[name] = feat.GetFieldAsString(name)
+                self.AddGeometry(pl, field_dict)
+
+    def export_to_shplayer(self, path):
+        file_name = path.split('/')[-1]
+        oDriver = ogr.GetDriverByName('ESRI Shapefile')
+        if oDriver is None:
+            msgBox = QMessageBox()
+            msgBox.setText("驱动不可用")
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
+        oDs = oDriver.CreateDataSource(file_name)
+        if oDs is None:
+            msgBox = QMessageBox()
+            msgBox.setText("无法创建文件：" + file_name)
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
 
 if __name__=='__main__':
     print(1)

@@ -264,12 +264,26 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     def bt_import_shp_clicked(self):
         ofd = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'ALL(*.*);;Shapefile文件(*.shp)')
-        self.importSHP(self, ofd)
+        driver = ogr.GetDriverByName('ESRI Shapefile')
+        data_source = driver.Open(ofd, 0)
+        if data_source is None:
+            msgBox = QMessageBox()
+            msgBox.setText("未找到符合要求的shp文件")
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
+        ori_layer = data_source.GetLayer(0)
+        type_dict = {ogr.wkbPoint: PointD, ogr.wkbLineString: Polyline, ogr.wkbPolygon: Polygon, ogr.wkbMultiPolygon : MultiPolygon,
+                     ogr.wkbMultiLineString : MultiPolyline}
+        layer_name = ofd.split('/')[-1].split('.')[0]
+        geo_type = type_dict[ori_layer.GetGeomType()]
+        # spatial_ref = ori_layer.GetSpatialRef()
+        new_layer = Layer(geo_type, layer_name)
+        new_layer.import_from_shplayer(ori_layer)
 
     def bt_export_shp_clicked(self):
         sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')
-        self.SaveToSHP(self, self.map_.layers[self.map_.selectedLayer], sfd)
-
+        self.map_.layers[self.map_.selectedLayer].export_to_shplayer(sfd)
     # def labelResizeEvent(self, a0: QtGui.QResizeEvent):
         '''画布大小改变'''
         # super(QLabel, self.Drawlabel).resizeEvent(a0)
@@ -277,38 +291,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # canvas.fill(QColor('white'))
         # self.Drawlabel.setPixmap(canvas)
         # Refresh(self, QCursor.pos())
-    def importSHP(self, path):
-        driver = ogr.GetDriverByName('ESRI Shapefile')
-        data_source = driver.Open(path, 0)
-        if data_source is None:
-            msgBox = QMessageBox()
-            msgBox.setText("未找到符合要求的shp文件")
-            msgBox.addButton(QMessageBox.Ok)
-            msgBox.exec_()
-            return
-        type_dict = {ogr.wkbPoint : PointD, ogr.wkbLineString : Polyline, ogr.wkbPolygon : Polygon}
-        ori_layer = data_source.GetLayer(0)
-        layer_name = path.split('/')[-1].split('.')[0]
-        geo_type = type_dict[ori_layer.GetGeomType()]
-        spatial_ref = ori_layer.GetSpatialRef()
-        new_layer = Layer(geo_type, layer_name, spatial_ref)
-
-    def SaveToSHP(self, layer, path):
-        file_name = path.split('/')[-1]
-        oDriver = ogr.GetDriverByName('ESRI Shapefile')
-        if oDriver is None:
-            msgBox = QMessageBox()
-            msgBox.setText("驱动不可用")
-            msgBox.addButton(QMessageBox.Ok)
-            msgBox.exec_()
-            return
-        oDs = oDriver.CreateDataSource(file_name)
-        if oDs is None:
-            msgBox = QMessageBox()
-            msgBox.setText("无法创建文件：" + file_name)
-            msgBox.addButton(QMessageBox.Ok)
-            msgBox.exec_()
-            return
 
     def SHP_to_wkt(self, path):#可以考虑直接导出一个列表
         driver = ogr.GetDriverByName('ESRI Shapefile')

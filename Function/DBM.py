@@ -45,7 +45,7 @@ class DBM:
             self.insert_geometry(layer,geometry)
         self.conn.commit()
 
-    def add_layer_from_shp(self):
+    def add_layer_from_shp(self, path):
         pass
 
     def create_table(self,tablename,geom_type,srid,attr_desp_dict):
