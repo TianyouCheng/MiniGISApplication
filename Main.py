@@ -9,6 +9,7 @@ from osgeo import ogr
 from UI import *
 from Function import *
 from unit_test import create_map
+import dbm_test
 #endregion
 
 # 主窗体操作
@@ -29,7 +30,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
         self.StyleOn=False # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
-        self.map = create_map()    # 当前地图
+        self.dbm=DBM()
+        self.map =create_map(self.dbm)    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
@@ -136,6 +138,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonAttr.clicked.connect(lambda:Switch(self,self.IsAttr,self.StyleOn))
         self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
+        self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -250,6 +253,20 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             else:
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
                 self.treeWidget.setEnabled(True)
+
+    def bt_save_to_dbm(self):
+        node=self.treeWidget.currentItem()
+        if not node:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先选择要编辑的图层。\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+        else:
+            self.dbm.add_layer_from_memory(self.map.layers[self.map.selectedLayer])
 
     def bt_newlayer_clicked(self):
         self.Winnewlayer=WinNewLayer()

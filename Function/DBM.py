@@ -1,3 +1,4 @@
+from typing import List, Tuple
 import psycopg2
 from .Layer import *
 from .Geometry import *
@@ -14,18 +15,36 @@ class DBM:
         self.conn=psycopg2.connect(database="minigis",user="minigiser",password="minigis",host="47.104.149.94",port="5432")
         self.cur=self.conn.cursor()
 
-    def get_layers_list(self):
+    
+    def get_layers_list(self)->List:
+        """
+        @description : 获取数据库存储图层名称列表
+        @param : None
+        @returns : name字符串列表
+        """
+        
         sql=f"""
-            select tablename from pg_tables
-            where tablename not like 'pg_%'
-            and tablename not like 'sql_%'
-            and tablename not like 'spatial_ref_sys';
+            select f_table_name from geometry_columns;
         """
         self.cur.execute(sql)
-        # self.layer_list= self.cur.fetchall()
-        return [ln[0] for ln in self.cur.fetchall()]
+        layer_list= self.cur.fetchall()
+        return [ln[0] for ln in layer_list]
 
-    def add_layer_from_memory(self,layer:Layer):
+    def get_layers_info(self)->Tuple:
+        """
+        @description : 获取数据库存储图层（name : str，srid : int，type : str）
+        @param :  无
+        @returns : 由各个图层信息构成的元组
+        """
+        
+        sql=f"""
+            select f_table_name,srid,type from geometry_columns;
+        """
+        self.cur.execute(sql)
+        layer_info_list=self.cur.fetchall()
+        return layer_info_list
+
+    def add_layer_from_memory(self,layer:Layer)->None:
         if layer.name in self.get_layers_list():
             self.cur.execute(f"drop table {layer.name}")
         if layer.type==PointD:
@@ -45,10 +64,10 @@ class DBM:
             self.insert_geometry(layer,geometry)
         self.conn.commit()
 
-    def add_layer_from_shp(self, path):
+    def add_layer_from_shp(self, path)->None:
         pass
 
-    def create_table(self,tablename,geom_type,srid,attr_desp_dict):
+    def create_table(self,tablename,geom_type,srid,attr_desp_dict)->None:
         sql=f"""
             create table {tablename}(
                 gid int primary key,
@@ -57,19 +76,20 @@ class DBM:
             );
         """
         self.cur.execute(sql)
-    
-    def insert_geometry(self,layer:Layer,geomtry:Geometry):
+
+    def insert_geometry(self,layer:Layer,geomtry:Geometry)->None:
         wkt=geomtry.ToWkt()
         sql=f"""
             insert into {layer.name}(gid,geom{''.join([f',{k}' for k in layer.attr_desp_dict.keys()])})
             values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{layer.srid}){''.join([f',{attr}' for attr in  layer.get_attr(geomtry.ID)])});
         """
         self.cur.execute(sql)
-    
-    def load_layer(self,layer_name):
+
+    def load_layer(self,layer_name)->Layer:
         self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name=\'{layer_name}\';")
         slct_rslt=self.cur.fetchall()
         col_name,layer_srid,layer_type=slct_rslt[0]
+        # col_name,layer_srid,layer_type=('geom',3857,'LINESTRING')
         if layer_type=='POINT':
             layer_type_class=PointD
         elif layer_type=='LINESTRING':
@@ -87,11 +107,11 @@ class DBM:
         self.cur.execute(f"""
             select ordinal_position as Colorder,column_name as ColumnName,data_type as TypeName,
             coalesce(character_maximum_length,numeric_precision,-1) as Length
-            from information_schema.columns 
+            from information_schema.columns
             left join (
-            select pg_attr.attname as colname,pg_constraint.conname as pk_name from pg_constraint 
-            inner join pg_class on pg_constraint.conrelid = pg_class.oid 
-            inner join pg_attribute pg_attr on pg_attr.attrelid = pg_class.oid and pg_attr.attnum = pg_constraint.conkey[1] 
+            select pg_attr.attname as colname,pg_constraint.conname as pk_name from pg_constraint
+            inner join pg_class on pg_constraint.conrelid = pg_class.oid
+            inner join pg_attribute pg_attr on pg_attr.attrelid = pg_class.oid and pg_attr.attnum = pg_constraint.conkey[1]
             inner join pg_type on pg_type.oid = pg_attr.atttypid
             where pg_class.relname = '{layer_name}' and pg_constraint.contype='p'
             ) b on b.colname = information_schema.columns.column_name
@@ -114,36 +134,36 @@ class DBM:
             points =self.cur.fetchall()
             for p in points:
                 cur_p=PointD(p[0],p[1],p[2])
-                cur_layer.AddGeometry(cur_p,p[4:])
+                cur_layer.AddGeometry(cur_p,dict(zip([attr[0] for attr in attr_info],p[4:])))
         elif layer_type=='LINESTRING':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             lines=self.cur.fetchall()
             for l in lines:
                 cur_l=Polyline(l[0],l[1])
-                cur_layer.AddGeometry(cur_l,l[3:])
+                cur_layer.AddGeometry(cur_l,dict(zip([attr[0] for attr in attr_info],l[3:])))
         elif layer_type=='POLYGON':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             polygons=self.cur.fetchall()
             for pg in polygons:
-                cur_pg=Polyline(pg[0],pg[1])
-                cur_layer.AddGeometry(cur_pg,pg[3:])
-            
+                cur_pg=Polygon(pg[0],pg[1])
+                cur_layer.AddGeometry(cur_pg,dict(zip([attr[0] for attr in attr_info],pg[3:])))
+
         elif layer_type=='MULTIPOLYGON':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             mpolygons=self.cur.fetchall()
             for mpg in mpolygons:
                 cur_mpg=MultiPolygon(mpg[0],mpg[1])
-                cur_layer.AddGeometry(cur_mpg,mpg[3:])
+                cur_layer.AddGeometry(cur_mpg,dict(zip([attr[0] for attr in attr_info],mpg[3:])))
         elif layer_type=='MULTILINESTRING':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             mlines=self.cur.fetchall()
             for ml in mlines:
-                cur_ml=Polyline(ml[0],ml[1])
-                cur_layer.AddGeometry(cur_ml,ml[3:])
+                cur_ml=MultiPolyline(ml[0],ml[1])
+                cur_layer.AddGeometry(cur_ml,dict(zip([attr[0] for attr in attr_info],ml[3:])))
         else:
             pass
         return cur_layer
-        
+
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
 
@@ -158,7 +178,8 @@ class DBM:
         # """)
         # self.conn.commit()
         layer_name='polygons'
-        self.cur.execute(f"select st_astext(geom),* from {layer_name};")
+        col_name='geom'
+        self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
         attr_info=self.cur.fetchall()
         return attr_info
 
@@ -166,5 +187,5 @@ class DBM:
 if __name__=="__main__":
     dbm=DBM()
     print(dbm.get_layers_list())
-    a=dbm.test()
+    a=dbm.load_layer('polygons')
     print(a)
