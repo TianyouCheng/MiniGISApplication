@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from .Map import Map
 from .Layer import Layer
 from .Geometry import *
-from .Op_DrawLabel import Refresh
+from .Op_DrawLabel import RefreshCanvas
 from .Op_TableView import TableUpdate
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
@@ -16,7 +16,7 @@ def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
     if parent is main_exe.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]:
         index = parent.indexOfChild(item)
         main_exe.map.layers[index].visible = item.checkState(column) == Qt.CheckState.Checked
-        Refresh(main_exe, QCursor.pos())
+        RefreshCanvas(main_exe)
 
 
 def treeCurrentItemChanged(current, main_exe):
@@ -26,7 +26,6 @@ def treeCurrentItemChanged(current, main_exe):
     if current is None or current.parent() is None:
         if layersItem.childCount() > 0:
             main_exe.treeWidget.setCurrentItem(layersItem.child(0))
-            main_exe.update()
             return
     # 点到了“点”、“线”...这些图层类型标签同理
     if current.parent() is not layersItem:
@@ -35,8 +34,8 @@ def treeCurrentItemChanged(current, main_exe):
     index = -1 if current is None or current.parent() is None \
         else current.parent().indexOfChild(current)
     main_exe.map.selectedLayer = index
-    Refresh(main_exe, QCursor.pos(), use_base=True)
-    TableUpdate(main_exe.tableWidget, main_exe.map.layers[index], main_exe.StyleOn)
+    TableUpdate(main_exe)
+    RefreshCanvas(main_exe, use_base=True)
 
 
 def TreeView_Init(self):
@@ -65,10 +64,8 @@ def TreeView_Init(self):
     # citem2.setCheckState(0, Qt.Checked)
     # citem3.setCheckState(0, Qt.Checked)
     # citem4.setCheckState(0, Qt.Checked)
-    self.treeWidget.itemChanged.connect(lambda item, column:
-                                        treeCheckedChange(item, column, self))
-    self.treeWidget.currentItemChanged.connect(lambda current, previous:
-                                               treeCurrentItemChanged(current, self))
+    self.treeWidget.itemChanged.connect(self.treeViewItemChanged)
+    self.treeWidget.currentItemChanged.connect(self.treeViewCurrentItemChanged)
 
     self.treeWidget.header().setVisible(False)
     self.treeWidget.expandAll()
@@ -90,38 +87,44 @@ def NewLayer(self):
     pos = self.map.selectedLayer if self.map.selectedLayer != -1 else 0
     self.map.AddLayer(layer, pos)
     self.Winnewlayer.close()
-    TreeViewUpdateList(self.treeWidget, self.map, self.StyleOn)
-    self.treeWidget.setCurrentItem(layersItem.child(pos))
+    TreeViewUpdateList(self)
+    TableUpdate(self)
+    RefreshCanvas(self, use_base=True)
 
 
-def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
+def TreeViewUpdateList(main_exe):
     '''
     更新图层列表
     :param tree: 树状视图
     :param map_: 地图
     :param style_on: bool，是否启用样式表
     '''
+    tree = main_exe.treeWidget
+    map_ = main_exe.map
+    # 先断开事件，更新完再恢复
+    tree.itemChanged.disconnect(main_exe.treeViewItemChanged)
+    tree.currentItemChanged.disconnect(main_exe.treeViewCurrentItemChanged)
     layersItem = tree.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
     layersItem.takeChildren()
     for layer in map_.layers:
         newline = QTreeWidgetItem(layersItem)
-        if style_on:
+        if main_exe.StyleOn:
             newline.setForeground(0, Qt.GlobalColor.white)
         newline.setCheckState(0, Qt.CheckState.Checked if layer.visible
                               else ~Qt.CheckState.Checked)
         # 点图层
         if layer.type == PointD:
-            icon = QIcon('./UI/images/Point.png' if style_on
+            icon = QIcon('./UI/images/Point.png' if main_exe.StyleOn
                          else './UI/images/Point_G.png')
             typetxt = '点'
         # 线、多线图层
         elif layer.type in (Polyline, MultiPolyline):
-            icon = QIcon('./UI/images/Line.png' if style_on
+            icon = QIcon('./UI/images/Line.png' if main_exe.StyleOn
                          else './UI/images/Line_G.png')
             typetxt = '线' if layer.type == Polyline else '多线'
         # 面、多面图层
         elif layer.type in (Polygon, MultiPolygon):
-            icon = QIcon('./UI/images/Polygon.png' if style_on
+            icon = QIcon('./UI/images/Polygon.png' if main_exe.StyleOn
                          else './UI/images/Polygon_G.png')
             typetxt = '面' if layer.type == Polygon else '多面'
         else:
@@ -132,9 +135,11 @@ def TreeViewUpdateList(tree: QTreeWidget, map_: Map, style_on):
         newChildline = QTreeWidgetItem(newline, [typetxt])
         newChildline.setIcon(0, icon)
         newChildline.setFlags(newChildline.flags() & ~Qt.ItemIsSelectable)
-        if style_on:
+        if main_exe.StyleOn:
             newChildline.setForeground(0, Qt.GlobalColor.white)
 
     tree.expandAll()
     tree.setCurrentItem(layersItem if map_.selectedLayer == -1
                         else layersItem.child(map_.selectedLayer))
+    tree.itemChanged.connect(main_exe.treeViewItemChanged)
+    tree.currentItemChanged.connect(main_exe.treeViewCurrentItemChanged)

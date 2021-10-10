@@ -10,10 +10,9 @@ from .Geometry import *
 from .Layer import Layer
 from .Map import Map
 from .MapTool import MapTool
-from Main import Main_exe
 
 
-def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None, use_base=False):
+def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False):
     '''
     绘制事件触发
     :param new_geo: 可能的新几何体（添加几何体模式）
@@ -27,8 +26,6 @@ def Refresh(main_exe: Main_exe, mouseLoc: QPoint, new_geo=None, use_base=False):
     # 计算屏幕、鼠标位置的地理坐标范围
     width = pixmap.width()
     height = pixmap.height()
-    mouse_screenloc = PointD(mouseLoc.x(), mouseLoc.y())
-    mouse_geoloc = map.ScreenToGeo(mouse_screenloc, (width, height))
     if use_base:
         painter.drawPixmap(0, 0, main_exe.basePixmap)
     else:
@@ -111,7 +108,7 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
     painter.setBrush(origin_brush)
 
 
-def LabelMousePress(main_exe: Main_exe, event: QMouseEvent):
+def LabelMousePress(main_exe, event: QMouseEvent):
     '''处理鼠标按下，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
@@ -122,15 +119,15 @@ def LabelMousePress(main_exe: Main_exe, event: QMouseEvent):
         if main_exe.tool == MapTool.ZoomIn:
             map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
                              map_.scale / main_exe.zoomRatio)
-            Refresh(main_exe, mouse_loc)
+            RefreshCanvas(main_exe, mouse_loc)
         # 在“缩小”模式下按下左键
         elif main_exe.tool == MapTool.ZoomOut:
             map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
                              map_.scale * main_exe.zoomRatio)
-            Refresh(main_exe, mouse_loc)
+            RefreshCanvas(main_exe, mouse_loc)
 
 
-def LabelMouseMove(main_exe: Main_exe, event: QMouseEvent):
+def LabelMouseMove(main_exe, event: QMouseEvent):
     '''处理鼠标移动，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
@@ -144,14 +141,16 @@ def LabelMouseMove(main_exe: Main_exe, event: QMouseEvent):
                                                  main_exe.mouseLastLoc.y()), (width, height))
             map_.offsetX += old_geoloc.X - now_geoloc.X
             map_.offsetY += old_geoloc.Y - now_geoloc.Y
-            Refresh(main_exe, mouse_loc)
+            RefreshCanvas(main_exe, mouse_loc)
         # 鼠标框选移动
         elif main_exe.tool == MapTool.Select:
-            Refresh(main_exe, mouse_loc, use_base=True)
+            RefreshCanvas(main_exe, mouse_loc, use_base=True)
 
 
-def LabelMouseRelease(main_exe: Main_exe, event: QMouseEvent):
+def LabelMouseRelease(main_exe, event: QMouseEvent):
     '''处理与画布有关的、鼠标松开的事件'''
+    from .Op_TableView import TableUpdate
+
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
@@ -164,6 +163,7 @@ def LabelMouseRelease(main_exe: Main_exe, event: QMouseEvent):
                 main_exe.bufferRadius ** 2:
             center_p = (QPointF(main_exe.mousePressLoc) + QPointF(mouse_loc)) / 2
             query = map_.ScreenToGeo(PointD(center_p.x(), center_p.y()), (width, height))
+            p_select = True
         # 框选模式
         else:
             rect_screen = RectangleD(min(main_exe.mousePressLoc.x(), mouse_loc.x()),
@@ -171,13 +171,17 @@ def LabelMouseRelease(main_exe: Main_exe, event: QMouseEvent):
                                      max(main_exe.mousePressLoc.x(), mouse_loc.x()),
                                      max(main_exe.mousePressLoc.y(), mouse_loc.y()))
             query = map_.ScreenToGeo(rect_screen, (width, height))
+            p_select = False
         buffer = map_.ScreenDistToGeo(main_exe.bufferRadius)
         result = map_.layers[map_.selectedLayer].Query(query, buffer)
+        result = ConcatSelection(map_.layers[map_.selectedLayer].selectedItems, result,
+                                 event.modifiers(), p_select)
         map_.layers[map_.selectedLayer].selectedItems = result
-        Refresh(main_exe, mouse_loc, use_base=True)
+        TableUpdate(main_exe)
+        RefreshCanvas(main_exe, mouse_loc, use_base=True)
 
 
-def LabelMouseWheel(main_exe: Main_exe, event: QWheelEvent):
+def LabelMouseWheel(main_exe, event: QWheelEvent):
     '''处理画布内的鼠标滚轮事件，可用滚轮放大缩小'''
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
@@ -192,5 +196,31 @@ def LabelMouseWheel(main_exe: Main_exe, event: QWheelEvent):
     else:
         map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
                          map_.scale * (1 + (main_exe.zoomRatio - 1) * -angle / 120))
-    Refresh(main_exe, mouse_loc)
-    # main_exe.zoomRatio
+    RefreshCanvas(main_exe, mouse_loc)
+
+
+def ConcatSelection(old_list, new_list, modifiers: Qt.KeyboardModifiers, p_select):
+    '''
+    根据键鼠输入状态，合并两个选择集合（重新选择、并集、差集）
+    :param modifiers: 功能按键（ctrl, alt, shift）的状态
+    :param p_select: 是否为点选
+    :return: 合并后的集合
+    '''
+    result = set(old_list)
+    if modifiers == Qt.KeyboardModifier.ControlModifier:
+        # 点选ctrl，逻辑是异或，即原来未选择的选上，原来已经选择的去除选择
+        if p_select:
+            result = result.symmetric_difference(new_list)
+        # 框选ctrl，效果与shift相同
+        else:
+            result = result.union(new_list)
+    # 按下shift，输出并集
+    elif modifiers == Qt.KeyboardModifier.ShiftModifier:
+        result = result.union(new_list)
+    # 按下alt，输出差集
+    elif modifiers == Qt.KeyboardModifier.AltModifier:
+        result = result.difference(new_list)
+    # 什么都没按，则用新选择结果代替旧结果
+    else:
+        return new_list
+    return list(result)

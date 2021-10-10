@@ -2,8 +2,11 @@
 表格控件的相关操作函数
 '''
 from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget
+from PyQt5.QtWidgets import QTableWidgetSelectionRange as TabRange
 from PyQt5.QtGui import QFont,QColor,QBrush
 import random
+from .MapTool import MapTool
+from .Op_DrawLabel import RefreshCanvas
 
 def TableView_Init(self,nColumn):
     '''
@@ -14,7 +17,7 @@ def TableView_Init(self,nColumn):
     :return: None
     '''
     font = QFont('微软雅黑', 8)
-    font.setBold(False)  # 设置字体加粗
+    font.setBold(True)  # 设置字体加粗
     self.tableWidget.horizontalHeader().setFont(font)  # 设置表头字体
 
     # self.tableWidget.setFrameShape(QFrame.NoFrame)  ##设置无表格的外框
@@ -31,6 +34,8 @@ def TableView_Init(self,nColumn):
     # 信号与槽函数
     self.pushButtonAdd.clicked.connect(lambda: TableViewAdd(self))
     self.pushButtonDel.clicked.connect(lambda: TableViewDel(self))
+    self.tableWidget.itemSelectionChanged.connect(self.tableSelectionChanged)
+
 
 def TableViewAdd(self):
     # Todo 优化2 添加数据
@@ -64,21 +69,48 @@ def TableViewDel(self):
     self.tableWidget.removeRow(self.tableWidget.indexFromItem(selected_items[0]).row())
 
 
-def TableUpdate(tabWid: QTableWidget, layer, style_on):
+def TableUpdate(main_exe):
     '''更新属性数据的表格内容'''
+    tabWid = main_exe.tableWidget
+    tabWid.itemSelectionChanged.disconnect(main_exe.tableSelectionChanged)
     tabWid.clearContents()
-    table = layer.table
-    tabWid.setColumnCount(table.shape[1])
-    tabWid.setRowCount(table.shape[0])
-    tabWid.setHorizontalHeaderLabels(table.columns)
-    selected_rows = []
-    for row in range(table.shape[0]):
-        for col in range(table.shape[1]):
-            item = QTableWidgetItem(str(table.iloc[row, col]))
-            if style_on:
-                item.setForeground(QColor(255, 255, 255))
-            tabWid.setItem(row, col, item)
-        if table.loc[row, 'ID'] in layer.selectedItems:
-            selected_rows.append(row)
-    for row in selected_rows:
-        tabWid.selectRow(row)
+    index = main_exe.map.selectedLayer
+    if index == -1:
+        tabWid.setColumnCount(0)
+        tabWid.setRowCount(0)
+    else:
+        layer = main_exe.map.layers[main_exe.map.selectedLayer]
+        table = layer.table
+        tabWid.setColumnCount(table.shape[1])
+        tabWid.setRowCount(table.shape[0])
+        tabWid.setHorizontalHeaderLabels(table.columns)
+        selectedItems = set(layer.selectedItems)
+        selected_rows = []
+        for row in range(table.shape[0]):
+            for col in range(table.shape[1]):
+                item = QTableWidgetItem(str(table.iloc[row, col]))
+                if main_exe.StyleOn:
+                    item.setForeground(QColor(255, 255, 255))
+                tabWid.setItem(row, col, item)
+            if table.loc[row, 'ID'] in selectedItems:
+                selected_rows.append(row)
+        # 在表格中选择要素
+        for row in selected_rows:
+            tabWid.setRangeSelected(TabRange(row, 0, row, tabWid.columnCount() - 1), True)
+    tabWid.itemSelectionChanged.connect(main_exe.tableSelectionChanged)
+
+
+def TableSelectionChanged(main_exe):
+    '''在属性表的选择内容改变，联动到地图上'''
+    tabWid = main_exe.tableWidget
+    map_ = main_exe.map
+    layer = map_.layers[map_.selectedLayer]
+    r = TabRange()
+    r.bottomRow()
+    # 仅在非编辑状态下联动表格
+    if not main_exe.EditStatus:
+        layer.selectedItems.clear()
+        for range_ in tabWid.selectedRanges():
+            ids = layer.table.loc[range(range_.topRow(), range_.bottomRow() + 1), 'ID']
+            layer.selectedItems.extend(ids)
+        RefreshCanvas(main_exe, use_base=True)

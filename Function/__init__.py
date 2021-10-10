@@ -4,7 +4,7 @@ from .Layer import *
 from .Map import *
 from .Op_TableView import *
 from .Op_TreeView import *
-from .Op_DrawLabel import Refresh, LabelMousePress, LabelMouseMove, LabelMouseRelease, LabelMouseWheel
+from .Op_DrawLabel import RefreshCanvas, LabelMousePress, LabelMouseMove, LabelMouseRelease, LabelMouseWheel
 from .DefaultUI import *
 from .MapTool import MapTool
 from .Animation import *

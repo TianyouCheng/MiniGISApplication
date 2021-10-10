@@ -30,8 +30,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
         self.StyleOn=False # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
-        self.dbm=DBM()
-        self.map =create_map(self.dbm)    # 当前地图
+        self.dbm = DBM()
+        self.map = create_map(self.dbm)    # 当前地图
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
@@ -87,12 +87,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         else:
             defaultUI(self)
 
+        RefreshCanvas(self)
         # 设置TabelView,必须设置有几列
         TableView_Init(self,5)
+        TableUpdate(self)
 
         # 设置TreeView
         TreeView_Init(self)
-        TreeViewUpdateList(self.treeWidget, self.map, self.StyleOn)
+        TreeViewUpdateList(self)
 
     # region 功能函数
     # 重写鼠标点击事件
@@ -213,11 +215,12 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def bt_zoomScale_clicked(self):
         '''按下“全屏显示”按钮'''
         self.map.FullScreen(self.Drawlabel.width(), self.Drawlabel.height())
-        Refresh(self, QCursor.pos())
+        RefreshCanvas(self)
 
     def bt_select_clicked(self):
         '''按下“选择要素”按钮'''
         self.tool = MapTool.Select
+        self.Drawlabel.setCursor(QCursor())
 
     def bt_edit_clicked(self):
         node=self.treeWidget.currentItem()
@@ -248,7 +251,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 self.treeWidget.setEnabled(False)
                 map_ = self.map
                 map_.layers[map_.selectedLayer].selectedItems.clear()
-                Refresh(self, QCursor.pos(), use_base=True)
+                RefreshCanvas(self, use_base=True)
 
             else:
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
@@ -322,7 +325,20 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         feat = ori_layer.GetNextFeature()
         while feat:
             wkt_list.append(feat.geometry().ExportToWkt())
-        return wkt_list    
+        return wkt_list
+
+    def treeViewItemChanged(self, item, column):
+        '''图层的可见性改变'''
+        treeCheckedChange(item, column, self)
+
+    def treeViewCurrentItemChanged(self, current, previous):
+        '''改变选择图层'''
+        treeCurrentItemChanged(current, self)
+
+    def tableSelectionChanged(self):
+        '''属性表中选择几何体变化'''
+        TableSelectionChanged(self)
+
     # endregion
 
 
