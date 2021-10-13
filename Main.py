@@ -31,7 +31,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.StyleOn=False # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
         self.dbm = DBM()
-        self.map = create_map(self.dbm)    # 当前地图
+        # self.map = create_map(self.dbm)    # 当前地图
+        self.map = create_map()
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
@@ -40,23 +41,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
         # TODO: 最大化disabled
         self.bt_close.clicked.connect(self.close)
-
-
-        # 鼠标悬停在按钮上显示信息
-        self.tsButtonNew.setToolTip('新建')
-        self.tsButtonOpen.setToolTip('打开')
-        self.tsButtonSave.setToolTip('保存')
-        self.tsButtonImportshp.setToolTip("导入shapefile文件至新图层")
-        self.tsButtonExportshp.setToolTip("图层导出shapefile文件")
-        self.tsButtonOperateNone.setToolTip('鼠标指针')
-        self.tsButtonPan.setToolTip('漫游')
-        self.tsButtonZoomIn.setToolTip('放大')
-        self.tsButtonZoomOut.setToolTip('缩小')
-        self.tsButtonZoomScale.setToolTip('全屏显示')
-        self.tsButtonNewLayer.setToolTip('创建新图层')
-        self.tsButtonSelect.setToolTip('选择要素')
-        self.tsButtonEdit.setToolTip('编辑模式')
-
 
         # 绑定信号与槽函数
         self.slot_connect()
@@ -78,8 +62,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             with open('./UI/style.qss') as f1:
                 qss=f1.read()
             self.setStyleSheet(qss)
+            initHover(self)
             # self.tableWidget.horizontalHeader().setStyleSheet("QHeaderView::section{background-color:rgb(255,255,255,0.3);font:10pt '宋体';color: white;}")
-            self.tableWidget.horizontalHeader().setVisible(False)
+
             self.tableWidget.verticalHeader().setVisible(False)
             with open('./UI/Scrollbar.qss') as f2:
                 qss=f2.read()

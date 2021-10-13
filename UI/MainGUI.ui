@@ -177,13 +177,13 @@
            <widget class="QPushButton" name="tsButtonNew">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -196,13 +196,13 @@
            <widget class="QPushButton" name="tsButtonOpen">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -215,13 +215,13 @@
            <widget class="QPushButton" name="tsButtonSave">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -234,19 +234,18 @@
            <widget class="QPushButton" name="tsButtonImportshp">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="text">
-             <string>导入
-shp</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -254,19 +253,18 @@ shp</string>
            <widget class="QPushButton" name="tsButtonExportshp">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="text">
-             <string>导出
-shp</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -274,13 +272,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonOperateNone">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -293,13 +291,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonPan">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -312,13 +310,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonZoomIn">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -331,13 +329,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonZoomOut">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -350,13 +348,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonZoomScale">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -369,13 +367,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonNewLayer">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -388,13 +386,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonSelect">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -407,13 +405,13 @@ shp</string>
            <widget class="QPushButton" name="tsButtonEdit">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
@@ -426,19 +424,18 @@ shp</string>
            <widget class="QPushButton" name="tsButtonDel">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="text">
-             <string>删除
-要素</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -446,63 +443,18 @@ shp</string>
            <widget class="QPushButton" name="tsButtonAttr">
             <property name="minimumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>35</width>
+              <width>33</width>
               <height>35</height>
              </size>
             </property>
             <property name="text">
-             <string>属性
-窗体</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonAdd">
-            <property name="minimumSize">
-             <size>
-              <width>35</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>35</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="text">
-             <string>增加</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="pushButtonDel">
-            <property name="minimumSize">
-             <size>
-              <width>35</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>35</width>
-              <height>16777215</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="text">
-             <string>删除</string>
+             <string/>
             </property>
            </widget>
           </item>
@@ -546,17 +498,11 @@ border: 1px solid rgb(0,0,0,0.3)</string>
              </widget>
             </item>
             <item>
-             <widget class="QWidget" name="widget_4" native="true">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>23</height>
-               </size>
+             <widget class="QTableWidget" name="tableWidget">
+              <property name="showGrid">
+               <bool>false</bool>
               </property>
              </widget>
-            </item>
-            <item>
-             <widget class="QTableWidget" name="tableWidget"/>
             </item>
            </layout>
           </item>

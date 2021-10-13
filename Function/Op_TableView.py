@@ -32,42 +32,7 @@ def TableView_Init(self,nColumn):
     self.id = 1
 
     # 信号与槽函数
-    self.pushButtonAdd.clicked.connect(lambda: TableViewAdd(self))
-    self.pushButtonDel.clicked.connect(lambda: TableViewDel(self))
     self.tableWidget.itemSelectionChanged.connect(self.tableSelectionChanged)
-
-
-def TableViewAdd(self):
-    # Todo 优化2 添加数据
-    row = self.tableWidget.rowCount()
-    self.tableWidget.setRowCount(row + 1)
-    id = str(self.id)
-    name = 'Ana'
-    score = str(random.randint(50, 99))
-    age = str(random.randint(18, 30))
-    add = 'America'
-    self.tableWidget.setItem(row, 0, QTableWidgetItem(id))
-    self.tableWidget.setItem(row, 1, QTableWidgetItem(name))
-    self.tableWidget.setItem(row, 2, QTableWidgetItem(age))
-    self.tableWidget.setItem(row, 3, QTableWidgetItem(add))
-    self.tableWidget.setItem(row, 4, QTableWidgetItem(score))
-    if self.StyleOn:
-        self.tableWidget.item(row,0).setForeground(QBrush(QColor(255,255,255)))
-        self.tableWidget.item(row, 1).setForeground(QBrush(QColor(255, 255, 255)))
-        self.tableWidget.item(row, 2).setForeground(QBrush(QColor(255, 255, 255)))
-        self.tableWidget.item(row, 3).setForeground(QBrush(QColor(255, 255, 255)))
-        self.tableWidget.item(row, 4).setForeground(QBrush(QColor(255, 255, 255)))
-    self.id += 1
-    self.lines.append([id, name, age, add, score])
-
-
-def TableViewDel(self):
-    # TODO 优化3 删除当前选中的数据
-    selected_items = self.tableWidget.selectedItems()
-    if len(selected_items) == 0:
-        return
-    self.tableWidget.removeRow(self.tableWidget.indexFromItem(selected_items[0]).row())
-
 
 def TableUpdate(main_exe):
     '''更新属性数据的表格内容'''
