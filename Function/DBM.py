@@ -75,6 +75,7 @@ class DBM:
         feat = ori_layer.GetNextFeature()
         while feat:
             wkt_list.append(feat.geometry().ExportToWkt())
+        ori_type = ori_layer
         geom_type_dict = {
             ogr.wkbPoint : PointD,
             ogr.wkbLineString : Polyline,

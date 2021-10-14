@@ -419,8 +419,8 @@ class Polygon(Geometry):
 # region 子类——多线
 class MultiPolyline(Geometry):
     # 属性 data是线构成的List
-    def __init__(self,Data,id=-1):
-        Geometry.__init__(self,id)
+    def __init__(self, Data, id=-1):
+        Geometry.__init__(self, id)
         if type(Data)==str:
             wkt_find=re.compile(r'\([^\(\)\, ]+ [^\(\)\, ]+(?:\,[^\(\)\, ]+ [^\(\)\, ]+)+\)')
             find_rslt=wkt_find.findall(Data)

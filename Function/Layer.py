@@ -161,26 +161,76 @@ class Layer(object):
             for name in fields:
                 field_dict[name] = [feat.GetFieldAsString(name)]
             if ori_type == ogr.wkbPoint:
-                pt = PointD(geom.GetX(), geom.GetY(), id)
-                self.AddGeometry(pt, pd.DataFrame(field_dict))
+                ft = PointD(geom.GetX(), geom.GetY(), id)
             elif ori_type == ogr.wkbLineString:
                 ptnum = geom.GetPointCount()
                 data = list()
                 for i in range(ptnum):
                     data.append(PointD(geom.GetX(i), geom.GetY(i)))
-                pl = Polyline(data, id)
-                self.AddGeometry(pl, field_dict)
-                feat = shplayer.GetNextFeature()
+                ft = Polyline(data, id)
             elif ori_type == ogr.wkbPolygon:
                 ringnum = geom.GetGeometryCount()
+                outring = list()
+                inring = list()
                 for i in range(ringnum):
                     ring = geom.GetGeometryRef(i)
+                    pt_num = ring.GetPointCount()
+                    if i == 0:
+                        for j in range(pt_num - 1):
+                            outring.append(PointD(ring.GetX(j), ring.GetY(j)))
+                    else:
+                        insubring = list()
+                        for j in range(pt_num - 1):
+                            insubring.append(PointD(ring.GetX(j), ring.GetY(j)))
+                        inring.append(insubring)
+                ft = Polygon(outring, inring, id)
+            elif ori_type == ogr.wkbMultiLineString:
+                linenum = geom.GetGeometryCount()
+                lines = list()
+                for i in range(linenum):
+                    line = geom.GetGeometryRef(i)
+                    pt_num = ring.GetPointCount()
+                    pts = list()
+                    for j in range(pt_num):
+                        pts.append(PointD(line.GetX(j), line.GetY(j)))
+                    lines.append(Polyline(pts))
+                ft = MultiPolyline(lines, id)
+            elif ori_type == ogr.wkbMultiPolygon:
+                poly_num = geom.GetGeometryCount()
+                polygons = list()
+                for i in range(poly_num):
+                    pg = geom.GetGeometryRef(i)
+                    ringnum = pg.GetPointCount()
+                    outring = list()
+                    inring = list()
+                    for j in range(ringnum):
+                        ring = pg.GetGeometryRef(j)
+                        pt_num = ring.GetPointCount()
+                        if j == 0:
+                            for k in range(pt_num - 1):
+                                outring.append(PointD(ring.GetX(k),ring.GetY(k)))
+                        else:
+                            insubring = list()
+                            for k in range(pt_num - 1):
+                                insubring.append(PointD(ring.GetX(k),ring.GetY(k)))
+                            inring.append(insubring)
+                    polygons.append(Polygon(outring, inring))
+                ft = MultiPolygon(polygons, id)
+            self.AddGeometry(ft, field_dict)
+            feat = shplayer.GetNextFeature()
 
     def export_to_shplayer(self, path):
         type_dict = {'int' : ogr.OFTInteger,
                      'str' : ogr.OFTString,
                      'float' : ogr.OFTReal
                      }
+        geotype_dict = {
+            PointD : ogr.wkbPoint,
+            Polyline : ogr.wkbLineString,
+            Polygon : ogr.wkbPolygon,
+            MultiPolyline : ogr.wkbMultiLineString,
+            MultiPolygon : ogr.wkbMultiPolygon
+        }
         file_name = path.split('/')[-1]
         related_path = path.split(file_name)[0]
         os.chdir(related_path)
@@ -188,23 +238,20 @@ class Layer(object):
         oDs = oDriver.CreateDataSource(file_name)
         if os.path.exists(path):
             oDriver.DeleteDataSource(file_name)
-        fields = self.table.columns
-        if self.type == PointD:#改造成统一的，图层建立分开做
-            outlayer = oDs.CreateLayer(file_name.split('.')[0], geom_type=ogr.wkbPoint)
-            for f in fields:
-                new_field = ogr.FieldDefn(f, type_dict[self.attr_desp_dict[f]])
-                outlayer.CreateField(new_field)
-            featureDefn = outlayer.GetLayerDefn()
-            for g in self.geometries:
-                point = ogr.CreateGeometryFromWkt(g.ToWkt())
-                ft = ogr.Feature(featureDefn)
-                ft.SetGeometry(point)
+        fields = self.table.columns.tolist()
+        outlayer = oDs.CreateLayer(file_name.split('.')[0], geom_type=geotype_dict[self.type])
+        for f in fields:
+            new_field = ogr.FieldDefn(f, type_dict[self.attr_desp_dict[f]])
+            outlayer.CreateField(new_field)
+        featureDefn = outlayer.GetLayerDefn()
+        for i, g in enumerate(self.geometries):
+            geom = ogr.CreateGeometryFromWkt(g.ToWkt())
+            ft = ogr.Feature(featureDefn)
+            ft.SetGeometry(geom)
+            values = self.table.iloc[[i]].tolist()
+            for f, v in zip(fields, values):
+                ft.SetField(f, v)
+            outlayer.CreateFeature(ft)
 
-                outlayer.CreateFeature(ft)
-        elif self.type == Polyline:
-            for g in self.geometries:
-                pl = ogr.CreateGeometryFromWkt(g.ToWkt())
-        elif self.type == Polygon:
-            pass
 if __name__=='__main__':
     print(1)
