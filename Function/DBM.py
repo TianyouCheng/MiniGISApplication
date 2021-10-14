@@ -2,6 +2,7 @@ from typing import List, Tuple
 import psycopg2
 from .Layer import *
 from .Geometry import *
+from osgeo import ogr
 
 """
 矢量数据的属性字段，支持varchar，
@@ -65,7 +66,30 @@ class DBM:
         self.conn.commit()
 
     def add_layer_from_shp(self, path)->None:
-        pass
+        driver = ogr.GetDriverByName('ESRI Shapefile')
+        data_source = driver.Open(path, 0)
+        layer_name = path.split('/')[-1].split('.')[0]
+        assert data_source is not None
+        ori_layer = data_source.GetLayer(0)
+        wkt_list = list()
+        feat = ori_layer.GetNextFeature()
+        while feat:
+            wkt_list.append(feat.geometry().ExportToWkt())
+        geom_type_dict = {
+            ogr.wkbPoint : PointD,
+            ogr.wkbLineString : Polyline,
+            ogr.wkbPolygon : Polygon,
+            ogr.wkbMultiLineString : MultiPolyline,
+            ogr.wkbMultiPolygon : MultiPolygon
+        }
+        sql = f"""
+                    create table {layer_name}(
+                        gid int primary key,
+                        geom Geometry({None},{3857})
+                        {''.join([f',{attr_name} {attr_type}' for attr_name, attr_type in attr_desp_dict.items()])}
+                    );
+                """
+        self.cur.execute(sql)#yaogai!
 
     def create_table(self,tablename,geom_type,srid,attr_desp_dict)->None:
         sql=f"""

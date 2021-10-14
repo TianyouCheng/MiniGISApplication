@@ -312,21 +312,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # self.Drawlabel.setPixmap(canvas)
         # Refresh(self, QCursor.pos())
 
-    def SHP_to_wkt(self, path):#可以考虑直接导出一个列表
-        driver = ogr.GetDriverByName('ESRI Shapefile')
-        data_source = driver.Open(path, 0)
-        if data_source is None:
-            msgBox = QMessageBox()
-            msgBox.setText("未找到符合要求的shp文件")
-            msgBox.exec_()
-            return
-        ori_layer = data_source.GetLayer(0)
-        wkt_list = list()
-        feat = ori_layer.GetNextFeature()
-        while feat:
-            wkt_list.append(feat.geometry().ExportToWkt())
-        return wkt_list
-
     def treeViewItemChanged(self, item, column):
         '''图层的可见性改变'''
         treeCheckedChange(item, column, self)

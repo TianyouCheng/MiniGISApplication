@@ -5,6 +5,7 @@ from .Geometry import *
 import pandas as pd
 from osgeo import ogr
 from osgeo import gdal
+import os
 
 class Layer(object):
     def __init__(self, _type, name='new_layer',srid=3857):
@@ -151,50 +152,59 @@ class Layer(object):
         for att in range(fieldcount):
             field = defn.GetFieldDefn(att)
             fields.append(field.GetNameRef())
-        if ori_type == ogr.wkbPoint:
-            feat = shplayer.GetNextFeature()
-            while feat:
-                geom = feat.GetGeometryRef()
-                id = int(feat.GetFieldAsString('id'))
+        feat = shplayer.GetNextFeature()
+        while feat:
+            geom = feat.GetGeometryRef()
+            id = int(feat.GetFieldAsString('FID'))
+            field_dict = dict()
+            field_dict['ID'] = [0]
+            for name in fields:
+                field_dict[name] = [feat.GetFieldAsString(name)]
+            if ori_type == ogr.wkbPoint:
                 pt = PointD(geom.GetX(), geom.GetY(), id)
-                field_dict = dict()
-                field_dict['ID'] = [0]
-                for name in fields:
-                    field_dict[name] = [feat.GetFieldAsString(name)]
                 self.AddGeometry(pt, pd.DataFrame(field_dict))
-                feat = shplayer.GetNextFeature()
-        elif ori_type == ogr.wkbLineString:
-            feat = shplayer.GetNextFeature()
-            while feat:
-                geom = shplayer.GetGeometryRef()
+            elif ori_type == ogr.wkbLineString:
                 ptnum = geom.GetPointCount()
                 data = list()
                 for i in range(ptnum):
                     data.append(PointD(geom.GetX(i), geom.GetY(i)))
-                id = int(feat.GetFieldAsString('id'))
                 pl = Polyline(data, id)
-                field_dict = dict()
-                field_dict['ID'] = [0]
-                for name in fields:
-                    field_dict[name] = feat.GetFieldAsString(name)
                 self.AddGeometry(pl, field_dict)
+                feat = shplayer.GetNextFeature()
+            elif ori_type == ogr.wkbPolygon:
+                ringnum = geom.GetGeometryCount()
+                for i in range(ringnum):
+                    ring = geom.GetGeometryRef(i)
 
     def export_to_shplayer(self, path):
+        type_dict = {'int' : ogr.OFTInteger,
+                     'str' : ogr.OFTString,
+                     'float' : ogr.OFTReal
+                     }
         file_name = path.split('/')[-1]
+        related_path = path.split(file_name)[0]
+        os.chdir(related_path)
         oDriver = ogr.GetDriverByName('ESRI Shapefile')
-        if oDriver is None:
-            msgBox = QMessageBox()
-            msgBox.setText("驱动不可用")
-            msgBox.addButton(QMessageBox.Ok)
-            msgBox.exec_()
-            return
         oDs = oDriver.CreateDataSource(file_name)
-        if oDs is None:
-            msgBox = QMessageBox()
-            msgBox.setText("无法创建文件：" + file_name)
-            msgBox.addButton(QMessageBox.Ok)
-            msgBox.exec_()
-            return
+        if os.path.exists(path):
+            oDriver.DeleteDataSource(file_name)
+        fields = self.table.columns
+        if self.type == PointD:#改造成统一的，图层建立分开做
+            outlayer = oDs.CreateLayer(file_name.split('.')[0], geom_type=ogr.wkbPoint)
+            for f in fields:
+                new_field = ogr.FieldDefn(f, type_dict[self.attr_desp_dict[f]])
+                outlayer.CreateField(new_field)
+            featureDefn = outlayer.GetLayerDefn()
+            for g in self.geometries:
+                point = ogr.CreateGeometryFromWkt(g.ToWkt())
+                ft = ogr.Feature(featureDefn)
+                ft.SetGeometry(point)
 
+                outlayer.CreateFeature(ft)
+        elif self.type == Polyline:
+            for g in self.geometries:
+                pl = ogr.CreateGeometryFromWkt(g.ToWkt())
+        elif self.type == Polygon:
+            pass
 if __name__=='__main__':
     print(1)
