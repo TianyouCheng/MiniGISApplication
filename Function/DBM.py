@@ -83,6 +83,7 @@ class DBM:
             ogr.wkbMultiLineString : MultiPolyline,
             ogr.wkbMultiPolygon : MultiPolygon
         }
+        #self.create_table(layer_name,)
         sql = f"""
                     create table {layer_name}(
                         gid int primary key,
@@ -92,7 +93,7 @@ class DBM:
                 """
         self.cur.execute(sql)#yaogai!
 
-    def create_table(self,tablename,geom_type,srid,attr_desp_dict)->None:
+    def create_table(self,tablename:str,geom_type:str,srid:int,attr_desp_dict:dict)->None:
         sql=f"""
             create table {tablename}(
                 gid int primary key,
@@ -189,6 +190,15 @@ class DBM:
             pass
         return cur_layer
 
+
+    def delete_layer(self,layer_name):
+        self.drop_table(layer_name)
+
+    def drop_table(self,table_name):
+        sql=f"""
+            drop table {table_name};
+        """
+        self.cur.execute(sql)
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
 

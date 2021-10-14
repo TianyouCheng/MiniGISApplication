@@ -210,7 +210,7 @@
       <x>20</x>
       <y>40</y>
       <width>159</width>
-      <height>471</height>
+      <height>360</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -380,6 +380,19 @@
       <string>字体颜色</string>
      </property>
     </item>
+   </widget>
+   <widget class="QPushButton" name="bt_Apply">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>440</y>
+      <width>101</width>
+      <height>91</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>应用</string>
+    </property>
    </widget>
   </widget>
  </widget>

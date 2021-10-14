@@ -4,6 +4,30 @@ border-image:url(UI/icon/new.png)
 QPushButton#tsButtonNew:pressed{
 border-image:url(UI/icon/new_p.png)
 }
+QPushButton#tsButtonImportshp{
+border-image:url(UI/icon/import.png)
+}
+QPushButton#tsButtonImportshp:pressed{
+border-image:url(UI/icon/import_p.png)
+}
+QPushButton#tsButtonExportshp{
+border-image:url(UI/icon/export.png)
+}
+QPushButton#tsButtonExportshp:pressed{
+border-image:url(UI/icon/export_p.png)
+}
+QPushButton#tsButtonDel{
+border-image:url(UI/icon/delete.png)
+}
+QPushButton#tsButtonDel:pressed{
+border-image:url(UI/icon/delete_p.png)
+}
+QPushButton#tsButtonAttr{
+border-image:url(UI/icon/attribute.png)
+}
+QPushButton#tsButtonAttr:pressed{
+border-image:url(UI/icon/attribute_p.png)
+}
 QPushButton#tsButtonOpen{
 border-image:url(UI/icon/open.png)
 }
@@ -67,7 +91,7 @@ border-image:url(UI/icon/edit_p.png)
 
 QMainWindow{
 border:0px;
-border-image:url(UI/images/background_Green_op05_Title1.png)
+border-image:url(UI/images/background_p.png)
 }
 
 QMenuBar{
