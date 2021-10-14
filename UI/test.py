@@ -62,7 +62,7 @@ class Ui_Form(object):
         self.widget_2.setStyleSheet("border: 0px")
         self.widget_2.setObjectName("widget_2")
         self.tableWidget = QtWidgets.QTableWidget(self.widget_2)
-        self.tableWidget.setGeometry(QtCore.QRect(20, 40, 159, 471))
+        self.tableWidget.setGeometry(QtCore.QRect(20, 40, 159, 360))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -133,6 +133,9 @@ class Ui_Form(object):
         self.tableWidget.setItem(10, 0, item)
         self.tableWidget.horizontalHeader().setVisible(False)
         self.tableWidget.verticalHeader().setVisible(False)
+        self.bt_Apply = QtWidgets.QPushButton(self.widget_2)
+        self.bt_Apply.setGeometry(QtCore.QRect(50, 440, 101, 91))
+        self.bt_Apply.setObjectName("bt_Apply")
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -204,3 +207,4 @@ class Ui_Form(object):
         item = self.tableWidget.item(10, 0)
         item.setText(_translate("Form", "字体颜色"))
         self.tableWidget.setSortingEnabled(__sortingEnabled)
+        self.bt_Apply.setText(_translate("Form", "应用"))

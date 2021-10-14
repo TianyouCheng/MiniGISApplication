@@ -19,7 +19,7 @@ def initAttr(self):
     # self.bt_test.setStyleSheet("background-color:white;")
 
     self.AttrtableWidget = QTableWidget(self.Attributewidget)
-    self.AttrtableWidget.setGeometry(QRect(20, 40, 159, 471))
+    self.AttrtableWidget.setGeometry(QRect(20, 40, 159, 360))
     sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
     sizePolicy.setHorizontalStretch(0)
     sizePolicy.setVerticalStretch(0)
@@ -59,34 +59,26 @@ def initAttr(self):
     self.AttrtableWidget.setHorizontalHeaderItem(0, item)
     item = QTableWidgetItem()
     self.AttrtableWidget.setHorizontalHeaderItem(1, item)
-    item = QTableWidgetItem()
+    self.bt_Apply = QPushButton(self.Attributewidget)
+    self.bt_Apply.setGeometry(QRect(50, 440, 101, 91))
+    self.bt_Apply.setObjectName("bt_Apply")
 
-    #  待添加 补全
-    self.AttrtableWidget.setItem(0, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(0, 1, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(1, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(1, 1, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(2, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(2, 1, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(3, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(5, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(6, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(7, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(8, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(9, 0, item)
-    item = QTableWidgetItem()
-    self.AttrtableWidget.setItem(10, 0, item)
+    for i in range(self.AttrtableWidget.rowCount()):
+        item=QTableWidgetItem()
+        item.setFlags(Qt.ItemFlag(0))
+        item.setFlags(Qt.ItemIsEnabled)
+        item.setForeground(QBrush(QColor(255, 255, 255)))
+        self.AttrtableWidget.setItem(i, 0, item)
+
+
+        item = QTableWidgetItem()
+        # 设置项的可编辑属性
+        if i not in [2,7,8,9,10]:
+            item.setFlags(Qt.ItemFlag(0))
+            item.setFlags(Qt.ItemIsEnabled)
+        item.setForeground(QBrush(QColor(255, 255, 255)))
+        self.AttrtableWidget.setItem(i, 1, item)
+
     self.AttrtableWidget.horizontalHeader().setVisible(False)
     self.AttrtableWidget.verticalHeader().setVisible(False)
     item = self.AttrtableWidget.verticalHeaderItem(0)
@@ -142,18 +134,8 @@ def initAttr(self):
     self.AttrtableWidget.setColumnWidth(0, 70)
     self.AttrtableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
+    self.bt_Apply.setText(_translate("Form", "应用"))
 
-    # 分别设置表项 背景颜色 下拉框 文字
-
-    item = self.AttrtableWidget.item(0,1)
-    item.setBackground(QBrush(QColor(255,0,0)))
-
-    combo=QComboBox()
-    combo.addItems(['实线','虚线'])
-    self.AttrtableWidget.setCellWidget(1,1,combo)
-
-    item = self.AttrtableWidget.item(2, 1)
-    item.setText(_translate("Form", "3"))
 
 
 

@@ -10,3 +10,4 @@ from .MapTool import MapTool
 from .Animation import *
 from .DBM import *
 from .EditTools import *
+from .Op_AttributeWin import *
