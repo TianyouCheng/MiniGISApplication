@@ -67,7 +67,8 @@ def initAttr(self):
         item=QTableWidgetItem()
         item.setFlags(Qt.ItemFlag(0))
         item.setFlags(Qt.ItemIsEnabled)
-        item.setForeground(QBrush(QColor(255, 255, 255)))
+        if self.StyleOn:
+            item.setForeground(QBrush(QColor(255, 255, 255)))
         self.AttrtableWidget.setItem(i, 0, item)
 
 
@@ -76,7 +77,8 @@ def initAttr(self):
         if i not in [2,7,8,9,10]:
             item.setFlags(Qt.ItemFlag(0))
             item.setFlags(Qt.ItemIsEnabled)
-        item.setForeground(QBrush(QColor(255, 255, 255)))
+        if self.StyleOn:
+            item.setForeground(QBrush(QColor(255, 255, 255)))
         self.AttrtableWidget.setItem(i, 1, item)
 
     self.AttrtableWidget.horizontalHeader().setVisible(False)

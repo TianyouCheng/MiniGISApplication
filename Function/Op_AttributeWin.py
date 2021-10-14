@@ -10,7 +10,8 @@ def setAttr(self):
 
     # 分别设置表项 背景颜色 下拉框 文字
     _translate = QCoreApplication.translate
-    self.bt_Apply.setStyleSheet('color:white;background-color:rgb(255,255,255,0.3);')
+    if self.StyleOn:
+        self.bt_Apply.setStyleSheet('color:white;background-color:rgb(255,255,255,0.3);')
 
     # Item轮廓颜色
     bt=QPushButton('')
@@ -20,7 +21,8 @@ def setAttr(self):
 
     # Item轮廓样式
     combo=QComboBox()
-    combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
+    if self.StyleOn:
+        combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
     combo.addItem(QIcon("./UI/images/Line_G.png"),'直线')
     combo.addItems(['实线','虚线'])
     self.AttrtableWidget.setCellWidget(1,1,combo)
@@ -38,14 +40,16 @@ def setAttr(self):
 
     # Item可见性
     combo = QComboBox()
-    combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
+    if self.StyleOn:
+        combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
     combo.addItems(['是', '否'])
     self.AttrtableWidget.setCellWidget(5, 1, combo)
 
 
     # Item绑定字段
     combo = QComboBox()
-    combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
+    if self.StyleOn:
+        combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
     combo.addItems(['ID', '设置动态添加'])
     self.AttrtableWidget.setCellWidget(6, 1, combo)
 
