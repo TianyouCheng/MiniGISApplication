@@ -58,8 +58,6 @@ class Layer(object):
         self.geometries.append(geometry)
         # TODO 记得给几何体分配ID，并在属性表中添加该几何体的属性信息
         geometry.ID = new_id
-        # 给每个几何体添加样式表
-        geometry.StyleList=[]
         if row is None:
             row = pd.DataFrame({'ID': [new_id]})
         else:

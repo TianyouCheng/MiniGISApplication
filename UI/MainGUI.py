@@ -163,6 +163,11 @@ class Ui_MainWindow(object):
         self.tsButtonDel.setText("")
         self.tsButtonDel.setObjectName("tsButtonDel")
         self.horizontalLayout.addWidget(self.tsButtonDel)
+        self.tsButtonAddAttr = QtWidgets.QPushButton(self.centralwidget)
+        self.tsButtonAddAttr.setMinimumSize(QtCore.QSize(33, 35))
+        self.tsButtonAddAttr.setMaximumSize(QtCore.QSize(33, 31))
+        self.tsButtonAddAttr.setObjectName("tsButtonAddAttr")
+        self.horizontalLayout.addWidget(self.tsButtonAddAttr)
         self.tsButtonAttr = QtWidgets.QPushButton(self.centralwidget)
         self.tsButtonAttr.setMinimumSize(QtCore.QSize(33, 35))
         self.tsButtonAttr.setMaximumSize(QtCore.QSize(33, 35))
@@ -241,6 +246,8 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.tsButtonAddAttr.setText(_translate("MainWindow", "添加\n"
+"属性"))
         self.menuItemNewMap.setText(_translate("MainWindow", "新建空白地图"))
         self.menuItemOpen.setText(_translate("MainWindow", "打开地图"))
         self.menuItemSave.setText(_translate("MainWindow", "保存"))

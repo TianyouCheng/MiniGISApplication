@@ -132,6 +132,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
+        self.tsButtonAddAttr.clicked.connect(lambda:addAttr(self))
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):

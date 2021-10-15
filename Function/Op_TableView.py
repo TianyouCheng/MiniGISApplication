@@ -79,3 +79,7 @@ def TableSelectionChanged(main_exe):
             ids = layer.table.loc[range(range_.topRow(), range_.bottomRow() + 1), 'ID']
             layer.selectedItems.extend(ids)
         RefreshCanvas(main_exe, use_base=True)
+
+# TODO 添加属性的响应函数
+def addAttr(main_exe):
+    pass;

@@ -42,6 +42,7 @@ class Geometry(ABC):
     def __init__(self, id=-1):
         self._box = RectangleD()
         self.ID=id
+        self.StyleList=[0]*10
 
     @property
     def box(self):
