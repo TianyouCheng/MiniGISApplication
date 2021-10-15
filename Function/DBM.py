@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 import psycopg2
 from .Layer import *
 from .Geometry import *
@@ -7,6 +7,11 @@ from osgeo import ogr
 """
 矢量数据的属性字段，支持varchar，
 """
+
+attr_type_dict={
+    'str':'varchar(100)',
+    'int':'int',
+}
 
 class DBM:
     def __init__(self):
@@ -48,18 +53,14 @@ class DBM:
     def add_layer_from_memory(self,layer:Layer)->None:
         if layer.name in self.get_layers_list():
             self.cur.execute(f"drop table {layer.name}")
-        if layer.type==PointD:
-            layer_type='POINT'
-        elif layer.type==Polyline:
-            layer_type='LINESTRING'
-        elif layer.type==Polygon:
-            layer_type='Polygon'
-        elif layer.type==MultiPolyline:
-            layer_type='MULTILINESTRING'
-        elif layer.type==MultiPolygon:
-            layer_type='MULTIPOLYGON'
-        else:
-            layer_type='POINT'
+        trans_dict={
+            PointD:'POINT',
+            Polyline:'LINESTRING',
+            Polygon:'POLYGON',
+            MultiPolygon:'MULTIPOLYGON',
+            MultiPolyline:'MULTIPOLYLINE',
+            }
+        layer_type=trans_dict[layer.type]
         self.create_table(layer.name,layer_type,layer.srid,layer.attr_desp_dict)
         for geometry in layer.geometries:
             self.insert_geometry(layer,geometry)
@@ -84,14 +85,14 @@ class DBM:
             ogr.wkbMultiPolygon : MultiPolygon
         }
         #self.create_table(layer_name,)
-        sql = f"""
-                    create table {layer_name}(
-                        gid int primary key,
-                        geom Geometry({None},{3857})
-                        {''.join([f',{attr_name} {attr_type}' for attr_name, attr_type in attr_desp_dict.items()])}
-                    );
-                """
-        self.cur.execute(sql)#yaogai!
+        # sql = f"""
+        #             create table {layer_name}(
+        #                 gid int primary key,
+        #                 geom Geometry({None},{3857})
+        #                 {''.join([f',{attr_name} {attr_type}' for attr_name, attr_type in attr_desp_dict.items()])}
+        #             );
+        #         """
+        # self.cur.execute(sql)#yaogai!
 
     def create_table(self,tablename:str,geom_type:str,srid:int,attr_desp_dict:dict)->None:
         sql=f"""
@@ -105,11 +106,49 @@ class DBM:
 
     def insert_geometry(self,layer:Layer,geomtry:Geometry)->None:
         wkt=geomtry.ToWkt()
+        attr_str_lst=[]
+        for attr in layer.get_attr(geomtry.ID):
+            if type(attr)==str:
+                attr_str_lst.append(f'\'{attr}\'')
+            else:
+                attr_str_lst.append(attr)
         sql=f"""
             insert into {layer.name}(gid,geom{''.join([f',{k}' for k in layer.attr_desp_dict.keys()])})
-            values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{layer.srid}){''.join([f',{attr}' for attr in  layer.get_attr(geomtry.ID)])});
+            values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{layer.srid}){''.join([f',{attr}' for attr in  attr_str_lst])});
         """
         self.cur.execute(sql)
+
+    def delete_geometry(self,layer:Layer,geometry_id):
+        sql=f"delete from {layer.name} where ID={geometry_id};"
+        self.cur.execute(sql)
+
+    def update_geometry(self,layer:Layer,geomery_id,info_dict:Dict):
+        for k,v in info_dict.items():
+            if type(v)==str:
+                info_dict[k]=f'\'{v}\''
+        sql=f"""
+            update {layer.name} set {','.join([f'{k}={v}' for k,v in info_dict.items()])}
+            where ID={geomery_id};
+        """
+        self.cur.execute(sql)
+
+    def add_column(self,layer:Layer,attr_name:str,attr_type:str):
+        sql=f"alter table {layer.name} add {attr_name} {attr_type} null;"
+        self.cur.execute(sql)
+
+    def delete_column(self,layer:Layer,attr_name:str):
+        sql=f"alter table {layer.name} drop {attr_name};"
+        self.cur.execute(sql)
+        self.conn.commit()
+
+    
+    def modify_column(self,layer:Layer,attr_name:str,new_name=None,new_type=None):
+        if new_type:
+            sql=f"alter table {layer.name} modify {attr_name} {new_type};"
+            self.cur.execute(sql)
+        if new_name:
+            sql=f"alter table {layer.name} rename column {attr_name} to {new_name};"
+            self.cur.execute(sql)
 
     def load_layer(self,layer_name)->Layer:
         self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name=\'{layer_name}\';")
@@ -199,6 +238,7 @@ class DBM:
             drop table {table_name};
         """
         self.cur.execute(sql)
+        self.conn.commit()
     # def execute(self,sql_str):
     #     self.cur.execute(sql_str)
 
