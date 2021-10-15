@@ -3,8 +3,9 @@
 '''
 
 from PyQt5.QtWidgets import QWidget,QPushButton,QLabel,QTableWidget,QSizePolicy,QTableWidgetItem,QHeaderView,QComboBox,QColorDialog
-from PyQt5.QtGui import QBrush, QColor,QIcon
+from PyQt5.QtGui import QBrush, QColor,QIcon,QPainter
 from PyQt5.QtCore import QRect,QPropertyAnimation,QPoint,QEasingCurve,QCoreApplication,Qt
+from .Op_DrawLabel import *
 
 def setAttr(self):
 
@@ -12,12 +13,15 @@ def setAttr(self):
     _translate = QCoreApplication.translate
     if self.StyleOn:
         self.bt_Apply.setStyleSheet('color:white;background-color:rgb(255,255,255,0.3);')
+    self.bt_Apply.clicked.connect(lambda:FeatureStyle(self))
 
     # Item轮廓颜色
     bt=QPushButton('')
     bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:red}')
     bt.clicked.connect(lambda:selectcolor(self,0))
+    self.StyleList[0] ='red'
     self.AttrtableWidget.setCellWidget(0,1,bt)
+
 
     # Item轮廓样式
     combo=QComboBox()
@@ -77,9 +81,13 @@ def setAttr(self):
 # 颜色对话框
 def selectcolor(self,row):
     col=QColorDialog.getColor()
-
+    self.StyleList[0] =col.name()
     # 新建一个button替换
     bt = QPushButton('')
     bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:%s}'%col.name())
     bt.clicked.connect(lambda: selectcolor(self,row))
     self.AttrtableWidget.setCellWidget(row, 1, bt)
+
+def FeatureStyle(self):
+    '''为要素绘制符号和注记'''
+    RefreshCanvas(self, stylelist=self.StyleList)

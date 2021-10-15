@@ -27,7 +27,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLeftPress = False     # 鼠标左键是否处于按下状态
         self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
-        self.StyleOn=False    # 是否启用样式表
+        self.StyleOn=True    # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
         self.dbm = DBM()
         # self.map = create_map(self.dbm)    # 当前地图
@@ -35,6 +35,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
+        self.StyleList=[0]*10           # 属性样式表
 
         # 初始化属性窗体
         initAttr(self)
@@ -88,6 +89,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     # region 功能函数
     # 重写鼠标点击事件
     def mousePressEvent(self, event):
+        # 在自定义样式中设置移动窗体
         Titlerect = self.widget.rect()
         if event.pos() in Titlerect:
             self.mouseDrag=True

@@ -12,12 +12,13 @@ from .Map import Map
 from .MapTool import MapTool
 
 
-def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False):
+def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,stylelist=[]):
     '''
     绘制事件触发
     :param new_geo: 可能的新几何体（添加几何体模式）
     :param use_base: 若为True，则使用main_exe.basePixMap绘制底层，
                      否则重新绘制底层并覆盖原来的basePixMap
+    :param stylelist: 点击“应用”按钮时传入的样式表
     '''
     map = main_exe.map
     pixmap = main_exe.Drawlabel.pixmap()
@@ -30,11 +31,11 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False)
         painter.drawPixmap(0, 0, main_exe.basePixmap)
     else:
         pixmap.fill(QColor('white'))
-        RefreshBasePixmap(painter, map, (width, height))
+        RefreshBasePixmap(painter, map, (width, height),stylelist)
         main_exe.basePixmap = QPixmap(pixmap)
 
     if map.selectedLayer != -1:
-        DrawSelectedGeo(painter, map, (width, height))
+        DrawSelectedGeo(painter, map, (width, height),stylelist)
         # “添加几何体”模式，绘制待添加的几何体
         if main_exe.tool == MapTool.AddGeometry:
             pass
@@ -53,7 +54,7 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False)
     main_exe.Drawlabel.update()
 
 
-def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
+def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[]):
     '''重新绘制地理底图'''
     screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
     screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
@@ -70,6 +71,9 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
             # 设置绘制样式，TODO 渲染样式在这里读取，修改
             painter.setPen(QPen(QColor('red'), 1.5))
             painter.setBrush(QBrush(QColor(255, 201, 14)))
+            # 获取当前图层被选择要素，赋样式表
+            if i == map_.selectedLayer:
+                selected = set(layer.selectedItems)
             # 绘制每个几何体
             for geometry in layer.geometries:
                 # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了
@@ -82,10 +86,25 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
                         isinstance(geometry, MultiPolygon):
                     draw_index = [index for index, part in enumerate(geometry.data)
                                   if part.box.IsIntersectBox(screen_geobox)]
+                # 对当前图层选择要素赋样式表
+                if i==map_.selectedLayer:
+                    if geometry.ID in selected:
+                        print(selected)
+                        if stylelist:
+                            geometry.StyleList = stylelist
+                            painter.setPen(QPen(QColor(geometry.StyleList[0]), 1.5))
+                        DS.draw(painter, screen_geo)
+                    else:
+                        painter.setPen(QPen(QColor('red'), 1.5))
+                # 如果要素已有样式表，按照表渲染
+                if geometry.StyleList:
+                    painter.setPen(QPen(QColor(geometry.StyleList[0]), 1.5))
                 DS.draw(painter, screen_geo, list=draw_index)
 
 
-def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
+
+
+def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size,stylelist=[]):
     '''绘制被选择的多边形'''
     layer = map_.layers[map_.selectedLayer]
     if not layer.visible:
@@ -103,6 +122,9 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
         # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了
         if item.ID in selected and item.box.IsIntersectBox(screen_geobox):
             screen_geo = map_.GeoToScreen(item, screen_size)
+            # 设置按“应用”时，立刻改变选中几何的样式
+            if stylelist:
+                painter.setPen(QPen(QColor(stylelist[0]), 1.5))
             DS.draw(painter, screen_geo)
     painter.setPen(origin_pen)
     painter.setBrush(origin_brush)

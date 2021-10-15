@@ -23,6 +23,7 @@ class Layer(object):
         self.srid=srid
         self.attr_desp_dict = {'ID': 'int'}         # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
         self.table = pd.DataFrame(columns=['ID'])   # 属性表，TODO 属性表的实现方法目前就定是pandas了
+
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……
 
     def RefreshBox(self):
@@ -57,6 +58,8 @@ class Layer(object):
         self.geometries.append(geometry)
         # TODO 记得给几何体分配ID，并在属性表中添加该几何体的属性信息
         geometry.ID = new_id
+        # 给每个几何体添加样式表
+        geometry.StyleList=[]
         if row is None:
             row = pd.DataFrame({'ID': [new_id]})
         else:
