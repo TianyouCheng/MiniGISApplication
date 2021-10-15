@@ -64,7 +64,7 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[]):
     for geometry in map_.layers[map_.selectedLayer].geometries:
         selected=set(map_.layers[map_.selectedLayer].selectedItems)
         if geometry.ID in selected:
-            geometry.StyleList = stylelist
+            geometry.StyleList = list(stylelist)
 
     # 若地图工程在显示范围内，则绘制
     if map_.box.IsIntersectBox(screen_geobox):
