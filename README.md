@@ -3,7 +3,7 @@ For GIS presentation
 
 渲染与注记
 ----
-![image](https://github.com/TianyouCheng/MiniGISApplication/blob/main/UI/images/Point.png)
+![image](https://github.com/TianyouCheng/MiniGISApplication/blob/main/UI/images/Readme_Render.png)
 
 说明
 ----
