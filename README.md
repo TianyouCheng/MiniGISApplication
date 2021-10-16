@@ -1,6 +1,10 @@
 # MiniGISApplication
 For GIS presentation
 
+渲染与注记
+----
+![image](https://github.com/TianyouCheng/MiniGISApplication/blob/main/UI/images/Point.png)
+
 说明
 ----
 * StyleOn属性设为True时，还需将显示屏显示设置-缩放与布局-更改文本、应用等项目的大小-设为100%（需重启），才能正常显示UI

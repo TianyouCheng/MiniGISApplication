@@ -3,7 +3,7 @@
 '''
 
 from PyQt5.QtWidgets import QWidget,QPushButton,QLabel,QTableWidget,QSizePolicy,QTableWidgetItem,QHeaderView,QComboBox
-from PyQt5.QtGui import QBrush, QColor
+from PyQt5.QtGui import QBrush, QColor,QFont
 from PyQt5.QtCore import QRect,QPropertyAnimation,QPoint,QEasingCurve,QCoreApplication,Qt
 
 def initAttr(self):
@@ -67,6 +67,7 @@ def initAttr(self):
         item=QTableWidgetItem()
         item.setFlags(Qt.ItemFlag(0))
         item.setFlags(Qt.ItemIsEnabled)
+        item.setFont(QFont("Microsoft YaHei",11))
         if self.StyleOn:
             item.setForeground(QBrush(QColor(255, 255, 255)))
         self.AttrtableWidget.setItem(i, 0, item)
@@ -74,7 +75,7 @@ def initAttr(self):
 
         item = QTableWidgetItem()
         # 设置项的可编辑属性
-        if i not in [2,7,8,9,10]:
+        if i not in [2,7,8,9]:
             item.setFlags(Qt.ItemFlag(0))
             item.setFlags(Qt.ItemIsEnabled)
         if self.StyleOn:
@@ -115,11 +116,11 @@ def initAttr(self):
     item = self.AttrtableWidget.item(0, 0)
     item.setText(_translate("Form", "轮廓颜色"))
     item = self.AttrtableWidget.item(1, 0)
-    item.setText(_translate("Form", "轮廓样式"))
+    item.setText(_translate("Form", "线型样式"))
     item = self.AttrtableWidget.item(2, 0)
     item.setText(_translate("Form", "轮廓宽度"))
     item = self.AttrtableWidget.item(3, 0)
-    item.setText(_translate("Form", "符号颜色"))
+    item.setText(_translate("Form", "填充颜色"))
     item = self.AttrtableWidget.item(5, 0)
     item.setText(_translate("Form", "可见性"))
     item = self.AttrtableWidget.item(6, 0)

@@ -2,13 +2,14 @@
 树形控件的相关操作函数
 '''
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
-from PyQt5.QtGui import QIcon, QCursor
+from PyQt5.QtGui import QIcon, QCursor,QFont
 from PyQt5.QtCore import Qt
 from .Map import Map
 from .Layer import Layer
 from .Geometry import *
 from .Op_DrawLabel import RefreshCanvas
 from .Op_TableView import TableUpdate
+from .Op_AttributeWin import RefreshAttr
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
     '''图层可见性发生变化，即列表勾选改变'''
@@ -36,6 +37,7 @@ def treeCurrentItemChanged(current, main_exe):
     main_exe.map.selectedLayer = index
     TableUpdate(main_exe)
     RefreshCanvas(main_exe, use_base=True)
+    RefreshAttr(main_exe,index)
 
 
 def TreeView_Init(self):
@@ -43,27 +45,10 @@ def TreeView_Init(self):
 
 
     pitem1 = QTreeWidgetItem(self.treeWidget, ['Layers'])
+    pitem1.setFont(0,QFont("Microsoft YaHei", 11))
     if self.StyleOn:
         pitem1.setForeground(0, Qt.white)
     pitem1.setFlags(pitem1.flags() & ~Qt.ItemIsSelectable)
-    # citem1 = QTreeWidgetItem(pitem1, ['Mountain'])
-    # citem11 = QTreeWidgetItem(citem1, ['Mountain Symbol'])
-    # citem11.setIcon(0, QIcon('./UI/icon1.png'))
-    # citem2 = QTreeWidgetItem(pitem1, ['Street'])
-    # citem22 = QTreeWidgetItem(citem2, ['Street Symbol'])
-    # citem22.setIcon(0, QIcon('./UI/icon1.png'))
-    # citem3 = QTreeWidgetItem(pitem1, ['Water'])
-    # citem33 = QTreeWidgetItem(citem3, ['Water Symbol'])
-    # citem33.setIcon(0, QIcon('./UI/icon1.png'))
-    # citem4 = QTreeWidgetItem(pitem1, ['City'])
-    # citem44 = QTreeWidgetItem(citem4, ['City Symbol'])
-    #
-    # citem44.setForeground(0,Qt.red)
-    # citem44.setIcon(0, QIcon('./UI/icon1.png'))
-    # citem1.setCheckState(0, Qt.Checked)
-    # citem2.setCheckState(0, Qt.Checked)
-    # citem3.setCheckState(0, Qt.Checked)
-    # citem4.setCheckState(0, Qt.Checked)
     self.treeWidget.itemChanged.connect(self.treeViewItemChanged)
     self.treeWidget.currentItemChanged.connect(self.treeViewCurrentItemChanged)
 
@@ -131,8 +116,10 @@ def TreeViewUpdateList(main_exe):
             raise TypeError('图层类型错误')
 
         newline.setText(0,layer.name)
+        newline.setFont(0,QFont("Microsoft YaHei", 11))
         # 设置层级树样式
         newChildline = QTreeWidgetItem(newline, [typetxt])
+        newChildline.setFont(0,QFont("Microsoft YaHei", 11))
         newChildline.setIcon(0, icon)
         newChildline.setFlags(newChildline.flags() & ~Qt.ItemIsSelectable)
         if main_exe.StyleOn:

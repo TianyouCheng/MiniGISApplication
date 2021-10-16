@@ -35,7 +35,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
-        self.StyleList=[0]*10           # 属性样式表
+        self.StyleList=[0]*15           # 属性样式表
+
 
         # 初始化属性窗体
         initAttr(self)

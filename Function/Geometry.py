@@ -42,7 +42,7 @@ class Geometry(ABC):
     def __init__(self, id=-1):
         self._box = RectangleD()
         self.ID=id
-        self.StyleList=[0]*10
+        self.StyleList=[0]*15
 
     @property
     def box(self):
@@ -64,6 +64,10 @@ class Geometry(ABC):
     # 框选一该box是否能选中几何体
     @abstractmethod
     def IsIntersectBox(self, box):pass
+
+    # 找到画注记的位置，为几何中心或距离几何中心最近的点
+    @abstractmethod
+    def MarkPos(self):pass
 
     # 将几何体转为WKT字符串
     @abstractmethod
@@ -177,6 +181,9 @@ class PointD(Geometry):
         self._box.MaxX=self._box.MinX=self.X
         self._box.MaxY = self._box.MinY = self.Y
 
+    def MarkPos(self):
+        return self
+
     def GetDistance(self,MouseLocation):
         dis=math.sqrt((MouseLocation.X-self.X)*(MouseLocation.X-self.X)+(MouseLocation.Y-self.Y)*(MouseLocation.Y-self.Y))
         return dis
@@ -252,6 +259,9 @@ class Polyline(Geometry):
         self._box.MaxY=MaxXY.Y
         self._box.MinX=MinXY.X
         self._box.MinY=MinXY.Y
+
+    def MarkPos(self):
+        return self.data[len(self.data)//2]
 
     def GetDistance(self,MouseLocation):
         """获取点击点到线的距离"""
@@ -394,6 +404,9 @@ class Polygon(Geometry):
             for hole in self.holes:
                 hole.Move(deltaX, deltaY)
         self.RenewBox()
+
+    def MarkPos(self):
+        return PointD((self._box.MaxX+self._box.MinX)/2,(self._box.MaxY+self._box.MinY)/2)
 
     def RenewBox(self):
         MaxXY = self.FindMaxXY(self.data)

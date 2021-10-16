@@ -10,6 +10,7 @@ from .Geometry import *
 from .Layer import Layer
 from .Map import Map
 from .MapTool import MapTool
+import copy
 
 
 def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,stylelist=[]):
@@ -20,6 +21,9 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,
                      否则重新绘制底层并覆盖原来的basePixMap
     :param stylelist: 点击“应用”按钮时传入的样式表
     '''
+    # 存储线型
+    LineStyle = [Qt.SolidLine, Qt.DashLine, Qt.DashDotLine, Qt.DotLine, Qt.DashDotDotLine]
+
     map = main_exe.map
     pixmap = main_exe.Drawlabel.pixmap()
     painter = QPainter(pixmap)
@@ -31,11 +35,11 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,
         painter.drawPixmap(0, 0, main_exe.basePixmap)
     else:
         pixmap.fill(QColor('white'))
-        RefreshBasePixmap(painter, map, (width, height),stylelist)
+        RefreshBasePixmap(painter, map, (width, height),stylelist,LineStyle)
         main_exe.basePixmap = QPixmap(pixmap)
 
     if map.selectedLayer != -1:
-        DrawSelectedGeo(painter, map, (width, height),stylelist)
+        DrawSelectedGeo(painter, map, (width, height),stylelist,LineStyle)
         # “添加几何体”模式，绘制待添加的几何体
         if main_exe.tool == MapTool.AddGeometry:
             pass
@@ -54,8 +58,9 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,
     main_exe.Drawlabel.update()
 
 
-def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[]):
+def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[],linestyle=[]):
     '''重新绘制地理底图'''
+    # linestyle传入线型列表
     screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
     screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
     screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
@@ -64,7 +69,7 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[]):
     for geometry in map_.layers[map_.selectedLayer].geometries:
         selected=set(map_.layers[map_.selectedLayer].selectedItems)
         if geometry.ID in selected:
-            geometry.StyleList = list(stylelist)
+            geometry.StyleList = copy.deepcopy(stylelist)
 
     # 若地图工程在显示范围内，则绘制
     if map_.box.IsIntersectBox(screen_geobox):
@@ -91,15 +96,39 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[]):
                     draw_index = [index for index, part in enumerate(geometry.data)
                                   if part.box.IsIntersectBox(screen_geobox)]
                 # 如果要素已有样式表，按照表渲染
+                # TODO: 以后再做全局渲染
                 if geometry.StyleList:
-                    painter.setPen(QPen(QColor(geometry.StyleList[0]), 1.5))
+                    # 设置轮廓颜色、轮廓宽度
+                    tmp_pen=QPen(QColor(geometry.StyleList[0]), geometry.StyleList[2])
+                    # 设置线型样式
+                    tmp_pen.setStyle(linestyle[geometry.StyleList[1]])
+                    painter.setPen(tmp_pen)
+                    # 设置填充颜色
+                    painter.setBrush(QBrush(QColor(geometry.StyleList[3])))
                 DS.draw(painter, screen_geo, list=draw_index)
 
+                if geometry.StyleList:
+                    # 注记
+                    if geometry.StyleList[5]:
+                        # 注记内容
+                        labeltxt = str(layer.table.loc[geometry.ID, geometry.StyleList[6]])
+                        # 设置画笔
+                        font = painter.font()
+                        fontsize = geometry.StyleList[9]
+                        font.setPixelSize(fontsize)
+                        font.setFamily("Microsoft YaHei")
+                        painter.setFont(font)
+                        painter.setPen(QPen(QColor(geometry.StyleList[10])))
+                        # 坐标转换
+                        textgeo = map_.GeoToScreen(geometry.MarkPos(), screen_size)
+                        # 附加水平垂直偏移
+                        painter.drawText(textgeo.X + geometry.StyleList[7], textgeo.Y + geometry.StyleList[8], labeltxt)
 
 
 
 
-def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size,stylelist=[]):
+
+def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size,stylelist=[],linestyle=[]):
     '''绘制被选择的多边形'''
     layer = map_.layers[map_.selectedLayer]
     if not layer.visible:
@@ -119,7 +148,10 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size,stylelist=[]):
             screen_geo = map_.GeoToScreen(item, screen_size)
             # 设置按“应用”时，立刻改变选中几何的样式
             if stylelist:
-                painter.setPen(QPen(QColor(stylelist[0]), 1.5))
+                tmp_pen=QPen(QColor(stylelist[0]), stylelist[2])
+                tmp_pen.setStyle(linestyle[stylelist[1]])
+                painter.setPen(tmp_pen)
+                painter.pen().setStyle(linestyle[stylelist[1]])
             DS.draw(painter, screen_geo)
     painter.setPen(origin_pen)
     painter.setBrush(origin_brush)
