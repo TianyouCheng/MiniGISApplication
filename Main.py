@@ -133,6 +133,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
+        self.tsButtonOpen.clicked.connect(self.bt_open_from_dbm)
         self.tsButtonAddAttr.clicked.connect(lambda:addAttr(self))
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
@@ -250,6 +251,21 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
                 self.treeWidget.setEnabled(True)
 
+    def bt_open_from_dbm(self):
+        layer_info_from_dbm=self.dbm.get_layers_info()
+        layer_count=len(layer_info_from_dbm)
+        #generate new window to select layer 
+        for layer_info in layer_info_from_dbm:
+            layer_name=layer_info[0]
+            layer_type=layer_info[2]
+            #show something in new window
+        selected_name=layer_info_from_dbm[0][0]#selected in window
+        new_layer=self.dbm.load_layer(selected_name)
+        self.map.AddLayer(new_layer)
+        self.map.selectedLayer=-1
+        pass
+
+
     def bt_save_to_dbm(self):
         node=self.treeWidget.currentItem()
         if not node:
@@ -263,6 +279,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.exec_()
         else:
             self.dbm.add_layer_from_memory(self.map.layers[self.map.selectedLayer])
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n保存成功\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
 
     def bt_newlayer_clicked(self):
         self.Winnewlayer=WinNewLayer()
