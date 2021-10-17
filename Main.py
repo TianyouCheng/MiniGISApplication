@@ -252,6 +252,20 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 self.treeWidget.setEnabled(True)
 
     def bt_open_from_dbm(self):
+        self.WinDBLoad = WinDBLoad()
+        # 设置Table
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.AttrtableWidget.sizePolicy().hasHeightForWidth())
+        self.WinDBLoad.DBL_tableWidget.setSizePolicy(sizePolicy)
+
+        self.WinDBLoad.show()
+        # 设置OK键函数
+        # self.WinDBLoad.DBLoad_OK.clicked.connect()
+        self.WinDBLoad.DBLoad_Cancel.clicked.connect(self.WinDBLoad.close)
+
+
         layer_info_from_dbm=self.dbm.get_layers_info()
         layer_count=len(layer_info_from_dbm)
         #generate new window to select layer 
@@ -350,6 +364,10 @@ class WinNewLayer(QWidget,Ui_Win_NewLayer):
         super().__init__()
         self.setupUi(self)
 
+class WinDBLoad(QWidget,Ui_Win_DBLoad):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
 
 # endregion
 
