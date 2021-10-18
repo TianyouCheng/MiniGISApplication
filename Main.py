@@ -254,12 +254,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def bt_open_from_dbm(self):
         self.WinDBLoad = WinDBLoad()
         # 设置Table
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.AttrtableWidget.sizePolicy().hasHeightForWidth())
-        self.WinDBLoad.DBL_tableWidget.setSizePolicy(sizePolicy)
-
+        self.WinDBLoad.DBL_tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.WinDBLoad.show()
         # 设置OK键函数
         self.WinDBLoad.DBLoad_OK.clicked.connect(self.bt_open_from_dbm_ok)
@@ -285,6 +280,10 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         layer_name=cur_item.text()
         new_layer=self.dbm.load_layer(layer_name)
         self.map.AddLayer(new_layer)
+        # 刷新树视图和刷新画布
+        TreeViewUpdateList(self)
+        RefreshCanvas(self)
+        
         self.WinDBLoad.close()
 
 
