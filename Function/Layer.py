@@ -25,6 +25,7 @@ class Layer(object):
         self.table = pd.DataFrame(columns=['ID'])   # 属性表，TODO 属性表的实现方法目前就定是pandas了
 
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……
+        self.edited_geometry=[]
 
     def RefreshBox(self):
         '''更新图层的外包矩形'''

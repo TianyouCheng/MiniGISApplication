@@ -20,11 +20,11 @@ def create_map() -> Map:
     layer1.selectedItems.extend([0, 1])
     map.AddLayer(layer1)
 
-    layer2 = Layer(PointD, name='points')
-    layer2.AddGeometry(PointD(0, 2, id=0))
-    layer2.AddGeometry(PointD(4, 4, id=1))
+    layer2 = Layer(PointD, name='point')
+    layer2.AddGeometry(PointD(0, 3, id=0))
+    layer2.AddGeometry(PointD(4, 5, id=1))
     layer2.AddGeometry(PointD(0, 4, id=2))
-    layer2.AddGeometry(PointD(3, 2, id=3))
+    layer2.AddGeometry(PointD(3, 3, id=3))
     map.AddLayer(layer2)
 
     layer3 = Layer(Polygon, name='polygons')

@@ -41,7 +41,7 @@ class DBM:
         @description : 获取数据库存储图层（name : str，srid : int，type : str）
         @param :  无
         @returns : 由各个图层信息构成的元组
-        """
+        """ 
         
         sql=f"""
             select f_table_name,srid,type from geometry_columns;

@@ -18,7 +18,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 创建窗体
         super(Main_exe,self).__init__()
         self.setupUi(self)
-
+        
 
         # 属性
         self.EditStatus=False # 是否启用编辑
@@ -262,22 +262,31 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         self.WinDBLoad.show()
         # 设置OK键函数
-        # self.WinDBLoad.DBLoad_OK.clicked.connect()
+        self.WinDBLoad.DBLoad_OK.clicked.connect(self.bt_open_from_dbm_ok)
         self.WinDBLoad.DBLoad_Cancel.clicked.connect(self.WinDBLoad.close)
 
 
         layer_info_from_dbm=self.dbm.get_layers_info()
         layer_count=len(layer_info_from_dbm)
-        #generate new window to select layer 
-        for layer_info in layer_info_from_dbm:
-            layer_name=layer_info[0]
-            layer_type=layer_info[2]
-            #show something in new window
-        selected_name=layer_info_from_dbm[0][0]#selected in window
-        new_layer=self.dbm.load_layer(selected_name)
+        layer_tablewidget=self.WinDBLoad.DBL_tableWidget
+        layer_tablewidget.setRowCount(layer_count)
+        layer_tablewidget.setSelectionBehavior(QAbstractItemView.SelectRows)
+
+        for row in range(layer_count):
+            layer_name=layer_info_from_dbm[row][0]
+            layer_type=layer_info_from_dbm[row][2]
+            layer_tablewidget.setItem(row,0,QTableWidgetItem(layer_name))
+            layer_tablewidget.setItem(row,1,QTableWidgetItem(layer_type))
+
+    def bt_open_from_dbm_ok(self):
+        cur_row=self.WinDBLoad.DBL_tableWidget.currentRow()
+        print(cur_row)
+        cur_item=self.WinDBLoad.DBL_tableWidget.item(cur_row,0)
+        layer_name=cur_item.text()
+        new_layer=self.dbm.load_layer(layer_name)
         self.map.AddLayer(new_layer)
-        self.map.selectedLayer=-1
-        pass
+        self.WinDBLoad.close()
+
 
 
     def bt_save_to_dbm(self):
