@@ -3,6 +3,7 @@ import psycopg2
 from .Layer import *
 from .Geometry import *
 from osgeo import ogr
+import os
 
 """
 矢量数据的属性字段，支持varchar，
@@ -58,42 +59,70 @@ class DBM:
             Polyline:'LINESTRING',
             Polygon:'POLYGON',
             MultiPolygon:'MULTIPOLYGON',
-            MultiPolyline:'MULTIPOLYLINE',
+            MultiPolyline:'MULTILINESTRING',
             }
         layer_type=trans_dict[layer.type]
-        self.create_table(layer.name,layer_type,layer.srid,layer.attr_desp_dict)
+        self.create_table(layer.name, layer_type, layer.srid, layer.attr_desp_dict)
         for geometry in layer.geometries:
-            self.insert_geometry(layer,geometry)
+            self.insert_geometry(layer, geometry)
         self.conn.commit()
 
-    def add_layer_from_shp(self, path)->None:
+    def add_layer_from_shp(self, path) -> None:
+        os.system(
+            'ogr2ogr ' + '-overwrite ' + '-f ' + '"' +
+            "PostgreSQL" + '"' + ' PG:' + '"' +
+            "host=47.104.149.94 user=minigiser dbname=minigis password=minigis" + '"'
+            + ' ' + '"' + path + '"')
+        '''
         driver = ogr.GetDriverByName('ESRI Shapefile')
         data_source = driver.Open(path, 0)
         layer_name = path.split('/')[-1].split('.')[0]
         assert data_source is not None
         ori_layer = data_source.GetLayer(0)
+        ori_type = ori_layer.GetGeometryType()
         wkt_list = list()
         feat = ori_layer.GetNextFeature()
         while feat:
             wkt_list.append(feat.geometry().ExportToWkt())
-        ori_type = ori_layer
         geom_type_dict = {
-            ogr.wkbPoint : PointD,
-            ogr.wkbLineString : Polyline,
-            ogr.wkbPolygon : Polygon,
-            ogr.wkbMultiLineString : MultiPolyline,
-            ogr.wkbMultiPolygon : MultiPolygon
+            ogr.wkbPoint : 'POINT',
+            ogr.wkbLineString : 'LINESTRING',
+            ogr.wkbPolygon : 'POLYGON',
+            ogr.wkbMultiLineString : 'MULTILINESTRING',
+            ogr.wkbMultiPolygon : 'MULTIPOLYGON'
         }
-        #self.create_table(layer_name,)
-        # sql = f"""
-        #             create table {layer_name}(
-        #                 gid int primary key,
-        #                 geom Geometry({None},{3857})
-        #                 {''.join([f',{attr_name} {attr_type}' for attr_name, attr_type in attr_desp_dict.items()])}
-        #             );
-        #         """
-        # self.cur.execute(sql)#yaogai!
-
+        type_dict = {ogr.OFTInteger: 'int',
+                     ogr.OFTString: 'varchar',
+                     ogr.OFTReal: 'float'
+                     }
+        fieldcount = ori_layer.GetFieldCount()
+        defn = ori_layer.GetLayerDefn()
+        fields = list()
+        attr_desp_dict = dict()
+        for att in range(fieldcount):
+            field = defn.GetFieldDefn(att)
+            fields.append(field.GetNameRef())
+            attr_desp_dict[field.GetNameRef()] = type_dict[field.GetType()]
+        sql = f"""
+                     create table {layer_name}(
+                         gid int primary key,
+                         geom Geometry({geom_type_dict[ori_type]},{3857})
+                         {''.join([f',{attr_name} {attr_type}' for attr_name, attr_type in attr_desp_dict.items()])}
+                     );
+                 """
+        self.cur.execute(sql)
+        attr_str_lst = []
+        for attr in layer.get_attr(geomtry.ID):
+            if type(attr) == str:
+                attr_str_lst.append(f'\'{attr}\'')
+            else:
+                attr_str_lst.append(attr)
+        sql = f"""
+                    insert into {layer_name}(gid,geom{''.join([f',{k}' for k in attr_desp_dict.keys()])})
+                    values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{3857}){''.join([f',{attr}' for attr in attr_str_lst])});
+                """
+        self.cur.execute(sql)
+        '''
     def create_table(self,tablename:str,geom_type:str,srid:int,attr_desp_dict:dict)->None:
         sql=f"""
             create table {tablename}(

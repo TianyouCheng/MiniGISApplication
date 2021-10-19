@@ -151,9 +151,14 @@ class Layer(object):
         defn = shplayer.GetLayerDefn()
         fieldcount = shplayer.GetFieldCount()
         fields = list()
+        type_dict = {ogr.OFTInteger: 'int',
+                     ogr.OFTString: 'varchar',
+                     ogr.OFTReal: 'float'
+                     }
         for att in range(fieldcount):
             field = defn.GetFieldDefn(att)
             fields.append(field.GetNameRef())
+            self.attr_desp_dict[field.GetNameRef()] = type_dict[field.GetType()]
         feat = shplayer.GetNextFeature()
         while feat:
             geom = feat.GetGeometryRef()
@@ -161,7 +166,12 @@ class Layer(object):
             field_dict = dict()
             field_dict['ID'] = [0]
             for name in fields:
-                field_dict[name] = [feat.GetFieldAsString(name)]
+                if self.attr_desp_dict[name] == 'int':
+                    field_dict[name] = [int(feat.GetFieldAsString(name))]
+                elif self.attr_desp_dict[name] == 'float':
+                    field_dict[name] = [float(feat.GetFieldAsString(name))]
+                else:
+                    field_dict[name] = [feat.GetFieldAsString(name)]
             if ori_type == ogr.wkbPoint:
                 ft = PointD(geom.GetX(), geom.GetY(), id)
             elif ori_type == ogr.wkbLineString:
@@ -223,7 +233,7 @@ class Layer(object):
 
     def export_to_shplayer(self, path):
         type_dict = {'int' : ogr.OFTInteger,
-                     'str' : ogr.OFTString,
+                     'varchar' : ogr.OFTString,
                      'float' : ogr.OFTReal
                      }
         geotype_dict = {
