@@ -160,6 +160,7 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size,stylelist=[],lines
 def LabelMousePress(main_exe, event: QMouseEvent):
     '''处理鼠标按下，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
+    edit_layer = main_exe.CurEditLayer
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
@@ -174,6 +175,15 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             map_.ZoomAtPoint((width, height), PointD(mouse_loc.x(), mouse_loc.y()),
                              map_.scale * main_exe.zoomRatio)
             RefreshCanvas(main_exe, mouse_loc)
+        elif main_exe.tool == MapTool.EditGeometry:
+            pass
+        elif main_exe.tool == MapTool.AddGeometry:
+            if edit_layer.type == PointD:
+                edit_layer.AddGeometry()
+            elif edit_layer.type == Polyline:
+                pass
+            elif edit_layer.type == Polygon:
+                pass
 
 
 def LabelMouseMove(main_exe, event: QMouseEvent):
@@ -194,7 +204,10 @@ def LabelMouseMove(main_exe, event: QMouseEvent):
         # 鼠标框选移动
         elif main_exe.tool == MapTool.Select:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
-
+        elif main_exe.tool == MapTool.AddGeometry:
+            pass
+        elif main_exe.tool == MapTool.EditGeometry:
+            pass
 
 def LabelMouseRelease(main_exe, event: QMouseEvent):
     '''处理与画布有关的、鼠标松开的事件'''

@@ -36,7 +36,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
         self.StyleList=[0]*15           # 属性样式表
-
+        self.CurEditLayer = None        #当前编辑的图层
 
         # 初始化属性窗体
         initAttr(self)
@@ -135,6 +135,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
         self.tsButtonOpen.clicked.connect(self.bt_open_from_dbm)
         self.tsButtonAddAttr.clicked.connect(lambda:addAttr(self))
+        self.tsButtonDel.clicked.connect(self.bt_del_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -153,14 +154,22 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         if self.Drawlabel.rect().contains(canvas_pos):
             LabelMouseMove(self, e)
-
+        '''
         painter = QtGui.QPainter(self.Drawlabel.pixmap())
+        
         # painter.setPen(QtGui.QColor('white'))
+        
         if self.EditStatus:
-            painter.drawPoint(canvas_pos.x(), canvas_pos.y())
-            painter.end()
+            if self.tool == MapTool.AddGeometry:
+                if self.type == PointD:
+                    painter.drawArc(QRect(canvas_pos.x() - 1, canvas_pos.y() - 1, 2, 2), 0, 360 * 16)
+                    painter.end()
+                elif self.type == Polyline:
+                    painter.
+            elif self.tool == MapTool.EditGeometry:
+                pass
             self.update()
-
+        '''
         self.mouseLastLoc.setX(canvas_pos.x())
         self.mouseLastLoc.setY(canvas_pos.y())
 
@@ -250,7 +259,36 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             else:
                 self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
                 self.treeWidget.setEnabled(True)
-
+    def bt_del_clicked(self):
+        if not self.EditStatus:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先进入编辑状态。\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+        elif self.MapTool != MapTool.ditGeometry:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n目前为创建要素状态，请先切换到编辑要素状态\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+        elif len(self.CurEditLayer.selectedItems) == 0:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先选择要删除的对象\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+        else:
+            pass
     def bt_open_from_dbm(self):
         self.WinDBLoad = WinDBLoad()
         # 设置Table

@@ -4,7 +4,6 @@
 from .Geometry import *
 import pandas as pd
 from osgeo import ogr
-from osgeo import gdal
 import os
 
 class Layer(object):
