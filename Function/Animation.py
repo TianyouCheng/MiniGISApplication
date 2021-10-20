@@ -139,14 +139,6 @@ def initAttr(self):
 
     self.bt_Apply.setText(_translate("Form", "应用"))
 
-
-
-
-
-
-
-
-
 def Switch(self, IsAttr, StyleOn):
     '''
     :param self: 调用主窗体各控件
@@ -194,3 +186,19 @@ def Switch(self, IsAttr, StyleOn):
         self.animition_Attr_Off.start()
         self.IsAttr=False
 
+def OperateStack(main_exe):
+    if main_exe.IsOperStacked:
+        main_exe.animition_Oper_on=QPropertyAnimation(main_exe.tsButtonPan,b'pos')
+        main_exe.animition_Oper_on.setEasingCurve(QEasingCurve.OutExpo)
+        main_exe.animition_Oper_on.setDuration(1000)
+        main_exe.animition_Oper_on.setStartValue(QPoint(465,55))
+        main_exe.animition_Oper_on.setEndValue(QPoint(497, 55))
+        main_exe.animition_Oper_on.start()
+    else:
+        main_exe.animition_Oper_off = QPropertyAnimation(main_exe.tsButtonPan, b'pos')
+        main_exe.animition_Oper_off.setEasingCurve(QEasingCurve.OutExpo)
+        main_exe.animition_Oper_off.setDuration(1000)
+        main_exe.animition_Oper_off.setStartValue(QPoint(497, 55))
+        main_exe.animition_Oper_off.setEndValue(QPoint(465, 55))
+        main_exe.animition_Oper_off.start()
+        main_exe.IsOperStacked = True

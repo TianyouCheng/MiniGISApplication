@@ -37,6 +37,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
         self.StyleList=[0]*15           # 属性样式表
         self.CurEditLayer = None        #当前编辑的图层
+        self.IsOperStacked=False      # 判断鼠标图标是否展开
 
         # 初始化属性窗体
         initAttr(self)
@@ -193,6 +194,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tool = MapTool.Null
         cursor = QCursor()
         self.Drawlabel.setCursor(cursor)
+        # OperateStack(self)
 
     def bt_pan_clicked(self):
         '''按下“漫游”按钮'''

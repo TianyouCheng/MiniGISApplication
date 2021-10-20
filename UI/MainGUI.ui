@@ -364,118 +364,164 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="tsButtonNewLayer">
+           <widget class="QWidget" name="widget_4" native="true">
             <property name="minimumSize">
              <size>
-              <width>33</width>
-              <height>35</height>
+              <width>600</width>
+              <height>0</height>
              </size>
             </property>
-            <property name="maximumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="tsButtonSelect">
-            <property name="minimumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="tsButtonEdit">
-            <property name="minimumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="tsButtonDel">
-            <property name="minimumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="tsButtonAddAttr">
-            <property name="minimumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>33</width>
-              <height>31</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>添加
+            <widget class="QPushButton" name="tsButtonAttr">
+             <property name="geometry">
+              <rect>
+               <x>200</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonEdit">
+             <property name="geometry">
+              <rect>
+               <x>83</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonDel">
+             <property name="geometry">
+              <rect>
+               <x>122</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonNewLayer">
+             <property name="geometry">
+              <rect>
+               <x>5</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonSelect">
+             <property name="geometry">
+              <rect>
+               <x>44</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonAddAttr">
+             <property name="geometry">
+              <rect>
+               <x>161</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>添加
 属性</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="tsButtonAttr">
-            <property name="minimumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>33</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
+             </property>
+            </widget>
            </widget>
           </item>
           <item>

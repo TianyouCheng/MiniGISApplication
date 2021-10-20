@@ -81,8 +81,8 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size,stylelist=[],lin
                     not layer.box.IsIntersectBox(screen_geobox):
                 continue
             # 设置绘制样式，TODO 渲染样式在这里读取，修改
-            painter.setPen(QPen(QColor('red'), 1.5))
-            painter.setBrush(QBrush(QColor(255, 201, 14)))
+            painter.setPen(QPen(QColor('black'), 1.5))
+            painter.setBrush(QBrush(QColor('black')))
             # 绘制每个几何体
             for geometry in layer.geometries:
                 # 判断几何体本身是否与画面相交太费时间，判断外包矩形相交就行了

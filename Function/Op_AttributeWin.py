@@ -42,7 +42,7 @@ def setAttr(self):
     item.setText(_translate("Form", "3"))
     self.StyleList[2] = 1.5
 
-    # Item符号颜色
+    # Item跳虫颜色
     bt = QPushButton('')
     bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:black;}')
     bt.clicked.connect(lambda: selectcolor(self,3))
