@@ -38,11 +38,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.StyleList=[0]*15           # 属性样式表
         self.CurEditLayer = None        #当前编辑的图层
         self.IsOperStacked=False      # 判断鼠标图标是否展开
+        self.IsEditStacked = False  # 判断鼠标图标是否展开
 
         # 初始化属性窗体
         initAttr(self)
         # 设置属性窗体
         setAttr(self)
+        # 叠起控件
+        OperateStack(self)
 
         # 自定义标题栏设置
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
@@ -194,7 +197,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tool = MapTool.Null
         cursor = QCursor()
         self.Drawlabel.setCursor(cursor)
-        # OperateStack(self)
+        OperateStack(self)
 
     def bt_pan_clicked(self):
         '''按下“漫游”按钮'''
@@ -228,6 +231,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Drawlabel.setCursor(QCursor())
 
     def bt_edit_clicked(self):
+        # EditStack(self)
         node=self.treeWidget.currentItem()
         if not node:
             msgBox = QMessageBox()

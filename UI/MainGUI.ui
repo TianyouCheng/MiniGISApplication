@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1234</width>
+    <width>1239</width>
     <height>869</height>
    </rect>
   </property>
@@ -374,7 +374,7 @@
             <widget class="QPushButton" name="tsButtonAttr">
              <property name="geometry">
               <rect>
-               <x>200</x>
+               <x>280</x>
                <y>0</y>
                <width>33</width>
                <height>35</height>
@@ -399,7 +399,7 @@
             <widget class="QPushButton" name="tsButtonEdit">
              <property name="geometry">
               <rect>
-               <x>83</x>
+               <x>81</x>
                <y>0</y>
                <width>33</width>
                <height>35</height>
@@ -424,7 +424,7 @@
             <widget class="QPushButton" name="tsButtonDel">
              <property name="geometry">
               <rect>
-               <x>122</x>
+               <x>200</x>
                <y>0</y>
                <width>33</width>
                <height>35</height>
@@ -449,7 +449,7 @@
             <widget class="QPushButton" name="tsButtonNewLayer">
              <property name="geometry">
               <rect>
-               <x>5</x>
+               <x>40</x>
                <y>0</y>
                <width>33</width>
                <height>35</height>
@@ -474,7 +474,7 @@
             <widget class="QPushButton" name="tsButtonSelect">
              <property name="geometry">
               <rect>
-               <x>44</x>
+               <x>0</x>
                <y>0</y>
                <width>33</width>
                <height>35</height>
@@ -499,7 +499,7 @@
             <widget class="QPushButton" name="tsButtonAddAttr">
              <property name="geometry">
               <rect>
-               <x>161</x>
+               <x>241</x>
                <y>0</y>
                <width>33</width>
                <height>35</height>
@@ -520,6 +520,58 @@
              <property name="text">
               <string>添加
 属性</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonEditFeature">
+             <property name="geometry">
+              <rect>
+               <x>160</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>编辑
+要素</string>
+             </property>
+            </widget>
+            <widget class="QPushButton" name="tsButtonAddFeature">
+             <property name="geometry">
+              <rect>
+               <x>120</x>
+               <y>0</y>
+               <width>33</width>
+               <height>35</height>
+              </rect>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>33</width>
+               <height>35</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>添加
+要素</string>
              </property>
             </widget>
            </widget>
