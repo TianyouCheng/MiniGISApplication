@@ -14,6 +14,13 @@ def initAttr(self):
     self.tsButtonPan.raise_()
     self.tsButtonOperateNone.raise_()
 
+    # self.tsButtonAttr.raise_()
+    self.tsButtonAddAttr.raise_()
+    self.tsButtonDel.raise_()
+    self.tsButtonEditFeature.raise_()
+    self.tsButtonAddFeature.raise_()
+    self.tsButtonEdit.raise_()
+
     self.Attributewidget = QWidget(self.centralwidget)
     self.Attributewidget.setGeometry(QRect(-300, 232, 200, 594))
     self.Attributewidget.setObjectName("Attributewidget")
@@ -193,48 +200,88 @@ def Switch(self, IsAttr, StyleOn):
         self.IsAttr=False
 
 def OperateStack(main_exe):
+    '''
+    四元判断：指针叠起，编辑叠起
+    :param main_exe:
+    :return:
+    '''
     if main_exe.IsOperStacked:
         # Pan
         animition_Oper_on=QPropertyAnimation(main_exe.tsButtonPan,b'pos')
         animition_Oper_on.setEasingCurve(QEasingCurve.OutExpo)
         animition_Oper_on.setDuration(1000)
-        animition_Oper_on.setStartValue(QPoint(460,55))
+        animition_Oper_on.setStartValue(QPoint(455,55))
         animition_Oper_on.setEndValue(QPoint(497, 55))
 
         # ZoomIn
         animition_ZoomIn_on = QPropertyAnimation(main_exe.tsButtonZoomIn, b'pos')
         animition_ZoomIn_on.setEasingCurve(QEasingCurve.OutExpo)
         animition_ZoomIn_on.setDuration(1000)
-        animition_ZoomIn_on.setStartValue(QPoint(465, 55))
+        animition_ZoomIn_on.setStartValue(QPoint(455, 55))
         animition_ZoomIn_on.setEndValue(QPoint(540, 55))
 
         # ZoomOut
         animition_ZoomOut_on = QPropertyAnimation(main_exe.tsButtonZoomOut, b'pos')
         animition_ZoomOut_on.setEasingCurve(QEasingCurve.OutExpo)
         animition_ZoomOut_on.setDuration(1000)
-        animition_ZoomOut_on.setStartValue(QPoint(470, 55))
+        animition_ZoomOut_on.setStartValue(QPoint(455, 55))
         animition_ZoomOut_on.setEndValue(QPoint(583, 55))
 
         # FullScale
         animition_FullScale_on = QPropertyAnimation(main_exe.tsButtonZoomScale, b'pos')
         animition_FullScale_on.setEasingCurve(QEasingCurve.OutExpo)
         animition_FullScale_on.setDuration(1000)
-        animition_FullScale_on.setStartValue(QPoint(475, 55))
+        animition_FullScale_on.setStartValue(QPoint(455, 55))
         animition_FullScale_on.setEndValue(QPoint(626, 55))
 
+        pos_original=[]
+        pos_original_op=[]
+        pos_zero0=669
+        pos_zero1=455+45
+        pos_edit = 586
+        pos_edit_end=755
+        for i in range(8):
+            pos_original.append(pos_zero0+i*43)
+            pos_original_op.append(pos_zero1+i*43)
+        bt_original=[main_exe.tsButtonSelect,main_exe.tsButtonNewLayer,main_exe.tsButtonEdit,main_exe.tsButtonAddFeature,main_exe.tsButtonEditFeature,main_exe.tsButtonDel,main_exe.tsButtonAddAttr,main_exe.tsButtonAttr]
         # Widget
-        animition_Widget_on = QPropertyAnimation(main_exe.widget_4, b'pos')
-        animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
-        animition_Widget_on.setDuration(1000)
-        animition_Widget_on.setStartValue(QPoint(520, 55))
-        animition_Widget_on.setEndValue(QPoint(670, 55))
+        animation_group = QParallelAnimationGroup(main_exe)
+        # 指针叠起，编辑未叠
+        if not main_exe.IsEditStacked:
+            for i in range(8):
+                animition_Widget_on =QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_on.setDuration(1000)
+                animition_Widget_on.setStartValue(QPoint(pos_original_op[i], 55))
+                animition_Widget_on.setEndValue(QPoint(pos_original[i], 55))
+                animation_group.addAnimation(animition_Widget_on)
+        # 指针叠起，编辑叠起
+        else:
+            for i in range(2):
+                animition_Widget_on =QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_on.setDuration(1000)
+                animition_Widget_on.setStartValue(QPoint(pos_original_op[i], 55))
+                animition_Widget_on.setEndValue(QPoint(pos_original[i], 55))
+                animation_group.addAnimation(animition_Widget_on)
+            for i in range(2,7):
+                animition_Widget_on = QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_on.setDuration(1000)
+                animition_Widget_on.setStartValue(QPoint(pos_edit, 55))
+                animition_Widget_on.setEndValue(QPoint(pos_edit_end, 55))
+                animation_group.addAnimation(animition_Widget_on)
+            animition_Widget_on = QPropertyAnimation(bt_original[7], b'pos')
+            animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Widget_on.setDuration(1000)
+            animition_Widget_on.setStartValue(QPoint(pos_edit+45, 55))
+            animition_Widget_on.setEndValue(QPoint(pos_edit_end+45, 55))
+            animation_group.addAnimation(animition_Widget_on)
 
-        animation_group=QParallelAnimationGroup(main_exe)
         animation_group.addAnimation(animition_Oper_on)
         animation_group.addAnimation(animition_ZoomIn_on)
         animation_group.addAnimation(animition_ZoomOut_on)
         animation_group.addAnimation(animition_FullScale_on)
-        animation_group.addAnimation(animition_Widget_on)
         animation_group.start()
 
         # style
@@ -251,42 +298,78 @@ def OperateStack(main_exe):
         animition_Oper_off.setEasingCurve(QEasingCurve.OutExpo)
         animition_Oper_off.setDuration(1000)
         animition_Oper_off.setStartValue(QPoint(497, 55))
-        animition_Oper_off.setEndValue(QPoint(460, 55))
+        animition_Oper_off.setEndValue(QPoint(455, 55))
 
         # ZoomIn
         animition_ZoomIn_off = QPropertyAnimation(main_exe.tsButtonZoomIn, b'pos')
         animition_ZoomIn_off.setEasingCurve(QEasingCurve.OutExpo)
         animition_ZoomIn_off.setDuration(1000)
         animition_ZoomIn_off.setStartValue(QPoint(540, 55))
-        animition_ZoomIn_off.setEndValue(QPoint(465, 55))
+        animition_ZoomIn_off.setEndValue(QPoint(455, 55))
 
         # ZoomOut
         animition_ZoomOut_off = QPropertyAnimation(main_exe.tsButtonZoomOut, b'pos')
         animition_ZoomOut_off.setEasingCurve(QEasingCurve.OutExpo)
         animition_ZoomOut_off.setDuration(1000)
         animition_ZoomOut_off.setStartValue(QPoint(582, 55))
-        animition_ZoomOut_off.setEndValue(QPoint(470, 55))
+        animition_ZoomOut_off.setEndValue(QPoint(455, 55))
 
         # FullScale
         animition_FullScale_off = QPropertyAnimation(main_exe.tsButtonZoomScale, b'pos')
         animition_FullScale_off.setEasingCurve(QEasingCurve.OutExpo)
         animition_FullScale_off.setDuration(1000)
         animition_FullScale_off.setStartValue(QPoint(626, 55))
-        animition_FullScale_off.setEndValue(QPoint(475, 55))
+        animition_FullScale_off.setEndValue(QPoint(455, 55))
 
         # Widget
-        animition_Widget_off = QPropertyAnimation(main_exe.widget_4, b'pos')
-        animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
-        animition_Widget_off.setDuration(1000)
-        animition_Widget_off.setStartValue(QPoint(670, 55))
-        animition_Widget_off.setEndValue(QPoint(520, 55))
-
+        pos_original=[]
+        pos_original_op=[]
+        pos_zero0=669
+        pos_zero1=455+45
+        pos_edit = 586
+        pos_edit_end = 755
+        for i in range(8):
+            pos_original.append(pos_zero0+i*43)
+            pos_original_op.append(pos_zero1+i*43)
+        bt_original=[main_exe.tsButtonSelect,main_exe.tsButtonNewLayer,main_exe.tsButtonEdit,main_exe.tsButtonAddFeature,main_exe.tsButtonEditFeature,main_exe.tsButtonDel,main_exe.tsButtonAddAttr,main_exe.tsButtonAttr]
+        # Widget
         animation_group = QParallelAnimationGroup(main_exe)
+        # 指针未叠，编辑未叠
+        if not main_exe.IsEditStacked:
+            for i in range(8):
+                animition_Widget_off =QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_off.setDuration(1000)
+                animition_Widget_off.setStartValue(QPoint(pos_original[i], 55))
+                animition_Widget_off.setEndValue(QPoint(pos_original_op[i], 55))
+                animation_group.addAnimation(animition_Widget_off)
+        # 指针未叠，编辑叠起
+        else:
+            for i in range(2):
+                animition_Widget_on =QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_on.setDuration(1000)
+                animition_Widget_on.setStartValue(QPoint(pos_original[i], 55))
+                animition_Widget_on.setEndValue(QPoint(pos_original_op[i], 55))
+                animation_group.addAnimation(animition_Widget_on)
+            for i in range(2,7):
+                animition_Widget_on = QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_on.setDuration(1000)
+                animition_Widget_on.setStartValue(QPoint(pos_edit_end, 55))
+                animition_Widget_on.setEndValue(QPoint(pos_edit, 55))
+                animation_group.addAnimation(animition_Widget_on)
+            animition_Widget_on = QPropertyAnimation(bt_original[7], b'pos')
+            animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Widget_on.setDuration(1000)
+            animition_Widget_on.setStartValue(QPoint(pos_edit_end+45, 55))
+            animition_Widget_on.setEndValue(QPoint(pos_edit+45, 55))
+            animation_group.addAnimation(animition_Widget_on)
+
         animation_group.addAnimation(animition_Oper_off)
         animation_group.addAnimation(animition_ZoomIn_off)
         animation_group.addAnimation(animition_ZoomOut_off)
         animation_group.addAnimation(animition_FullScale_off)
-        animation_group.addAnimation(animition_Widget_off)
         animation_group.start()
 
         # style
@@ -303,112 +386,120 @@ def OperateStack(main_exe):
         main_exe.IsOperStacked = True
 
 def EditStack(main_exe):
-    if main_exe.IsEditStacked:
-        # # AddF
-        # animition_AddF_on=QPropertyAnimation(main_exe.tsButtonAddFeature,b'pos')
-        # animition_AddF_on.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_AddF_on.setDuration(1000)
-        # animition_AddF_on.setStartValue(QPoint(770,55))
-        # animition_AddF_on.setEndValue(QPoint(802, 55))
-        #
-        # # EditF
-        # animition_EditF_on = QPropertyAnimation(main_exe.tsButtonEditFeature, b'pos')
-        # animition_EditF_on.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_EditF_on.setDuration(1000)
-        # animition_EditF_on.setStartValue(QPoint(780, 55))
-        # animition_EditF_on.setEndValue(QPoint(846, 55))
-        #
-        # # Del
-        # animition_Del_on = QPropertyAnimation(main_exe.tsButtonDel, b'pos')
-        # animition_Del_on.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_Del_on.setDuration(1000)
-        # animition_Del_on.setStartValue(QPoint(790, 55))
-        # animition_Del_on.setEndValue(QPoint(890, 55))
-        #
-        # # AddA
-        # animition_AddA_on = QPropertyAnimation(main_exe.tsButtonAddAttr, b'pos')
-        # animition_AddA_on.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_AddA_on.setDuration(1000)
-        # animition_AddA_on.setStartValue(QPoint(800, 55))
-        # animition_AddA_on.setEndValue(QPoint(934, 55))
-        #
-        # # Attr
-        # animition_Attr_on = QPropertyAnimation(main_exe.tsButtonAttr, b'pos')
-        # animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_Attr_on.setDuration(1000)
-        # animition_Attr_on.setStartValue(QPoint(830, 55))
-        # animition_Attr_on.setEndValue(QPoint(978, 55))
-        #
-        # animation_group=QParallelAnimationGroup(main_exe)
-        # animation_group.addAnimation(animition_AddF_on)
-        # animation_group.addAnimation(animition_EditF_on)
-        # animation_group.addAnimation(animition_Del_on)
-        # animation_group.addAnimation(animition_AddA_on)
-        # animation_group.addAnimation(animition_Attr_on)
-        # animation_group.start()
+    if not main_exe.IsEditStacked:
+        if not main_exe.IsOperStacked:
+            # 指针未叠，编辑未叠
+            animition_Attr_on=QPropertyAnimation(main_exe.tsButtonAttr,b'pos')
+            animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Attr_on.setDuration(1000)
+            animition_Attr_on.setStartValue(QPoint(970,55))
+            animition_Attr_on.setEndValue(QPoint(755+45, 55))
 
-        # # style
-        # main_exe.tsButtonOperateNone.setStyleSheet('QPushButton#tsButtonOperateNone{border-image:url(UI/icon/mouse.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/mouse_p.png)}')
-        # main_exe.tsButtonPan.setStyleSheet('QPushButton#tsButtonPan{border-image:url(UI/icon/pan1.png)}QPushButton#tsButtonPan:pressed{border-image:url(UI/icon/pan1_p.png)}')
-        # main_exe.tsButtonZoomIn.setStyleSheet('QPushButton#tsButtonZoomIn{border-image:url(UI/icon/zoomin.png)}QPushButton#tsButtonZoomIn:pressed{border-image:url(UI/icon/zoomin_p.png)}')
-        # main_exe.tsButtonZoomOut.setStyleSheet('QPushButton#tsButtonZoomOut{border-image:url(UI/icon/zoomout.png)}QPushButton#tsButtonZoomOut:pressed{border-image:url(UI/icon/zoomout_p.png)}')
-        # main_exe.tsButtonZoomScale.setStyleSheet('QPushButton#tsButtonZoomScale{border-image:url(UI/icon/zoomscale.png)}QPushButton#tsButtonZoomScale:pressed{border-image:url(UI/icon/zoomscale_p.png)}')
+            pos_edit = []
+            pos_zero0 = 798
+            pos_zero1 = 755
+            for i in range(4):
+                pos_edit.append(pos_zero0 + i * 43)
+            bt_original = [main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
+                           main_exe.tsButtonAddAttr]
+            # Widget
+            animation_group = QParallelAnimationGroup(main_exe)
 
-        main_exe.IsEditStacked = False
-    else:
-        # AddF
-        animition_AddF_off = QPropertyAnimation(main_exe.tsButtonAddFeature, b'geometry')
-        animition_AddF_off.setEasingCurve(QEasingCurve.OutExpo)
-        animition_AddF_off.setDuration(1000)
-        animition_AddF_off.setStartValue(QRect(100, 0, 33, 35))
-        animition_AddF_off.setEndValue(QRect(120, 0, 33, 35))
-        animition_AddF_off.start()
+            for i in range(4):
+                animition_Widget_off = QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_off.setDuration(1000)
+                animition_Widget_off.setStartValue(QPoint(pos_edit[i], 55))
+                animition_Widget_off.setEndValue(QPoint(pos_zero1, 55))
+                animation_group.addAnimation(animition_Widget_off)
+            animation_group.addAnimation(animition_Attr_on)
+            animation_group.start()
+        # 指针叠起，编辑未叠
+        if main_exe.IsOperStacked:
+            animition_Attr_on=QPropertyAnimation(main_exe.tsButtonAttr,b'pos')
+            animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Attr_on.setDuration(1000)
+            animition_Attr_on.setStartValue(QPoint(801,55))
+            animition_Attr_on.setEndValue(QPoint(586+45, 55))
 
-        # # EditF
-        # animition_EditF_off = QPropertyAnimation(main_exe.tsButtonEditFeature, b'pos')
-        # animition_EditF_off.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_EditF_off.setDuration(1000)
-        # animition_EditF_off.setStartValue(QPoint(846, 55))
-        # animition_EditF_off.setEndValue(QPoint(780, 55))
-        #
-        # # Del
-        # animition_Del_off = QPropertyAnimation(main_exe.tsButtonDel, b'pos')
-        # animition_Del_off.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_Del_off.setDuration(1000)
-        # animition_Del_off.setStartValue(QPoint(890, 55))
-        # animition_Del_off.setEndValue(QPoint(790, 55))
-        #
-        # # AddA
-        # animition_AddA_off = QPropertyAnimation(main_exe.tsButtonAddAttr, b'pos')
-        # animition_AddA_off.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_AddA_off.setDuration(1000)
-        # animition_AddA_off.setStartValue(QPoint(934, 55))
-        # animition_AddA_off.setEndValue(QPoint(800, 55))
-        #
-        # # Attr
-        # animition_Attr_off = QPropertyAnimation(main_exe.tsButtonAttr, b'pos')
-        # animition_Attr_off.setEasingCurve(QEasingCurve.OutExpo)
-        # animition_Attr_off.setDuration(1000)
-        # animition_Attr_off.setStartValue(QPoint(978, 55))
-        # animition_Attr_off.setEndValue(QPoint(830, 55))
-        #
-        # animation_group = QParallelAnimationGroup(main_exe)
-        # animation_group.addAnimation(animition_AddF_off)
-        # animation_group.addAnimation(animition_EditF_off)
-        # animation_group.addAnimation(animition_Del_off)
-        # animation_group.addAnimation(animition_AddA_off)
-        # animation_group.addAnimation(animition_Attr_off)
-        # animation_group.start()
+            pos_edit = []
+            pos_zero0 = 629
+            pos_zero1 = 586
+            for i in range(4):
+                pos_edit.append(pos_zero0 + i * 43)
+            bt_original = [main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
+                           main_exe.tsButtonAddAttr]
+            # Widget
+            animation_group = QParallelAnimationGroup(main_exe)
 
-        # # style
-        # main_exe.tsButtonOperateNone.setStyleSheet('QPushButton#tsButtonOperateNone{border-image:url(UI/icon/mouse_s.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/mouse_p.png)}')
-        # main_exe.tsButtonPan.setStyleSheet(
-        #     'QPushButton#tsButtonPan{border-image:url(UI/icon/pan1_s.png)}QPushButton#tsButtonPan:pressed{border-image:url(UI/icon/pan1_p.png)}')
-        # main_exe.tsButtonZoomIn.setStyleSheet(
-        #     'QPushButton#tsButtonZoomIn{border-image:url(UI/icon/zoomin_s.png)}QPushButton#tsButtonZoomIn:pressed{border-image:url(UI/icon/zoomin_p.png)}')
-        # main_exe.tsButtonZoomOut.setStyleSheet(
-        #     'QPushButton#tsButtonZoomOut{border-image:url(UI/icon/zoomout_s.png)}QPushButton#tsButtonZoomOut:pressed{border-image:url(UI/icon/zoomout_p.png)}')
-        # main_exe.tsButtonZoomScale.setStyleSheet(
-        #     'QPushButton#tsButtonZoomScale{border-image:url(UI/icon/zoomscale_s.png)}QPushButton#tsButtonZoomScale:pressed{border-image:url(UI/icon/zoomscale_p.png)}')
-
+            for i in range(4):
+                animition_Widget_off = QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_off.setDuration(1000)
+                animition_Widget_off.setStartValue(QPoint(pos_edit[i], 55))
+                animition_Widget_off.setEndValue(QPoint(pos_zero1, 55))
+                animation_group.addAnimation(animition_Widget_off)
+            animation_group.addAnimation(animition_Attr_on)
+            animation_group.start()
         main_exe.IsEditStacked = True
+        main_exe.tsButtonEdit.setStyleSheet(
+            'QPushButton#tsButtonEdit{border-image:url(UI/icon/edit_s.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/mouse_p.png)}')
+
+    else:
+        # 指针未叠，编辑叠起
+        if not main_exe.IsOperStacked:
+            animition_Attr_on=QPropertyAnimation(main_exe.tsButtonAttr,b'pos')
+            animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Attr_on.setDuration(1000)
+            animition_Attr_on.setStartValue(QPoint(755+45,55))
+            animition_Attr_on.setEndValue(QPoint(970, 55))
+
+            pos_edit = []
+            pos_zero0 = 798
+            pos_zero1 = 755
+            for i in range(4):
+                pos_edit.append(pos_zero0 + i * 43)
+            bt_original = [main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
+                           main_exe.tsButtonAddAttr]
+            # Widget
+            animation_group = QParallelAnimationGroup(main_exe)
+
+            for i in range(4):
+                animition_Widget_off = QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_off.setDuration(1000)
+                animition_Widget_off.setStartValue(QPoint(pos_zero1, 55))
+                animition_Widget_off.setEndValue(QPoint(pos_edit[i], 55))
+                animation_group.addAnimation(animition_Widget_off)
+            animation_group.addAnimation(animition_Attr_on)
+            animation_group.start()
+        # 指针叠起，编辑叠起
+        if main_exe.IsOperStacked:
+            animition_Attr_on=QPropertyAnimation(main_exe.tsButtonAttr,b'pos')
+            animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Attr_on.setDuration(1000)
+            animition_Attr_on.setStartValue(QPoint(586+45,55))
+            animition_Attr_on.setEndValue(QPoint(801, 55))
+
+            pos_edit = []
+            pos_zero0 = 629
+            pos_zero1 = 586
+            for i in range(4):
+                pos_edit.append(pos_zero0 + i * 43)
+            bt_original = [main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
+                           main_exe.tsButtonAddAttr]
+            # Widget
+            animation_group = QParallelAnimationGroup(main_exe)
+
+            for i in range(4):
+                animition_Widget_off = QPropertyAnimation(bt_original[i], b'pos')
+                animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
+                animition_Widget_off.setDuration(1000)
+                animition_Widget_off.setStartValue(QPoint(pos_zero1, 55))
+                animition_Widget_off.setEndValue(QPoint(pos_edit[i], 55))
+                animation_group.addAnimation(animition_Widget_off)
+            animation_group.addAnimation(animition_Attr_on)
+            animation_group.start()
+        main_exe.IsEditStacked = False
+        main_exe.tsButtonEdit.setStyleSheet(
+            'QPushButton#tsButtonEdit{border-image:url(UI/icon/edit.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/mouse_p.png)}')

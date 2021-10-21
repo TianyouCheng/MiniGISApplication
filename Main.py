@@ -45,7 +45,10 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 设置属性窗体
         setAttr(self)
         # 叠起控件
+
+        EditStack(self)
         OperateStack(self)
+
 
         # 自定义标题栏设置
         self.bt_min.clicked.connect(lambda: self.setWindowState(Qt.WindowMinimized))
@@ -231,7 +234,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Drawlabel.setCursor(QCursor())
 
     def bt_edit_clicked(self):
-        # EditStack(self)
+        EditStack(self)
         node=self.treeWidget.currentItem()
         if not node:
             msgBox = QMessageBox()
