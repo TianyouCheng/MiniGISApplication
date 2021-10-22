@@ -12,7 +12,6 @@ from .Map import Map
 from .MapTool import MapTool
 import copy
 
-
 def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,stylelist=[]):
     '''
     绘制事件触发
@@ -189,6 +188,7 @@ def LabelMousePress(main_exe, event: QMouseEvent):
 def LabelMouseMove(main_exe, event: QMouseEvent):
     '''处理鼠标移动，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
+    edit_layer = main_exe.map.selectedLayer
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
@@ -205,14 +205,17 @@ def LabelMouseMove(main_exe, event: QMouseEvent):
         elif main_exe.tool == MapTool.Select:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
         elif main_exe.tool == MapTool.AddGeometry:
-            pass
+            if edit_layer.type == PointD:
+                pass
+            elif edit_layer.type == Polyline:
+                pass
         elif main_exe.tool == MapTool.EditGeometry:
             pass
 
 def LabelMouseRelease(main_exe, event: QMouseEvent):
     '''处理与画布有关的、鼠标松开的事件'''
     from .Op_TableView import TableUpdate
-
+    edit_layer = main_exe.map.selectedLayer
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
