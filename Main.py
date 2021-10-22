@@ -141,7 +141,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
         self.tsButtonOpen.clicked.connect(self.bt_open_from_dbm)
-        self.tsButtonAddAttr.clicked.connect(lambda:addAttr(self))
+        self.tsButtonAddAttr.clicked.connect(self.bt_addattr_clicked)
         self.tsButtonDel.clicked.connect(self.bt_del_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
@@ -259,14 +259,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 msgBox.addButton(QMessageBox.Ok)
                 # 模态对话框
                 msgBox.exec_()
-                self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
+                # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
                 self.treeWidget.setEnabled(False)
                 map_ = self.map
                 map_.layers[map_.selectedLayer].selectedItems.clear()
                 RefreshCanvas(self, use_base=True)
 
             else:
-                self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
+                # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
                 self.treeWidget.setEnabled(True)
     def bt_del_clicked(self):
         if not self.EditStatus:
@@ -398,6 +398,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # self.Drawlabel.setPixmap(canvas)
         # Refresh(self, QCursor.pos())
 
+    def bt_addattr_clicked(self):
+        self.WinNewAttr = WinNewAttr()
+        self.WinNewAttr.show()
+        # 设置OK键函数
+        self.WinNewAttr.pushButto_OK.clicked.connect(self.WinNewAttr.close)
+        self.WinNewAttr.pushButto_Cancel.clicked.connect(self.WinNewAttr.close)
+
+
     def treeViewItemChanged(self, item, column):
         '''图层的可见性改变'''
         treeCheckedChange(item, column, self)
@@ -420,6 +428,11 @@ class WinNewLayer(QWidget,Ui_Win_NewLayer):
         self.setupUi(self)
 
 class WinDBLoad(QWidget,Ui_Win_DBLoad):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+
+class WinNewAttr(QWidget, Ui_Win_NewAttr):
     def __init__(self):
         super().__init__()
         self.setupUi(self)

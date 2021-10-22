@@ -3,9 +3,10 @@
 '''
 
 from PyQt5.QtWidgets import QWidget,QPushButton,QLabel,QTableWidget,QSizePolicy,QTableWidgetItem,QHeaderView,QComboBox,QColorDialog
-from PyQt5.QtGui import QBrush, QColor,QIcon,QPainter
+from PyQt5.QtGui import QBrush, QColor,QIcon,QPainter,QFont
 from PyQt5.QtCore import QRect,QPropertyAnimation,QPoint,QEasingCurve,QCoreApplication,Qt
-from .Op_DrawLabel import *
+from .Op_DrawLabel import RefreshCanvas
+import copy
 
 def setAttr(self):
     # TODO:设置缺省样式，黑色太难看
@@ -117,6 +118,7 @@ def is_number(s):
 
 def FeatureStyle(self):
     '''为要素绘制符号和注记'''
+    LineStyle = [Qt.SolidLine, Qt.DashLine, Qt.DashDotLine, Qt.DotLine, Qt.DashDotDotLine]
     # 获取“轮廓宽度”
     item = self.AttrtableWidget.item(2, 1)
     if is_number(item.text()):
@@ -124,7 +126,7 @@ def FeatureStyle(self):
     else:
         raise TypeError('数值类型错误')
     # 获取“轮廓样式”的索引
-    self.StyleList[1]=int(self.AttrtableWidget.cellWidget(1,1).currentIndex())
+    self.StyleList[1]=LineStyle[int(self.AttrtableWidget.cellWidget(1,1).currentIndex())]
     # 获取“可见性”的索引self.StyleList[5]
     self.StyleList[5] = int(self.AttrtableWidget.cellWidget(5, 1).currentIndex())
     # 获取“绑定字段”
@@ -148,7 +150,8 @@ def FeatureStyle(self):
     else:
         raise TypeError('数值类型错误')
     # 重绘地图
-    RefreshCanvas(self, stylelist=self.StyleList)
+    SetStyleList(self,self.StyleList)
+    RefreshCanvas(self)
 
 def RefreshAttr(main_exe,ind):
     '''
@@ -167,3 +170,11 @@ def RefreshAttr(main_exe,ind):
         layer = main_exe.map.layers[ind]
         combo.addItems(layer.table.columns)
     main_exe.AttrtableWidget.setCellWidget(6, 1, combo)
+
+def SetStyleList(main_exe,stylelist):
+    # 赋样式表
+    map_ = main_exe.map
+    for geometry in map_.layers[map_.selectedLayer].geometries:
+        selected = set(map_.layers[map_.selectedLayer].selectedItems)
+        if geometry.ID in selected:
+            geometry.StyleList = copy.deepcopy(stylelist)

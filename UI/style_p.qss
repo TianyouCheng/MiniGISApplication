@@ -88,6 +88,24 @@ border-image:url(UI/icon/edit.png)
 QPushButton#tsButtonEdit:pressed{
 border-image:url(UI/icon/edit_p.png)
 }
+QPushButton#tsButtonAddFeature{
+border-image:url(UI/icon/add.png)
+}
+QPushButton#tsButtonAddFeature:pressed{
+border-image:url(UI/icon/add_p.png)
+}
+QPushButton#tsButtonEditFeature{
+border-image:url(UI/icon/editf.png)
+}
+QPushButton#tsButtonEditFeature:pressed{
+border-image:url(UI/icon/editf_p.png)
+}
+QPushButton#tsButtonAddAttr{
+border-image:url(UI/icon/addattr.png)
+}
+QPushButton#tsButtonAddAttr:pressed{
+border-image:url(UI/icon/addattr_p.png)
+}
 
 QMainWindow{
 border:0px;
