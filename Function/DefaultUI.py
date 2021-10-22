@@ -59,3 +59,6 @@ def initHover(self):
     self.tsButtonExportshp.setToolTip('导出\nshp')
     self.tsButtonDel.setToolTip('删除\n要素')
     self.tsButtonAttr.setToolTip('属性\n窗体')
+    self.tsButtonAddFeature.setToolTip('添加\n要素')
+    self.tsButtonEditFeature.setToolTip('编辑\n要素')
+    self.tsButtonAddAttr.setToolTip('新增\n属性')

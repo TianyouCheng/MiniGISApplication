@@ -4,10 +4,23 @@
 
 from PyQt5.QtWidgets import QWidget,QPushButton,QLabel,QTableWidget,QSizePolicy,QTableWidgetItem,QHeaderView,QComboBox
 from PyQt5.QtGui import QBrush, QColor,QFont
-from PyQt5.QtCore import QRect,QPropertyAnimation,QPoint,QEasingCurve,QCoreApplication,Qt
+from PyQt5.QtCore import QRect,QPropertyAnimation,QPoint,QEasingCurve,QCoreApplication,Qt,QParallelAnimationGroup
 
 def initAttr(self):
     '''UI里的test文件用于属性窗体的编写，编写完成后记得删除'''
+    self.tsButtonZoomScale.raise_()
+    self.tsButtonZoomOut.raise_()
+    self.tsButtonZoomIn.raise_()
+    self.tsButtonPan.raise_()
+    self.tsButtonOperateNone.raise_()
+
+    # self.tsButtonAttr.raise_()
+    self.tsButtonAddAttr.raise_()
+    self.tsButtonDel.raise_()
+    self.tsButtonEditFeature.raise_()
+    self.tsButtonAddFeature.raise_()
+    self.tsButtonEdit.raise_()
+
     self.Attributewidget = QWidget(self.centralwidget)
     self.Attributewidget.setGeometry(QRect(-300, 232, 200, 594))
     self.Attributewidget.setObjectName("Attributewidget")
@@ -139,14 +152,6 @@ def initAttr(self):
 
     self.bt_Apply.setText(_translate("Form", "应用"))
 
-
-
-
-
-
-
-
-
 def Switch(self, IsAttr, StyleOn):
     '''
     :param self: 调用主窗体各控件
@@ -155,10 +160,10 @@ def Switch(self, IsAttr, StyleOn):
     :return: None
     '''
     if not IsAttr:
-        if StyleOn:
-            with open('./UI/style_p.qss') as f2:
-                qss = f2.read()
-            self.setStyleSheet(qss)
+        # if StyleOn:
+        #     with open('./UI/style_p.qss') as f2:
+        #         qss = f2.read()
+        #     self.setStyleSheet(qss)
 
         # 设置移动动画。move的参数是移动到的地址
         self.animition_Tree_off=QPropertyAnimation(self.treeWidget,b'pos')
@@ -175,10 +180,10 @@ def Switch(self, IsAttr, StyleOn):
         self.animition_Attr_On.start()
         self.IsAttr=True
     else:
-        if StyleOn:
-            with open('./UI/style.qss') as f2:
-                qss = f2.read()
-            self.setStyleSheet(qss)
+        # if StyleOn:
+        #     with open('./UI/style.qss') as f2:
+        #         qss = f2.read()
+        #     self.setStyleSheet(qss)
 
         self.animition_Tree_on=QPropertyAnimation(self.treeWidget,b'pos')
         self.animition_Tree_on.setEasingCurve(QEasingCurve.InExpo)
@@ -194,3 +199,159 @@ def Switch(self, IsAttr, StyleOn):
         self.animition_Attr_Off.start()
         self.IsAttr=False
 
+def OperateStack(main_exe,dua=1000):
+    '''
+    四元判断：指针叠起，编辑叠起
+    :param main_exe:
+    :return:
+    '''
+    # 指针叠起的四个按钮控件
+    bt_Oper = [main_exe.tsButtonPan, main_exe.tsButtonZoomIn, main_exe.tsButtonZoomOut, main_exe.tsButtonZoomScale]
+    bt_Oper_pos0 = [420] # 指针后四按钮叠起位置
+    bt_Oper_pos1 = [458] # 指针后四按钮展开初始位置
+    # 指针叠起后的8个控件
+    bt_OperRest = [main_exe.tsButtonSelect, main_exe.tsButtonNewLayer, main_exe.tsButtonEdit,
+                   main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
+                   main_exe.tsButtonAddAttr, main_exe.tsButtonAttr]
+    bt_OperRest_pos0=[458] # 指针后8控件叠起位置
+    bt_OperRest_pos1=[618] # 指针后8控件展开初始位置
+    interval_small=38 # 按钮间隔
+    interval_big=41 # 叠起按钮与后一按钮间隔
+    ypos = 45 # 纵向坐标
+
+    # 扩展四按钮位置坐标
+    for i in range(1,len(bt_Oper)):
+        bt_Oper_pos0.append(bt_Oper_pos0[0])
+        bt_Oper_pos1.append(bt_Oper_pos1[0]+i*interval_small)
+
+    # 使用判断来切换坐标
+    if not main_exe.IsOperStacked:
+        tp_pos=bt_Oper_pos0
+        bt_Oper_pos0=bt_Oper_pos1
+        bt_Oper_pos1=tp_pos
+        tp_pos = bt_OperRest_pos0
+        bt_OperRest_pos0 = bt_OperRest_pos1
+        bt_OperRest_pos1 = tp_pos
+
+        # style
+        main_exe.tsButtonOperateNone.setStyleSheet('QPushButton#tsButtonOperateNone{border-image:url(UI/icon/mouse_s.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/mouse_p.png)}')
+    else:
+        # style
+        main_exe.tsButtonOperateNone.setStyleSheet(
+            'QPushButton#tsButtonOperateNone{border-image:url(UI/icon/mouse.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/mouse_p.png)}')
+    animation_group = QParallelAnimationGroup(main_exe)
+
+    # 指针后四按钮叠起/展开动画
+    for i in range(len(bt_Oper)):
+        animition_Oper_on=QPropertyAnimation(bt_Oper[i],b'pos')
+        animition_Oper_on.setEasingCurve(QEasingCurve.OutExpo)
+        animition_Oper_on.setDuration(dua)
+        animition_Oper_on.setStartValue(QPoint(bt_Oper_pos0[i],ypos))
+        animition_Oper_on.setEndValue(QPoint(bt_Oper_pos1[i], ypos))
+        animation_group.addAnimation(animition_Oper_on)
+
+    # 指针后八按钮叠起/展开动画
+    # 指针叠起，编辑未叠
+    if not main_exe.IsEditStacked:
+        for i in range(8):
+            animition_Widget_on =QPropertyAnimation(bt_OperRest[i], b'pos')
+            animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Widget_on.setDuration(dua)
+            animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+i*interval_small, ypos))
+            animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+i*interval_small, ypos))
+            animation_group.addAnimation(animition_Widget_on)
+    # 指针叠起，编辑叠起
+    # 若编辑叠起,需分三类按钮考虑
+    else:
+        for i in range(2):
+            animition_Widget_on =QPropertyAnimation(bt_OperRest[i], b'pos')
+            animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Widget_on.setDuration(dua)
+            animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+i*interval_small, ypos))
+            animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+i*interval_small, ypos))
+            animation_group.addAnimation(animition_Widget_on)
+        for i in range(2,7):
+            animition_Widget_on = QPropertyAnimation(bt_OperRest[i], b'pos')
+            animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Widget_on.setDuration(dua)
+            animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+2*interval_small, ypos))
+            animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+2*interval_small, ypos))
+            animation_group.addAnimation(animition_Widget_on)
+        animition_Widget_on = QPropertyAnimation(bt_OperRest[7], b'pos')
+        animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+        animition_Widget_on.setDuration(dua)
+        animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+2*interval_small+interval_big, ypos))
+        animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+2*interval_small+interval_big, ypos))
+        animation_group.addAnimation(animition_Widget_on)
+    animation_group.start()
+
+    main_exe.IsOperStacked = not main_exe.IsOperStacked
+
+
+
+def EditStack(main_exe,dua=1000):
+    # 编辑叠起的四个按钮控件
+    bt_Edit = [main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
+                           main_exe.tsButtonAddAttr]
+    bt_Edit_pos0 = [693]  # 编辑后四按钮叠起位置
+    bt_Edit_pos1 = [734]  # 编辑后四按钮展开初始位置
+
+    interval_small = 38  # 按钮间隔
+    interval_big = 41  # 叠起按钮与后一按钮间隔
+    # 编辑叠起后一控件
+    bt_EditRest_pos0 = [bt_Edit_pos0[0]+interval_big]  # 编辑后一控件叠起位置
+    bt_EditRest_pos1 = [bt_Edit_pos1[0]+interval_small*(len(bt_Edit)-1)+interval_big]  # 编辑后一控件展开初始位置
+    interval_OperStack=160
+    ypos = 45  # 纵向坐标
+
+
+    for i in range(1, len(bt_Edit)):
+        bt_Edit_pos0.append(bt_Edit_pos0[0])
+        bt_Edit_pos1.append(bt_Edit_pos1[0] + i * interval_small)
+
+
+    animation_group = QParallelAnimationGroup(main_exe)
+
+    if not main_exe.IsEditStacked:
+        tp_pos = bt_Edit_pos0
+        bt_Edit_pos0 = bt_Edit_pos1
+        bt_Edit_pos1 = tp_pos
+        tp_pos = bt_EditRest_pos0
+        bt_EditRest_pos0 = bt_EditRest_pos1
+        bt_EditRest_pos1 = tp_pos
+        main_exe.tsButtonEdit.setStyleSheet('QPushButton#tsButtonEdit{border-image:url(UI/icon/edit_s.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/edit_p.png)}')
+    else:
+        main_exe.tsButtonEdit.setStyleSheet('QPushButton#tsButtonEdit{border-image:url(UI/icon/edit_p.png)}QPushButton#tsButtonOperateNone:pressed{border-image:url(UI/icon/edit_p.png)}')
+
+
+    if main_exe.IsOperStacked:
+        for i in range(len(bt_Edit_pos0)):
+            bt_Edit_pos0[i]=bt_Edit_pos0[i]-interval_OperStack
+            bt_Edit_pos1[i] = bt_Edit_pos1[i] - interval_OperStack
+        for i in range(len(bt_EditRest_pos0)):
+            bt_EditRest_pos0[i]=bt_EditRest_pos0[i]-interval_OperStack
+            bt_EditRest_pos1[i] = bt_EditRest_pos1[i] - interval_OperStack
+
+
+    # 指针未叠，编辑未叠
+    animition_Attr_on=QPropertyAnimation(main_exe.tsButtonAttr,b'pos')
+    animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
+    animition_Attr_on.setDuration(dua)
+    animition_Attr_on.setStartValue(QPoint(bt_EditRest_pos0[0],ypos))
+    animition_Attr_on.setEndValue(QPoint(bt_EditRest_pos1[0], ypos))
+
+    # Widget
+    animation_group = QParallelAnimationGroup(main_exe)
+
+    for i in range(len(bt_Edit)):
+        animition_Widget_off = QPropertyAnimation(bt_Edit[i], b'pos')
+        animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
+        animition_Widget_off.setDuration(dua)
+        animition_Widget_off.setStartValue(QPoint(bt_Edit_pos0[i], ypos))
+        animition_Widget_off.setEndValue(QPoint(bt_Edit_pos1[i], ypos))
+        animation_group.addAnimation(animition_Widget_off)
+
+    animation_group.addAnimation(animition_Attr_on)
+    animation_group.start()
+
+    main_exe.IsEditStacked = not main_exe.IsEditStacked
