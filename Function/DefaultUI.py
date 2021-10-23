@@ -1,7 +1,7 @@
 '''
 缺省UI文件
 '''
-
+import qdarkstyle
 def defaultUI(self):
     self.tsButtonNew.setText('新建')
     self.tsButtonOpen.setText('打开')
@@ -11,34 +11,46 @@ def defaultUI(self):
     self.tsButtonZoomIn.setText('放大')
     self.tsButtonZoomOut.setText('缩小')
     self.tsButtonZoomScale.setText('全屏\n显示')
-    self.tsButtonNewLayer.setText('创建\n新图层')
+    self.tsButtonNewLayer.setText('新建\n图层')
     self.tsButtonSelect.setText('选择\n要素')
     self.tsButtonEdit.setText('编辑\n模式')
     self.tsButtonImportshp.setText('导入\nshp')
     self.tsButtonExportshp.setText('导出\nshp')
     self.tsButtonDel.setText('删除\n要素')
     self.tsButtonAttr.setText('属性\n窗体')
+    self.tsButtonSelectByAttr.setText('属性\n选择')
+    self.tsButtonAddFeature.setText('新增\n要素')
+    self.tsButtonEditFeature.setText('编辑\n要素')
+    self.tsButtonAddAttr.setText('添加\n属性')
     self.bt_min.setStyleSheet('background-color:transparent')
     self.bt_max.setStyleSheet('background-color:transparent')
     self.bt_close.setStyleSheet('background-color:transparent')
     self.widget_2.setFixedHeight(0)
     self.widget.setFixedHeight(0)
+    Fixedsize=40
     self.treeWidget.setFixedHeight(822)
-    self.tsButtonNew.setFixedWidth(50)
-    self.tsButtonOpen.setFixedWidth(50)
-    self.tsButtonSave.setFixedWidth(50)
-    self.tsButtonOperateNone.setFixedWidth(50)
-    self.tsButtonPan.setFixedWidth(50)
-    self.tsButtonZoomIn.setFixedWidth(50)
-    self.tsButtonZoomOut.setFixedWidth(50)
-    self.tsButtonZoomScale.setFixedWidth(50)
-    self.tsButtonNewLayer.setFixedWidth(50)
-    self.tsButtonSelect.setFixedWidth(50)
-    self.tsButtonEdit.setFixedWidth(50)
-    self.tsButtonImportshp.setFixedWidth(50)
-    self.tsButtonExportshp.setFixedWidth(50)
-    self.tsButtonDel.setFixedWidth(50)
-    self.tsButtonAttr.setFixedWidth(50)
+    self.tsButtonNew.setFixedWidth(Fixedsize)
+    self.tsButtonOpen.setFixedWidth(Fixedsize)
+    self.tsButtonSave.setFixedWidth(Fixedsize)
+    self.tsButtonOperateNone.setFixedWidth(Fixedsize)
+    self.tsButtonPan.setFixedWidth(Fixedsize)
+    self.tsButtonZoomIn.setFixedWidth(Fixedsize)
+    self.tsButtonZoomOut.setFixedWidth(Fixedsize)
+    self.tsButtonZoomScale.setFixedWidth(Fixedsize)
+    self.tsButtonNewLayer.setFixedWidth(Fixedsize)
+    self.tsButtonSelect.setFixedWidth(Fixedsize)
+    self.tsButtonEdit.setFixedWidth(Fixedsize)
+    self.tsButtonImportshp.setFixedWidth(Fixedsize)
+    self.tsButtonExportshp.setFixedWidth(Fixedsize)
+    self.tsButtonDel.setFixedWidth(Fixedsize)
+    self.tsButtonAttr.setFixedWidth(Fixedsize)
+    self.tsButtonSelectByAttr.setFixedWidth(Fixedsize)
+    self.tsButtonAddFeature.setFixedWidth(Fixedsize)
+    self.tsButtonEditFeature.setFixedWidth(Fixedsize)
+    self.tsButtonAddAttr.setFixedWidth(Fixedsize)
+
+
+    self.setStyleSheet(qdarkstyle.load_stylesheet())
 
 def initHover(self):
     # 鼠标悬停在按钮上显示信息
@@ -62,3 +74,6 @@ def initHover(self):
     self.tsButtonAddFeature.setToolTip('添加\n要素')
     self.tsButtonEditFeature.setToolTip('编辑\n要素')
     self.tsButtonAddAttr.setToolTip('新增\n属性')
+    self.tsButtonSelectByAttr.setToolTip('属性\n选择')
+    self.tsButtonAddFeature.setToolTip('新增\n要素')
+    self.tsButtonEditFeature.setToolTip('编辑\n要素')

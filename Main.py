@@ -27,7 +27,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLeftPress = False     # 鼠标左键是否处于按下状态
         self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
-        self.StyleOn=True    # 是否启用样式表
+        self.StyleOn=False    # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
         self.dbm = DBM()
         # self.map = create_map(self.dbm)    # 当前地图
@@ -45,9 +45,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 设置属性窗体
         setAttr(self)
         # 叠起控件
-
-        EditStack(self)
-        OperateStack(self)
+        if self.StyleOn:
+            EditStack(self)
+            OperateStack(self)
 
 
         # 自定义标题栏设置
@@ -201,7 +201,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tool = MapTool.Null
         cursor = QCursor()
         self.Drawlabel.setCursor(cursor)
-        OperateStack(self)
+        if self.StyleOn:
+            OperateStack(self)
 
     def bt_pan_clicked(self):
         '''按下“漫游”按钮'''
@@ -235,7 +236,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Drawlabel.setCursor(QCursor())
 
     def bt_edit_clicked(self):
-        EditStack(self)
+        if self.StyleOn:
+            EditStack(self)
         node=self.treeWidget.currentItem()
         if not node:
             msgBox = QMessageBox()
