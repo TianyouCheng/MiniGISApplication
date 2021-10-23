@@ -143,6 +143,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonOpen.clicked.connect(self.bt_open_from_dbm)
         self.tsButtonAddAttr.clicked.connect(self.bt_addattr_clicked)
         self.tsButtonDel.clicked.connect(self.bt_del_clicked)
+        self.tsButtonSelectByAttr.clicked.connect(self.bt_selectbyattr_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -405,6 +406,12 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.WinNewAttr.pushButto_OK.clicked.connect(self.WinNewAttr.close)
         self.WinNewAttr.pushButto_Cancel.clicked.connect(self.WinNewAttr.close)
 
+    def bt_selectbyattr_clicked(self):
+        self.WinSelect=WinSelectByAttr()
+        self.WinSelect.show()
+        # 设置OK键函数
+        self.WinSelect.bt_OK.clicked.connect(self.WinSelect.close)
+        self.WinSelect.bt_Cancel.clicked.connect(self.WinSelect.close)
 
     def treeViewItemChanged(self, item, column):
         '''图层的可见性改变'''
@@ -433,6 +440,11 @@ class WinDBLoad(QWidget,Ui_Win_DBLoad):
         self.setupUi(self)
 
 class WinNewAttr(QWidget, Ui_Win_NewAttr):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+
+class WinSelectByAttr(QWidget, Ui_Win_SelectByAttr):
     def __init__(self):
         super().__init__()
         self.setupUi(self)

@@ -210,7 +210,7 @@ def OperateStack(main_exe,dua=1000):
     bt_Oper_pos0 = [420] # 指针后四按钮叠起位置
     bt_Oper_pos1 = [458] # 指针后四按钮展开初始位置
     # 指针叠起后的8个控件
-    bt_OperRest = [main_exe.tsButtonSelect, main_exe.tsButtonNewLayer, main_exe.tsButtonEdit,
+    bt_OperRest = [main_exe.tsButtonSelect, main_exe.tsButtonSelectByAttr,main_exe.tsButtonNewLayer, main_exe.tsButtonEdit,
                    main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
                    main_exe.tsButtonAddAttr, main_exe.tsButtonAttr]
     bt_OperRest_pos0=[458] # 指针后8控件叠起位置
@@ -253,7 +253,7 @@ def OperateStack(main_exe,dua=1000):
     # 指针后八按钮叠起/展开动画
     # 指针叠起，编辑未叠
     if not main_exe.IsEditStacked:
-        for i in range(8):
+        for i in range(len(bt_OperRest)):
             animition_Widget_on =QPropertyAnimation(bt_OperRest[i], b'pos')
             animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
             animition_Widget_on.setDuration(dua)
@@ -263,25 +263,25 @@ def OperateStack(main_exe,dua=1000):
     # 指针叠起，编辑叠起
     # 若编辑叠起,需分三类按钮考虑
     else:
-        for i in range(2):
+        for i in range(3):
             animition_Widget_on =QPropertyAnimation(bt_OperRest[i], b'pos')
             animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
             animition_Widget_on.setDuration(dua)
             animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+i*interval_small, ypos))
             animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+i*interval_small, ypos))
             animation_group.addAnimation(animition_Widget_on)
-        for i in range(2,7):
+        for i in range(3,8):
             animition_Widget_on = QPropertyAnimation(bt_OperRest[i], b'pos')
             animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
             animition_Widget_on.setDuration(dua)
-            animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+2*interval_small, ypos))
-            animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+2*interval_small, ypos))
+            animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+3*interval_small, ypos))
+            animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+3*interval_small, ypos))
             animation_group.addAnimation(animition_Widget_on)
-        animition_Widget_on = QPropertyAnimation(bt_OperRest[7], b'pos')
+        animition_Widget_on = QPropertyAnimation(bt_OperRest[8], b'pos')
         animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
         animition_Widget_on.setDuration(dua)
-        animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+2*interval_small+interval_big, ypos))
-        animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+2*interval_small+interval_big, ypos))
+        animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+3*interval_small+interval_big, ypos))
+        animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+3*interval_small+interval_big, ypos))
         animation_group.addAnimation(animition_Widget_on)
     animation_group.start()
 
@@ -293,8 +293,8 @@ def EditStack(main_exe,dua=1000):
     # 编辑叠起的四个按钮控件
     bt_Edit = [main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
                            main_exe.tsButtonAddAttr]
-    bt_Edit_pos0 = [693]  # 编辑后四按钮叠起位置
-    bt_Edit_pos1 = [734]  # 编辑后四按钮展开初始位置
+    bt_Edit_pos0 = [693+38]  # 编辑后四按钮叠起位置
+    bt_Edit_pos1 = [734+38]  # 编辑后四按钮展开初始位置
 
     interval_small = 38  # 按钮间隔
     interval_big = 41  # 叠起按钮与后一按钮间隔
