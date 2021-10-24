@@ -26,7 +26,7 @@ class Ui_Win_NewLayer(object):
         self.label_2.setObjectName("label_2")
         self.comboBox = QtWidgets.QComboBox(Win_NewLayer)
         self.comboBox.setGeometry(QtCore.QRect(310, 150, 111, 22))
-        self.comboBox.setEditable(True)
+        self.comboBox.setEditable(False)
         self.comboBox.setPlaceholderText("")
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")

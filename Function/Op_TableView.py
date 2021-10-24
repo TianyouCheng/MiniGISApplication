@@ -1,7 +1,7 @@
 '''
 表格控件的相关操作函数
 '''
-from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget
+from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget, QMessageBox
 from PyQt5.QtWidgets import QTableWidgetSelectionRange as TabRange
 from PyQt5.QtGui import QFont,QColor,QBrush
 import random
@@ -80,6 +80,45 @@ def TableSelectionChanged(main_exe):
             layer.selectedItems.extend(ids)
         RefreshCanvas(main_exe, use_base=True)
 
-# TODO 添加属性的响应函数
+
 def addAttr(main_exe):
-    pass;
+    import pandas as pd
+    import numpy as np
+    map_ = main_exe.map
+    window = main_exe.WinNewAttr
+    need_close = True
+    try:
+        # 未选择图层直接退出
+        if map_.selectedLayer == -1:
+            raise RuntimeError(u'图层错误', u'未选择图层！')
+        layer = map_.layers[map_.selectedLayer]
+        column_name = window.lineEdit.text()
+        # TODO 数据库中的列名不支持哪些字符？还没处理
+        # 输入的字段名已经存在，报错
+        if column_name.lower() in map(str.lower, layer.table.columns):
+            need_close = False
+            raise RuntimeError(u'字段错误', f'该图层已经有"{column_name}"字段！')
+
+        type_name = window.comboBox.currentText()
+        geoms_num = layer.table.shape[0]
+        if type_name == 'int':
+            new_column = pd.DataFrame(data={column_name: np.zeros((geoms_num,), dtype=np.int_)})
+            layer.attr_desp_dict[column_name] = 'int'
+        elif type_name == 'float':
+            new_column = pd.DataFrame(data={column_name: np.zeros((geoms_num,), dtype=np.float_)})
+            layer.attr_desp_dict[column_name] = 'float'
+        else:
+            new_column = pd.DataFrame(data={column_name: [''] * geoms_num}, dtype=str)
+            layer.attr_desp_dict[column_name] = 'str'
+        layer.table = pd.concat([layer.table, new_column], axis=1)
+    # 运行错误则弹出对话框
+    except RuntimeError as e:
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(e.args[0])
+        msgBox.setText(f'\n{e.args[1]}\n')
+        msgBox.addButton(QMessageBox.Ok)
+        msgBox.exec_()
+    finally:
+        if need_close:
+            window.close()
+            TableUpdate(main_exe)

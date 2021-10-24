@@ -21,7 +21,7 @@ class Layer(object):
 
         self.srid=srid
         self.attr_desp_dict = {'ID': 'int'}         # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
-        self.table = pd.DataFrame(columns=['ID'])   # 属性表，TODO 属性表的实现方法目前就定是pandas了
+        self.table = pd.DataFrame(columns=['ID'])   # 属性表
 
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……
         self.edited_geometry=[]
@@ -56,7 +56,6 @@ class Layer(object):
         new_id = 0 if self.table.shape[0] == 0 \
                 else self.table['ID'].max() + 1
         self.geometries.append(geometry)
-        # TODO 记得给几何体分配ID，并在属性表中添加该几何体的属性信息
         geometry.ID = new_id
         if row is None:
             row = pd.DataFrame({'ID': [new_id]})
@@ -74,7 +73,6 @@ class Layer(object):
                 break
         if index is not None:
             self.geometries.pop(index)
-            # TODO 属性表也要跟着删除
             self.table.drop(index=self.table[self.table['ID'] == _id].index, inplace=True)
             self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()

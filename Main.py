@@ -405,7 +405,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.WinNewAttr = WinNewAttr()
         self.WinNewAttr.show()
         # 设置OK键函数
-        self.WinNewAttr.pushButto_OK.clicked.connect(self.WinNewAttr.close)
+        self.WinNewAttr.pushButto_OK.clicked.connect(lambda: addAttr(self))
         self.WinNewAttr.pushButto_Cancel.clicked.connect(self.WinNewAttr.close)
 
     def bt_selectbyattr_clicked(self):
