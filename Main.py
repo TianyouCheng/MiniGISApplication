@@ -39,6 +39,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.CurEditLayer = None        #当前编辑的图层
         self.IsOperStacked=False      # 判断鼠标图标是否展开
         self.IsEditStacked = False  # 判断鼠标图标是否展开
+        self.IsChart=False         # 当前界面是否为表格窗体
 
         # 初始化属性窗体
         initAttr(self)
@@ -136,7 +137,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
         # self.Drawlabel.resizeEvent = self.labelResizeEvent
-        self.tsButtonAttr.clicked.connect(lambda:Switch(self,self.IsAttr,self.StyleOn))
+        self.tsButtonAttr.clicked.connect(self.bt_Attr_clicked)
         self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
@@ -144,6 +145,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonAddAttr.clicked.connect(self.bt_addattr_clicked)
         self.tsButtonDel.clicked.connect(self.bt_del_clicked)
         self.tsButtonSelectByAttr.clicked.connect(self.bt_selectbyattr_clicked)
+        self.tsButtonChart.clicked.connect(self.bt_setchart_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -371,6 +373,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
         # txt=self.treeWidget.currentItem().text(0)
 
+    def bt_Attr_clicked(self):
+        Switch(self, self.IsAttr, self.StyleOn)
+
     def bt_import_shp_clicked(self):
         ofd = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'ALL(*.*);;Shapefile文件(*.shp)')
         driver = ogr.GetDriverByName('ESRI Shapefile')
@@ -440,6 +445,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def tableSelectionChanged(self):
         '''属性表中选择几何体变化'''
         TableSelectionChanged(self)
+
+    def bt_setchart_clicked(self):
+        initChart(self)
 
     # endregion
 
