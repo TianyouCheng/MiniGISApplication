@@ -13,7 +13,7 @@ from .MapTool import MapTool
 import copy
 
 
-def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,stylelist=[]):
+def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False, stylelist=[]):
 
     '''
     绘制事件触发
@@ -38,9 +38,11 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,
 
     if map.selectedLayer != -1:
         DrawSelectedGeo(painter, map, (width, height))
+        edit_layer = map.layers[map.selectedLayer]
         # “添加几何体”模式，绘制待添加的几何体
         if main_exe.tool == MapTool.AddGeometry:
-            pass
+            if edit_layer.type == PointD:
+                pass
         # “编辑几何体”模式，绘制正在编辑的几何体
         elif main_exe.tool == MapTool.EditGeometry:
             pass
@@ -147,6 +149,8 @@ def LabelMousePress(main_exe, event: QMouseEvent):
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
+    need_save = main_exe.NeedSave()
+
     if event.button() == Qt.MouseButton.LeftButton:
         # 在“放大”模式下按下左键
         if main_exe.tool == MapTool.ZoomIn:
@@ -162,11 +166,20 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             pass
         elif main_exe.tool == MapTool.AddGeometry:
             if edit_layer.type == PointD:
-                edit_layer.AddGeometry()
+                edit_layer.AddGeometry(PointD(mouse_loc.x(), mouse_loc.y()))
+                RefreshCanvas(main_exe, mouse_loc, main_exe.TrackPoints, False, main_exe.StyleList)
             elif edit_layer.type == Polyline:
-                pass
+                main_exe.TrackPoints.append(PointD(mouse_loc.x(), mouse_loc.y()))
+                RefreshCanvas()
             elif edit_layer.type == Polygon:
                 pass
+    else:
+        if main_exe.tool == MapTool.AddGeometry:
+            if edit_layer.type == PointD:
+                pass
+        elif main_exe.tool == MapTool.EditGeometry:
+            pass
+
 
 
 def LabelMouseMove(main_exe, event: QMouseEvent):

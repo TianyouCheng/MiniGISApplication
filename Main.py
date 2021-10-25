@@ -39,6 +39,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.CurEditLayer = None        #当前编辑的图层
         self.IsOperStacked=False      # 判断鼠标图标是否展开
         self.IsEditStacked = False  # 判断鼠标图标是否展开
+        self.TrackPoints = list()
+        self.NeedSave = False
 
         # 初始化属性窗体
         initAttr(self)
