@@ -409,10 +409,24 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.WinNewAttr.pushButto_Cancel.clicked.connect(self.WinNewAttr.close)
 
     def bt_selectbyattr_clicked(self):
+        # 地图中没有图层，需要报信息
+        if len(self.map.layers) == 0:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle('图层错误')
+            msgBox.setText('\n该地图项目中没有图层。\n')
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
         self.WinSelect=WinSelectByAttr()
+        # 添加图层到图层选择列表中
+        combo_layer = self.WinSelect.combo_layer
+        combo_layer.addItems([layer.name for layer in self.map.layers])
+        if self.map.selectedLayer != -1:
+            combo_layer.setCurrentIndex(self.map.selectedLayer)
         self.WinSelect.show()
         # 设置OK键函数
-        self.WinSelect.bt_OK.clicked.connect(self.WinSelect.close)
+        self.WinSelect.bt_OK.clicked.connect(lambda: selectGeoByStr(self))
         self.WinSelect.bt_Cancel.clicked.connect(self.WinSelect.close)
 
     def treeViewItemChanged(self, item, column):
