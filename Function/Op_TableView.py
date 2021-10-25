@@ -112,8 +112,9 @@ def addAttr(main_exe):
             window.close()
             TableUpdate(main_exe)
 
-from Main import Main_exe
-def selectGeoByStr(main_exe: Main_exe):
+
+def selectGeoByStr(main_exe):
+    '''属性表选择点击OK之后'''
     window = main_exe.WinSelect
     index = window.combo_layer.currentIndex()
     try:
@@ -121,7 +122,12 @@ def selectGeoByStr(main_exe: Main_exe):
         if index is None or index >= len(main_exe.map.layers) or index < 0:
             raise RuntimeError('图层错误', '未选择正确图层！')
         layer = main_exe.map.layers[index]
-        selected_geom = layer.Query(window.lineEdit_SelectState.text())
+        try:
+            selected_geom = layer.Query(window.lineEdit_SelectState.text())
+        except NameError:
+            raise RuntimeError('表达式错误', '输入的字段名不存在。请重新输入表达式。')
+        except Exception:
+            raise RuntimeError('表达式错误', '表达式不合法。请重新输入表达式。')
         select_mode = window.comboBox_SelectMode.currentIndex()
         # 选择模式：交并差
         if select_mode == 0:
