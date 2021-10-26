@@ -112,6 +112,12 @@ border-image:url(UI/icon/selectattr.png)
 QPushButton#tsButtonSelectByAttr:pressed{
 border-image:url(UI/icon/selectattr_p.png)
 }
+QPushButton#tsButtonChart{
+border-image:url(UI/icon/chart.png)
+}
+QPushButton#tsButtonChart:pressed{
+border-image:url(UI/icon/chart_p.png)
+}
 
 QMainWindow{
 border:0px;

@@ -77,6 +77,26 @@ class Layer(object):
             self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()
 
+    def add_attr(self, attr_name, attr_type):
+        '''
+        给属性表增加一列字段
+        :param attr_name: 列名称
+        :param attr_type: 列的类型，字符串：支持'int', 'float', 'string'
+        '''
+        import numpy as np
+        geoms_num = self.table.shape[0]
+        if attr_type == 'int':
+            new_column = pd.DataFrame(data={attr_name: np.zeros((geoms_num,), dtype=np.int_)})
+        elif attr_type == 'float':
+            new_column = pd.DataFrame(data={attr_name: np.zeros((geoms_num,), dtype=np.float_)})
+        elif attr_type == 'string' or attr_type == 'str':
+            new_column = pd.DataFrame(data={attr_name: [''] * geoms_num}, dtype=str)
+            attr_type = 'str'
+        else:
+            raise ValueError(f'不支持添加"{attr_type}"类型字段')
+        self.attr_desp_dict[attr_name] = attr_type
+        self.table = pd.concat([self.table, new_column], axis=1)
+
     def Query(self, query, *args):
         '''
         查找满足条件的几何体
@@ -86,13 +106,13 @@ class Layer(object):
         :return: 被选中的几何体ID集合（注：未更新self.selectedItems）
         '''
         if isinstance(query, PointD):
-            return self.QueryPoint(query, args[0])
+            return self._QueryPoint(query, args[0])
         if isinstance(query, RectangleD):
-            return self.QueryBox(query)
+            return self._QueryBox(query)
         if isinstance(query, str):
-            return self.QuerySQL(query)
+            return self._QuerySQL(query)
 
-    def QueryPoint(self, point, buffer):
+    def _QueryPoint(self, point, buffer):
         '''
         点选几何体
         :param point: 鼠标点的地理坐标
@@ -107,7 +127,7 @@ class Layer(object):
                     selected.append(geometry.ID)
         return selected
 
-    def QueryBox(self, box):
+    def _QueryBox(self, box):
         '''
         框选几何体
         :param box: 矩形框的地理坐标
@@ -120,13 +140,13 @@ class Layer(object):
                     selected.append(geometry.ID)
         return selected
 
-    def QuerySQL(self, sql):
+    def _QuerySQL(self, sql):
         '''
         几何体的属性查询
         :param sql: 文本查询
         :return: 被选中的几何体ID集合（注：未更新self.selectedItems）
         '''
-        pass
+        return list(self.table.query(sql)['ID'])
 
     @property
     def Count(self):

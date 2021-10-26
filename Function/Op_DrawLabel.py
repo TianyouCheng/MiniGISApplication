@@ -13,7 +13,7 @@ from .MapTool import MapTool
 import copy
 
 
-def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,stylelist=[]):
+def RefreshCanvas(main_exe, mouseLoc: QPoint=None, use_base=False, stylelist=[]):
 
     '''
     绘制事件触发
@@ -38,9 +38,30 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, new_geo=None, use_base=False,
 
     if map.selectedLayer != -1:
         DrawSelectedGeo(painter, map, (width, height))
+        edit_layer = map.layers[map.selectedLayer]
+        edit_geom = edit_layer.edited_geometry
         # “添加几何体”模式，绘制待添加的几何体
         if main_exe.tool == MapTool.AddGeometry:
-            pass
+            for g in edit_layer.geometries:
+                g_screen = map.GeoToScreen(g, (width, height))
+                DS.draw(painter, g_screen)#先把不再编辑的画出来
+            if edit_layer.type == PointD:
+                pass
+            elif edit_layer.type == Polyline:
+                cur_line = Polyline(edit_geom)
+                DS.draw(painter, cur_line)
+                #橡皮筋
+                tail = Polyline([PointD(mouseLoc.x(), mouseLoc.y()), edit_geom[-1]])
+                DS.draw(painter, tail)
+            elif edit_layer.type == Polygon:
+                cur_mouse = PointD(mouseLoc.x(), mouseLoc.y())
+                if len(edit_geom) == 1:
+                    cur_pg = Polygon(edit_geom[0] + [cur_mouse])
+                else:
+                    holes = edit_geom[1:]
+                    cur_holes = holes[:-1] + [holes[-1] + [cur_mouse]]
+                    cur_pg = Polygon(edit_geom[0], cur_holes)
+                DS.draw(painter, cur_pg)
         # “编辑几何体”模式，绘制正在编辑的几何体
         elif main_exe.tool == MapTool.EditGeometry:
             pass
@@ -143,10 +164,10 @@ def DrawSelectedGeo(painter: QPainter, map_: Map, screen_size):
 def LabelMousePress(main_exe, event: QMouseEvent):
     '''处理鼠标按下，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
-    edit_layer = main_exe.CurEditLayer
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
+
     if event.button() == Qt.MouseButton.LeftButton:
         # 在“放大”模式下按下左键
         if main_exe.tool == MapTool.ZoomIn:
@@ -161,15 +182,49 @@ def LabelMousePress(main_exe, event: QMouseEvent):
         elif main_exe.tool == MapTool.EditGeometry:
             pass
         elif main_exe.tool == MapTool.AddGeometry:
+            edit_layer = main_exe.CurEditLayer
+            edit_geom = edit_layer.edited_geometry
+            need_save = main_exe.NeedSave
             if edit_layer.type == PointD:
-                edit_layer.AddGeometry()
+                edit_layer.AddGeometry(map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()),(width, height)))
+                RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
             elif edit_layer.type == Polyline:
-                pass
+                edit_geom.append(PointD(mouse_loc.x(), mouse_loc.y()))
+                RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
             elif edit_layer.type == Polygon:
+                if len(edit_geom) == 0:
+                    edit_geom.append(list())
+                edit_geom[-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
+                RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
+            elif edit_layer.type == MultiPolyline:
                 pass
+            elif edit_layer.type == MultiPolygon:
+                pass
+    else:
+        if main_exe.tool == MapTool.AddGeometry:
+            edit_layer = main_exe.CurEditLayer
+            edit_geom = edit_layer.edited_geometry
+            need_save = main_exe.NeedSave
+            if edit_layer.type == Polygon:
+                edit_geom.append(list())
+
+        elif main_exe.tool == MapTool.EditGeometry:
+            pass
 
 
-def LabelMouseMove(main_exe, event: QMouseEvent):
+def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
+    map_ = main_exe.map
+    edit_layer = main_exe.map.selectedLayer
+    edit_geom = edit_layer.edited_geometry
+    if edit_layer.type == Polyline:
+        pass
+    elif edit_layer.type == Polygon:
+        pass
+    elif edit_layer.type == MultiPolyline:
+        pass
+    elif edit_layer.type == MultiPolygon:
+        pass
+def LabelMouseMove(main_exe, event : QMouseEvent):
     '''处理鼠标移动，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
     edit_layer = main_exe.map.selectedLayer
