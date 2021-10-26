@@ -39,8 +39,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.CurEditLayer = None        #当前编辑的图层
         self.IsOperStacked=False      # 判断鼠标图标是否展开
         self.IsEditStacked = False  # 判断鼠标图标是否展开
-        self.TrackPoints = list()
-        self.NeedSave = False
+        self.TrackPoints = list()  #追踪点序列（列表形式）
+        self.NeedSave = False      #是否需要保存
+        self.IsChart=False         # 当前界面是否为表格窗体
 
         # 初始化属性窗体
         initAttr(self)
@@ -138,7 +139,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonEdit.clicked.connect(self.bt_edit_clicked)
         self.tsButtonNewLayer.clicked.connect(self.bt_newlayer_clicked)
         # self.Drawlabel.resizeEvent = self.labelResizeEvent
-        self.tsButtonAttr.clicked.connect(lambda:Switch(self,self.IsAttr,self.StyleOn))
+        self.tsButtonAttr.clicked.connect(self.bt_Attr_clicked)
         self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
@@ -146,6 +147,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonAddAttr.clicked.connect(self.bt_addattr_clicked)
         self.tsButtonDel.clicked.connect(self.bt_del_clicked)
         self.tsButtonSelectByAttr.clicked.connect(self.bt_selectbyattr_clicked)
+        self.tsButtonChart.clicked.connect(self.bt_setchart_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -373,6 +375,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)
         # txt=self.treeWidget.currentItem().text(0)
 
+    def bt_Attr_clicked(self):
+        Switch(self, self.IsAttr, self.StyleOn)
+
     def bt_import_shp_clicked(self):
         ofd = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'ALL(*.*);;Shapefile文件(*.shp)')
         driver = ogr.GetDriverByName('ESRI Shapefile')
@@ -411,10 +416,24 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.WinNewAttr.pushButto_Cancel.clicked.connect(self.WinNewAttr.close)
 
     def bt_selectbyattr_clicked(self):
+        # 地图中没有图层，需要报信息
+        if len(self.map.layers) == 0:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle('图层错误')
+            msgBox.setText('\n该地图项目中没有图层。\n')
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            msgBox.addButton(QMessageBox.Ok)
+            msgBox.exec_()
+            return
         self.WinSelect=WinSelectByAttr()
+        # 添加图层到图层选择列表中
+        combo_layer = self.WinSelect.combo_layer
+        combo_layer.addItems([layer.name for layer in self.map.layers])
+        if self.map.selectedLayer != -1:
+            combo_layer.setCurrentIndex(self.map.selectedLayer)
         self.WinSelect.show()
         # 设置OK键函数
-        self.WinSelect.bt_OK.clicked.connect(self.WinSelect.close)
+        self.WinSelect.bt_OK.clicked.connect(lambda: selectGeoByStr(self))
         self.WinSelect.bt_Cancel.clicked.connect(self.WinSelect.close)
 
     def treeViewItemChanged(self, item, column):
@@ -428,6 +447,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def tableSelectionChanged(self):
         '''属性表中选择几何体变化'''
         TableSelectionChanged(self)
+
+    def bt_setchart_clicked(self):
+        initChart(self)
 
     # endregion
 

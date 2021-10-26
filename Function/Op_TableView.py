@@ -3,7 +3,8 @@
 '''
 from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget, QMessageBox
 from PyQt5.QtWidgets import QTableWidgetSelectionRange as TabRange
-from PyQt5.QtGui import QFont,QColor,QBrush
+from PyQt5.QtGui import QFont,QColor,QBrush, QIcon
+from PyQt5.Qt import Qt
 import random
 from .MapTool import MapTool
 from .Op_DrawLabel import RefreshCanvas
@@ -82,8 +83,7 @@ def TableSelectionChanged(main_exe):
 
 
 def addAttr(main_exe):
-    import pandas as pd
-    import numpy as np
+    '''点击“添加属性”按钮并OK后'''
     map_ = main_exe.map
     window = main_exe.WinNewAttr
     need_close = True
@@ -98,27 +98,59 @@ def addAttr(main_exe):
         if column_name.lower() in map(str.lower, layer.table.columns):
             need_close = False
             raise RuntimeError(u'字段错误', f'该图层已经有"{column_name}"字段！')
-
-        type_name = window.comboBox.currentText()
-        geoms_num = layer.table.shape[0]
-        if type_name == 'int':
-            new_column = pd.DataFrame(data={column_name: np.zeros((geoms_num,), dtype=np.int_)})
-            layer.attr_desp_dict[column_name] = 'int'
-        elif type_name == 'float':
-            new_column = pd.DataFrame(data={column_name: np.zeros((geoms_num,), dtype=np.float_)})
-            layer.attr_desp_dict[column_name] = 'float'
-        else:
-            new_column = pd.DataFrame(data={column_name: [''] * geoms_num}, dtype=str)
-            layer.attr_desp_dict[column_name] = 'str'
-        layer.table = pd.concat([layer.table, new_column], axis=1)
+        layer.add_attr(column_name, window.comboBox.currentText())
     # 运行错误则弹出对话框
     except RuntimeError as e:
         msgBox = QMessageBox()
         msgBox.setWindowTitle(e.args[0])
         msgBox.setText(f'\n{e.args[1]}\n')
         msgBox.addButton(QMessageBox.Ok)
+        msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
         msgBox.exec_()
     finally:
         if need_close:
             window.close()
             TableUpdate(main_exe)
+
+
+def selectGeoByStr(main_exe):
+    '''属性表选择点击OK之后'''
+    window = main_exe.WinSelect
+    index = window.combo_layer.currentIndex()
+    try:
+        # 判断选择的图层
+        if index is None or index >= len(main_exe.map.layers) or index < 0:
+            raise RuntimeError('图层错误', '未选择正确图层！')
+        layer = main_exe.map.layers[index]
+        try:
+            selected_geom = layer.Query(window.lineEdit_SelectState.text())
+        except NameError:
+            raise RuntimeError('表达式错误', '输入的字段名不存在。请重新输入表达式。')
+        except Exception:
+            raise RuntimeError('表达式错误', '表达式不合法。请重新输入表达式。')
+        select_mode = window.comboBox_SelectMode.currentIndex()
+        # 选择模式：交并差
+        if select_mode == 0:
+            layer.selectedItems = selected_geom
+        elif select_mode == 1:
+            layer.selectedItems = sorted(list(set(layer.selectedItems).union(selected_geom)))
+        elif select_mode == 2:
+            layer.selectedItems = sorted(list(set(layer.selectedItems).difference(selected_geom)))
+        else:
+            layer.selectedItems = sorted(list(set(layer.selectedItems).intersection(selected_geom)))
+        window.close()
+        if index == main_exe.map.selectedLayer:
+            TableUpdate(main_exe)
+            RefreshCanvas(main_exe, use_base=True)
+        # 如果当前图层不是选择的图层，则跳转
+        else:
+            tree = main_exe.treeWidget
+            topItem = tree.findItems('Layers', Qt.MatchStartsWith)[0]
+            tree.setCurrentItem(topItem.child(index))
+    except RuntimeError as e:
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(e.args[0])
+        msgBox.setText(f'\n{e.args[1]}\n')
+        msgBox.addButton(QMessageBox.Ok)
+        msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+        msgBox.exec_()

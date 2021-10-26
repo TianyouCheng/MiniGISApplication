@@ -22,6 +22,7 @@ def defaultUI(self):
     self.tsButtonAddFeature.setText('新增\n要素')
     self.tsButtonEditFeature.setText('编辑\n要素')
     self.tsButtonAddAttr.setText('添加\n属性')
+    self.tsButtonChart.setText('表格\n视图')
     self.bt_min.setStyleSheet('background-color:transparent')
     self.bt_max.setStyleSheet('background-color:transparent')
     self.bt_close.setStyleSheet('background-color:transparent')
@@ -77,3 +78,4 @@ def initHover(self):
     self.tsButtonSelectByAttr.setToolTip('属性\n选择')
     self.tsButtonAddFeature.setToolTip('新增\n要素')
     self.tsButtonEditFeature.setToolTip('编辑\n要素')
+    self.tsButtonChart.setToolTip('表格\n视图')

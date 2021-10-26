@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+    <script type="text/javascript" src="./dist/echarts.js"></script>
+    <script type="text/javascript" src="./dist/echarts-gl.min.js"></script>
+    <style type="text/css">
+        #main {height:100%;width:100%;position:absolute;}
+        body {margin:0px; padding:0px; overflow:hidden;}
+    </style>
+</head>
+
+<body>
+    <div id="main"></div>
+
+    <script type="text/javascript">
+        var myChart = echarts.init(document.getElementById('main'));
+        option = {
+          xAxis: {
+            type: 'category',
+            data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              data: [120, 200, 150, 80, 70, 110, 130],
+              type: 'bar'
+            }
+          ]
+        };
+
+        myChart.setOption(option);
+
+        //传入横坐标和值，设置柱状图
+        function setValue(cate,val){
+            option.xAxis.data=cate;
+            option.series[0].data=val;
+            myChart.setOption(option);
+        }
+
+        window.onresize=myChart.resize;
+
+    </script>
+</body>
+
+</html>
