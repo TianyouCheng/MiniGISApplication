@@ -1,9 +1,11 @@
 '''
 表格控件的相关操作函数
 '''
+import PyQt5
 from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget, QMessageBox
 from PyQt5.QtWidgets import QTableWidgetSelectionRange as TabRange
 from PyQt5.QtGui import QFont,QColor,QBrush
+from PyQt5.QtCore import Qt
 import random
 from .MapTool import MapTool
 from .Op_DrawLabel import RefreshCanvas
@@ -24,7 +26,7 @@ def TableView_Init(self,nColumn):
     self.tableWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # 设置只可以单选，可以使用ExtendedSelection进行多选
     self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置不可选择单个单元格，只可选择一行。
     self.tableWidget.setColumnCount(nColumn)  ##设置表格一共有五列
-    self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
+    # self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
     self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 设置第五列宽度自动调整，充满屏幕
     # 设置表头
     self.tableWidget.setHorizontalHeaderLabels(['序号', '姓名', '年龄', '地址', '成绩'])
@@ -33,11 +35,13 @@ def TableView_Init(self,nColumn):
 
     # 信号与槽函数
     self.tableWidget.itemSelectionChanged.connect(self.tableSelectionChanged)
+    self.tableWidget.itemChanged.connect(self.tableItemChanged)
 
 def TableUpdate(main_exe):
     '''更新属性数据的表格内容'''
     tabWid = main_exe.tableWidget
     tabWid.itemSelectionChanged.disconnect(main_exe.tableSelectionChanged)
+    tabWid.itemChanged.disconnect(main_exe.tableItemChanged)
     tabWid.clearContents()
     index = main_exe.map.selectedLayer
     if index == -1:
@@ -57,12 +61,14 @@ def TableUpdate(main_exe):
                 if main_exe.StyleOn:
                     item.setForeground(QColor(255, 255, 255))
                 tabWid.setItem(row, col, item)
+            tabWid.item(row,0).setFlags(Qt.ItemIsSelectable|Qt.ItemIsEnabled)
             if table.loc[row, 'ID'] in selectedItems:
                 selected_rows.append(row)
         # 在表格中选择要素
         for row in selected_rows:
             tabWid.setRangeSelected(TabRange(row, 0, row, tabWid.columnCount() - 1), True)
     tabWid.itemSelectionChanged.connect(main_exe.tableSelectionChanged)
+    tabWid.itemChanged.connect(main_exe.tableItemChanged)
 
 
 def TableSelectionChanged(main_exe):
@@ -122,3 +128,14 @@ def addAttr(main_exe):
         if need_close:
             window.close()
             TableUpdate(main_exe)
+
+def TableItemChanged(main_exe,item):
+    text=item.text()
+    if item.whatsThis()=='int':
+        text=int(text)
+    elif item.whatsThis()=='float':
+        text=float(text)
+    cur_layer=main_exe.map.layers[main_exe.map.selectedLayer]
+    cur_id=int(main_exe.tableWidget.item(item.row(),0).text())
+    cur_dict={main_exe.tableWidget.horizontalHeaderItem(item.column()).text():text}
+    main_exe.dbm.update_geometry(cur_layer,cur_id,cur_dict)

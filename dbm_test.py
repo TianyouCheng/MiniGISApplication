@@ -17,7 +17,9 @@ def create_map(dbm:DBM):
     return map
 
 if __name__=='__main__':
-    dbm=DBM()
-    a=dbm.get_layers_info()
-    print(a)
-    a.dbm
+    import re
+    s='aaaa'
+    match=re.match(r'^aa(.*)?(b)?$',s)
+    print(match)
+    if match:
+        print(match.group(2))
