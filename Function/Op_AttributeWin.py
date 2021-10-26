@@ -64,7 +64,7 @@ def setAttr(self):
     combo = QComboBox()
     if self.StyleOn:
         combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
-    RefreshAttr(self,self.map.selectedLayer)
+    RefreshAttr(self)
 
 
     # Item水平偏移
@@ -153,7 +153,7 @@ def FeatureStyle(self):
     SetStyleList(self,self.StyleList)
     RefreshCanvas(self)
 
-def RefreshAttr(main_exe,ind):
+def RefreshAttr(main_exe):
     '''
     动态获取绑定字段
     :param main_exe: 主窗体
@@ -162,6 +162,7 @@ def RefreshAttr(main_exe,ind):
     '''
     combo = QComboBox()
     combo.setFont(QFont("Microsoft YaHei", 11))
+    ind=main_exe.map.selectedLayer
     if main_exe.StyleOn:
         combo.setStyleSheet('QComboBox{color:white;}QComboBox QAbstractItemView{color:white;background:rgb(255,255,255,0.6)} ')
     if ind==-1:

@@ -25,11 +25,6 @@ def initAttr(self):
     self.Attributewidget.setGeometry(QRect(-300, 232, 200, 594))
     self.Attributewidget.setObjectName("Attributewidget")
     self.Attributewidget.setStyleSheet("background-color:transparent;")
-    # self.bt_test = QPushButton(self.Attributewidget)
-    # self.bt_test.setGeometry(QRect(5,5,80,80))
-    # self.bt_test.setText("我是按钮")
-    # self.bt_test.setObjectName("bt_test")
-    # self.bt_test.setStyleSheet("background-color:white;")
 
     self.AttrtableWidget = QTableWidget(self.Attributewidget)
     self.AttrtableWidget.setGeometry(QRect(20, 40, 159, 360))
@@ -212,7 +207,7 @@ def OperateStack(main_exe,dua=1000):
     # 指针叠起后的8个控件
     bt_OperRest = [main_exe.tsButtonSelect, main_exe.tsButtonSelectByAttr,main_exe.tsButtonNewLayer, main_exe.tsButtonEdit,
                    main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
-                   main_exe.tsButtonAddAttr, main_exe.tsButtonAttr]
+                   main_exe.tsButtonAddAttr, main_exe.tsButtonAttr,main_exe.tsButtonChart]
     bt_OperRest_pos0=[458] # 指针后8控件叠起位置
     bt_OperRest_pos1=[618] # 指针后8控件展开初始位置
     interval_small=38 # 按钮间隔
@@ -277,12 +272,14 @@ def OperateStack(main_exe,dua=1000):
             animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+3*interval_small, ypos))
             animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+3*interval_small, ypos))
             animation_group.addAnimation(animition_Widget_on)
-        animition_Widget_on = QPropertyAnimation(bt_OperRest[8], b'pos')
-        animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
-        animition_Widget_on.setDuration(dua)
-        animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+3*interval_small+interval_big, ypos))
-        animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+3*interval_small+interval_big, ypos))
-        animation_group.addAnimation(animition_Widget_on)
+        for i in range(8,10):
+            animition_Widget_on = QPropertyAnimation(bt_OperRest[i], b'pos')
+            animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
+            animition_Widget_on.setDuration(dua)
+            animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0] + 3 * interval_small + interval_big+(i-8)*interval_small, ypos))
+            animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0] + 3 * interval_small + interval_big+(i-8)*interval_small, ypos))
+            animation_group.addAnimation(animition_Widget_on)
+
     animation_group.start()
 
     main_exe.IsOperStacked = not main_exe.IsOperStacked
@@ -299,6 +296,7 @@ def EditStack(main_exe,dua=1000):
     interval_small = 38  # 按钮间隔
     interval_big = 41  # 叠起按钮与后一按钮间隔
     # 编辑叠起后一控件
+    bt_EditRest=[main_exe.tsButtonAttr,main_exe.tsButtonChart]
     bt_EditRest_pos0 = [bt_Edit_pos0[0]+interval_big]  # 编辑后一控件叠起位置
     bt_EditRest_pos1 = [bt_Edit_pos1[0]+interval_small*(len(bt_Edit)-1)+interval_big]  # 编辑后一控件展开初始位置
     interval_OperStack=160
@@ -334,15 +332,15 @@ def EditStack(main_exe,dua=1000):
 
 
     # 指针未叠，编辑未叠
-    animition_Attr_on=QPropertyAnimation(main_exe.tsButtonAttr,b'pos')
-    animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
-    animition_Attr_on.setDuration(dua)
-    animition_Attr_on.setStartValue(QPoint(bt_EditRest_pos0[0],ypos))
-    animition_Attr_on.setEndValue(QPoint(bt_EditRest_pos1[0], ypos))
+    for i in range(len(bt_EditRest)):
+        animition_Attr_on=QPropertyAnimation(bt_EditRest[i],b'pos')
+        animition_Attr_on.setEasingCurve(QEasingCurve.OutExpo)
+        animition_Attr_on.setDuration(dua)
+        animition_Attr_on.setStartValue(QPoint(bt_EditRest_pos0[0]+i*interval_small,ypos))
+        animition_Attr_on.setEndValue(QPoint(bt_EditRest_pos1[0]+i*interval_small, ypos))
+        animation_group.addAnimation(animition_Attr_on)
 
     # Widget
-    animation_group = QParallelAnimationGroup(main_exe)
-
     for i in range(len(bt_Edit)):
         animition_Widget_off = QPropertyAnimation(bt_Edit[i], b'pos')
         animition_Widget_off.setEasingCurve(QEasingCurve.OutExpo)
@@ -351,7 +349,6 @@ def EditStack(main_exe,dua=1000):
         animition_Widget_off.setEndValue(QPoint(bt_Edit_pos1[i], ypos))
         animation_group.addAnimation(animition_Widget_off)
 
-    animation_group.addAnimation(animition_Attr_on)
     animation_group.start()
 
     main_exe.IsEditStacked = not main_exe.IsEditStacked

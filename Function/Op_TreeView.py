@@ -37,7 +37,7 @@ def treeCurrentItemChanged(current, main_exe):
     main_exe.map.selectedLayer = index
     TableUpdate(main_exe)
     RefreshCanvas(main_exe, use_base=True)
-    RefreshAttr(main_exe,index)
+    RefreshAttr(main_exe)
 
 
 def TreeView_Init(self):

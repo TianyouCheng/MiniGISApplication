@@ -579,23 +579,39 @@
           <item>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QLabel" name="Drawlabel">
+             <widget class="QWidget" name="widget_4" native="true">
               <property name="minimumSize">
                <size>
                 <width>1000</width>
                 <height>480</height>
                </size>
               </property>
-              <property name="mouseTracking">
-               <bool>true</bool>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background-color:white;
+              <widget class="QLabel" name="Drawlabel">
+               <property name="geometry">
+                <rect>
+                 <x>0</x>
+                 <y>0</y>
+                 <width>1005</width>
+                 <height>480</height>
+                </rect>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>1000</width>
+                 <height>480</height>
+                </size>
+               </property>
+               <property name="mouseTracking">
+                <bool>true</bool>
+               </property>
+               <property name="styleSheet">
+                <string notr="true">background-color:white;
 border: 1px solid rgb(0,0,0,0.3)</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
              </widget>
             </item>
             <item>
