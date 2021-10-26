@@ -6,9 +6,11 @@ from osgeo import gdal
 from osgeo import ogr
 
 #region 引入窗体及函数
+
 from UI import *
 from Function import *
 from unit_test import create_map
+#from Function.Op_DrawLabel import LabelMouseDoubleClick
 import dbm_test
 #endregion
 
@@ -39,7 +41,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.CurEditLayer = None        #当前编辑的图层
         self.IsOperStacked=False      # 判断鼠标图标是否展开
         self.IsEditStacked = False  # 判断鼠标图标是否展开
-        self.TrackPoints = list()  #追踪点序列（列表形式）
         self.NeedSave = False      #是否需要保存
         self.IsChart=False         # 当前界面是否为表格窗体
 
@@ -148,12 +149,20 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonDel.clicked.connect(self.bt_del_clicked)
         self.tsButtonSelectByAttr.clicked.connect(self.bt_selectbyattr_clicked)
         self.tsButtonChart.clicked.connect(self.bt_setchart_clicked)
+        self.tsButtonAddFeature.clicked.connect(self.bt_addfeature_clicked)
+        self.tsButtonEditFeature.clicked.connect(self.bt_editfeature_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
         point = e.globalPos()
         point = self.Drawlabel.mapFromGlobal(point)
         return point
+
+    def mouseDoubleClickEvent(self, e):
+        canvas_pos = self.ConvertCor(e)
+        self.mouseDrag = False
+        if self.EditStatus and self.tool == MapTool.AddGeometry and self.Drawlabel.rect().contains(canvas_pos):
+            LabelMouseDoubleClick(self, e)
 
     # 重写鼠标移动事件
     def mouseMoveEvent(self, e):
@@ -166,22 +175,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         if self.Drawlabel.rect().contains(canvas_pos):
             LabelMouseMove(self, e)
-        '''
-        painter = QtGui.QPainter(self.Drawlabel.pixmap())
-        
-        # painter.setPen(QtGui.QColor('white'))
-        
-        if self.EditStatus:
-            if self.tool == MapTool.AddGeometry:
-                if self.type == PointD:
-                    painter.drawArc(QRect(canvas_pos.x() - 1, canvas_pos.y() - 1, 2, 2), 0, 360 * 16)
-                    painter.end()
-                elif self.type == Polyline:
-                    painter.
-            elif self.tool == MapTool.EditGeometry:
-                pass
-            self.update()
-        '''
         self.mouseLastLoc.setX(canvas_pos.x())
         self.mouseLastLoc.setY(canvas_pos.y())
 
@@ -275,6 +268,34 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             else:
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
                 self.treeWidget.setEnabled(True)
+
+    def bt_addfeature_clicked(self):
+        if self.EditStatus:
+            self.MapTool = MapTool.AddGeometry
+            self.NeedSave = False
+        else:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先进入编辑状态。\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+
+    def bt_editfeature_clicked(self):
+        if self.EditStatus:
+            self.MapTool = MapTool.EditGeometry
+            self.NeedSave = False
+        else:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先进入编辑状态。\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
     def bt_del_clicked(self):
         if not self.EditStatus:
             msgBox = QMessageBox()
@@ -285,7 +306,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.addButton(QMessageBox.Ok)
             # 模态对话框
             msgBox.exec_()
-        elif self.MapTool != MapTool.ditGeometry:
+        elif self.MapTool != MapTool.EditGeometry:
             msgBox = QMessageBox()
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n目前为创建要素状态，请先切换到编辑要素状态\n")
