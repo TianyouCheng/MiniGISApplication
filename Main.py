@@ -45,6 +45,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
         # 初始化属性窗体
         initAttr(self)
+        # 初始化表格窗体
+        initChart(self)
         # 设置属性窗体
         setAttr(self)
         # 叠起控件
@@ -449,10 +451,26 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         TableSelectionChanged(self)
 
     def bt_setchart_clicked(self):
-        initChart(self)
+        if not self.IsChart:
+            self.WinChart = WinChartSet()
 
-    # endregion
+            # 初始化combobox
+            ind = self.map.selectedLayer
+            combo=self.WinChart.comboBox
+            combo1=self.WinChart.comboBox_2
+            if ind == -1:
+                combo.addItems([''])
+                combo1.addItems([''])
+            else:
+                combo.addItems(self.map.layers[ind].table.columns)
+                combo1.addItems(self.map.layers[ind].table.columns)
 
+            self.WinChart.show()
+            # 设置OK键函数
+            self.WinChart.bt_OK.clicked.connect(lambda:SwitchChart(self))
+            self.WinChart.bt_Cancel.clicked.connect(self.WinChart.close)
+        else:
+            SwitchChart(self)
 
 # region 子窗体
 class WinNewLayer(QWidget,Ui_Win_NewLayer):
@@ -474,6 +492,12 @@ class WinSelectByAttr(QWidget, Ui_Win_SelectByAttr):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+
+class WinChartSet(QWidget, Ui_Win_Chart):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+
 
 # endregion
 
