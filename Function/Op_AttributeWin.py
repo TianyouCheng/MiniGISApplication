@@ -20,7 +20,7 @@ def setAttr(self):
 
     # Item轮廓颜色
     bt=QPushButton('')
-    bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:black}')
+    bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:#f5f500}')
     bt.clicked.connect(lambda:selectcolor(self,0))
     self.StyleList[0] ='black'
     self.AttrtableWidget.setCellWidget(0,1,bt)
@@ -40,12 +40,12 @@ def setAttr(self):
 
     # Item轮廓宽度
     item = self.AttrtableWidget.item(2, 1)
-    item.setText(_translate("Form", "3"))
+    item.setText(_translate("Form", "1.5"))
     self.StyleList[2] = 1.5
 
     # Item跳虫颜色
     bt = QPushButton('')
-    bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:black;}')
+    bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:#6edda4;}')
     bt.clicked.connect(lambda: selectcolor(self,3))
     self.StyleList[3] = 'black'
     self.AttrtableWidget.setCellWidget(3, 1, bt)
@@ -84,7 +84,7 @@ def setAttr(self):
 
     # Item字体颜色
     bt = QPushButton('')
-    bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:black;}')
+    bt.setStyleSheet('QPushButton{margin:3px 55px 3px 0px;background-color:#000000;}')
     bt.clicked.connect(lambda: selectcolor(self,10))
     self.StyleList[10] = 'black'
     self.AttrtableWidget.setCellWidget(10, 1, bt)
@@ -118,15 +118,15 @@ def is_number(s):
 
 def FeatureStyle(self):
     '''为要素绘制符号和注记'''
-    LineStyle = [Qt.SolidLine, Qt.DashLine, Qt.DashDotLine, Qt.DotLine, Qt.DashDotDotLine]
+
     # 获取“轮廓宽度”
     item = self.AttrtableWidget.item(2, 1)
     if is_number(item.text()):
-        self.StyleList[2]=int(item.text())
+        self.StyleList[2]=float(item.text())
     else:
         raise TypeError('数值类型错误')
     # 获取“轮廓样式”的索引
-    self.StyleList[1]=LineStyle[int(self.AttrtableWidget.cellWidget(1,1).currentIndex())]
+    self.StyleList[1]=int(self.AttrtableWidget.cellWidget(1,1).currentIndex())
     # 获取“可见性”的索引self.StyleList[5]
     self.StyleList[5] = int(self.AttrtableWidget.cellWidget(5, 1).currentIndex())
     # 获取“绑定字段”

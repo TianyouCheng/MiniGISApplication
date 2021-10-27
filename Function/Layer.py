@@ -25,6 +25,7 @@ class Layer(object):
 
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……
         self.edited_geometry=[]
+        self.saved_in_dbm=False
 
     def RefreshBox(self):
         '''更新图层的外包矩形'''

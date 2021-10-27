@@ -32,7 +32,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.StyleOn=True    # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
         self.dbm = DBM()
-        # self.map = create_map(self.dbm)    # 当前地图
+        # self.map = dbm_test.create_map(self.dbm)    # 当前地图
         self.map = create_map()
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
@@ -352,7 +352,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     def bt_open_from_dbm_ok(self):
         cur_row=self.WinDBLoad.DBL_tableWidget.currentRow()
-        print(cur_row)
         cur_item=self.WinDBLoad.DBL_tableWidget.item(cur_row,0)
         layer_name=cur_item.text()
         new_layer=self.dbm.load_layer(layer_name)
@@ -363,7 +362,16 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         
         self.WinDBLoad.close()
 
-
+    def bt_open_from_dbm_delete(self):
+        cur_row=self.WinDBLoad.DBL_tableWidget.currentRow()
+        cur_item=self.WinDBLoad.DBL_tableWidget.item(cur_row,0)
+        layer_name=cur_item.text()
+        self.dbm.delete_layer(layer_name)
+        for layer in self.map.layers:
+            if layer.name == layer_name:
+                layer.saved_in_dbm=False
+        self.WinDBLoad.DBL_tableWidget.removeRow(cur_row)
+        
 
     def bt_save_to_dbm(self):
         node=self.treeWidget.currentItem()
@@ -378,6 +386,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.exec_()
         else:
             self.dbm.add_layer_from_memory(self.map.layers[self.map.selectedLayer])
+            self.map.layers[self.map.selectedLayer].saved_in_dbm=True
             msgBox = QMessageBox()
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n保存成功\n")
@@ -471,6 +480,10 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         '''属性表中选择几何体变化'''
         TableSelectionChanged(self)
 
+    def tableItemChanged(self,item):
+        TableItemChanged(self,item)
+
+    # endregion
     def bt_setchart_clicked(self):
         if not self.IsChart:
             self.WinChart = WinChartSet()

@@ -36,7 +36,7 @@ def create_map() -> Map:
     layer3.AddGeometry(polygon2)
 
     layer3.selectedItems.append(1)
-    map.AddLayer(layer3, 2)
-    map.selectedLayer = 2
+    # map.AddLayer(layer3, 2)
+    map.selectedLayer = 1
     map.FullScreen(1010, 566)
     return map

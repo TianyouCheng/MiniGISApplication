@@ -83,6 +83,7 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
     screen_minP = map_.ScreenToGeo(PointD(0, screen_size[1]), screen_size)
     screen_maxP = map_.ScreenToGeo(PointD(screen_size[0], 0), screen_size)
     screen_geobox = RectangleD(screen_minP.X, screen_minP.Y, screen_maxP.X, screen_maxP.Y)
+    LineStyle=[Qt.SolidLine,Qt.DashLine,Qt.DashDotLine,Qt.DotLine,Qt.DashDotDotLine]
 
     # 若地图工程在显示范围内，则绘制
     if map_.box.IsIntersectBox(screen_geobox):
@@ -114,7 +115,7 @@ def RefreshBasePixmap(painter: QPainter, map_: Map, screen_size):
                     # 设置轮廓颜色、轮廓宽度
                     tmp_pen=QPen(QColor(geometry.StyleList[0]), geometry.StyleList[2])
                     # 设置线型样式
-                    tmp_pen.setStyle(geometry.StyleList[1])
+                    tmp_pen.setStyle(LineStyle[geometry.StyleList[1]])
                     painter.setPen(tmp_pen)
                     # 设置填充颜色
                     painter.setBrush(QBrush(QColor(geometry.StyleList[3])))

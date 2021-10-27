@@ -14,7 +14,7 @@ class Map(object):
         self.scale = 1              # 地图缩小系数（即比例尺为1:scale），scale越大几何体越小
         self.box = RectangleD()     # 全地图的外包矩形
         self.selectedLayer = -1     # 选定图层的下标，默认为-1，即未选择图层
-        self.edited_layer=[]
+        
 
     def RefreshBox(self):
         '''更新外包矩形框'''
