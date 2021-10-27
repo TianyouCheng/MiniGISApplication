@@ -2,9 +2,9 @@
 表格控件的相关操作函数
 '''
 import PyQt5
-from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget, QMessageBox
+from PyQt5.QtWidgets import QTableWidgetItem,QAbstractItemView,QHeaderView, QTableWidget, QMessageBox,QMenu
 from PyQt5.QtWidgets import QTableWidgetSelectionRange as TabRange
-from PyQt5.QtGui import QFont,QColor,QBrush, QIcon
+from PyQt5.QtGui import QFont,QColor,QBrush, QIcon,QCursor
 from PyQt5.Qt import Qt
 from PyQt5.QtCore import Qt as qcq
 import random
@@ -37,6 +37,20 @@ def TableView_Init(self,nColumn):
     # 信号与槽函数
     self.tableWidget.itemSelectionChanged.connect(self.tableSelectionChanged)
     self.tableWidget.itemChanged.connect(self.tableItemChanged)
+
+    # 右键菜单
+    self.tableWidget.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
+    self.tableWidget.horizontalHeader().customContextMenuRequested.connect(lambda:TableContextMenu(self))
+
+def TableContextMenu(self):
+    self.contextMenu=QMenu()
+    self.actionA = self.contextMenu.addAction(u'动作a')
+    self.contextMenu.popup(QCursor.pos())
+    self.actionA.triggered.connect(lambda:actionHandler())
+    self.contextMenu.show()
+
+def actionHandler():
+    print(222)
 
 def TableUpdate(main_exe):
     '''更新属性数据的表格内容'''
