@@ -191,13 +191,11 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             elif edit_layer.type == Polyline:
                 edit_geom.append(PointD(mouse_loc.x(), mouse_loc.y()))
                 RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
-            elif edit_layer.type == Polygon:
+            elif edit_layer.type == Polygon or edit_layer.type == MultiPolyline:
                 if len(edit_geom) == 0:
                     edit_geom.append(list())
                 edit_geom[-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
                 RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
-            elif edit_layer.type == MultiPolyline:
-                pass
             elif edit_layer.type == MultiPolygon:
                 pass
     else:
@@ -205,9 +203,11 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             edit_layer = main_exe.CurEditLayer
             edit_geom = edit_layer.edited_geometry
             need_save = main_exe.NeedSave
+            #注意这里右键也有一个新对象
             if edit_layer.type == Polygon:
                 edit_geom.append(list())
-
+            elif edit_layer.type == MultiPolyline:
+                edit_geom.append(list())
         elif main_exe.tool == MapTool.EditGeometry:
             pass
 
