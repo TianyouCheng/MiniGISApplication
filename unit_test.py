@@ -11,6 +11,8 @@ def create_map() -> Map:
     '''构建一个简单的地图MAP样例'''
     map = Map()
     layer1 = Layer(Polyline, name='lines')
+    layer1.add_attr('name', 'str')
+    layer1.add_attr('value', 'float')
     layer1.AddGeometry(Polyline([PointD(1, 1), PointD(2, 2), PointD(2, 4), PointD(4, 6)], id=0),
                        pd.DataFrame({'ID': [0], 'name': ['aaa'], 'value': [20]}))
     layer1.AddGeometry(Polyline([PointD(0, 6), PointD(1, 3), PointD(2, 5), PointD(3, 3)], id=1),
@@ -36,7 +38,7 @@ def create_map() -> Map:
     layer3.AddGeometry(polygon2)
 
     layer3.selectedItems.append(1)
-    # map.AddLayer(layer3, 2)
+    map.AddLayer(layer3, 2)
     map.selectedLayer = 1
     map.FullScreen(1010, 566)
     return map

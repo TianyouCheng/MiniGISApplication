@@ -58,11 +58,19 @@ class Layer(object):
                 else self.table['ID'].max() + 1
         self.geometries.append(geometry)
         geometry.ID = new_id
+        new_row = pd.DataFrame(columns=self.table.columns)
+        # 添加属性
+        default_val = {'int': 0, 'float': 0.0, 'str': ''}
         if row is None:
-            row = pd.DataFrame({'ID': [new_id]})
-        else:
-            row['ID'] = new_id
-        self.table = self.table.append(row, ignore_index=True)
+            row = {key: default_val[val] for key, val in self.attr_desp_dict.items()}
+        for col_name, col_type in self.attr_desp_dict.items():
+            if col_name == 'ID':
+                new_row[col_name] = [new_id]
+            elif col_name in row:
+                new_row[col_name] = row[col_name] if isinstance(row, pd.DataFrame) else [row[col_name]]
+            else:
+                new_row[col_name] = [default_val[col_type]]
+        self.table = self.table.append(new_row, ignore_index=True)
         self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()
 
@@ -97,6 +105,14 @@ class Layer(object):
             raise ValueError(f'不支持添加"{attr_type}"类型字段')
         self.attr_desp_dict[attr_name] = attr_type
         self.table = pd.concat([self.table, new_column], axis=1)
+
+    def del_attr(self, attr_name):
+        '''
+        删除属性表中的一列字段
+        :param attr_name: 列名称
+        '''
+        del self.table[attr_name]
+        del self.attr_desp_dict[attr_name]
 
     def Query(self, query, *args):
         '''

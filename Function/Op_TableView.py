@@ -40,17 +40,46 @@ def TableView_Init(self,nColumn):
 
     # 右键菜单
     self.tableWidget.horizontalHeader().setContextMenuPolicy(Qt.CustomContextMenu)
-    self.tableWidget.horizontalHeader().customContextMenuRequested.connect(lambda:TableContextMenu(self))
+    self.tableWidget.horizontalHeader().customContextMenuRequested.connect(lambda pos: TableContextMenu(self, pos))
 
-def TableContextMenu(self):
-    self.contextMenu=QMenu()
-    self.actionA = self.contextMenu.addAction(u'动作a')
-    self.contextMenu.popup(QCursor.pos())
-    self.actionA.triggered.connect(lambda:actionHandler())
-    self.contextMenu.show()
+def TableContextMenu(self, pos):
+    '''添加右键菜单内容，触发函数'''
+    if self.map.selectedLayer == -1:
+        return
+    contextMenu=QMenu(self)
+    actionA = contextMenu.addAction(u'删除列')
+    contextMenu.popup(QCursor.pos())
+    col_idx = self.tableWidget.horizontalHeader().logicalIndexAt(pos)
+    layer = self.map.layers[self.map.selectedLayer]
+    actionA.triggered.connect(lambda: del_column(self, layer, col_idx))
+    contextMenu.show()
 
-def actionHandler():
-    print(222)
+
+def del_column(main_exe, layer, child):
+    '''对表格的列标题，右键菜单删除列操作后'''
+    msgBox = QMessageBox()
+    msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+    col_name = layer.table.columns[child]
+    btn_ok = msgBox.addButton(QMessageBox.Ok)
+    if col_name == 'ID':
+        msgBox.setIcon(QMessageBox.Critical)
+        msgBox.setWindowTitle('删除列错误')
+        msgBox.setText('\n不能删除"ID"字段！\n')
+    else:
+        msgBox.setIcon(QMessageBox.Question)
+        msgBox.setWindowTitle('删除列')
+        msgBox.setText(f'\n确认删除"{col_name}"字段吗？\n')
+        msgBox.addButton(QMessageBox.Cancel)
+        msgBox.buttonClicked.connect(lambda btn: _del_check(col_name, btn))
+
+        # 点击OK，确认删除字段
+        def _del_check(name, btn_):
+            if btn_ is btn_ok:
+                layer.del_attr(name)
+                TableUpdate(main_exe)
+
+    msgBox.exec_()
+
 
 def TableUpdate(main_exe):
     '''更新属性数据的表格内容'''
@@ -93,7 +122,7 @@ def TableSelectionChanged(main_exe):
     layer = map_.layers[map_.selectedLayer]
     r = TabRange()
     r.bottomRow()
-    # 仅在非编辑状态下联动表格
+    # 仅在非编辑状态下联动表格，TODO 编辑模式下请hyq自己考虑
     if not main_exe.EditStatus:
         layer.selectedItems.clear()
         for range_ in tabWid.selectedRanges():

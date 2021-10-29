@@ -265,6 +265,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 self.treeWidget.setEnabled(False)
                 map_ = self.map
                 map_.layers[map_.selectedLayer].selectedItems.clear()
+                TableUpdate(self)
                 RefreshCanvas(self, use_base=True)
 
             else:
