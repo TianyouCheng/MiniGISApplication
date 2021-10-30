@@ -1,7 +1,7 @@
 '''
 树形控件的相关操作函数
 '''
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
 from PyQt5.QtGui import QIcon, QCursor,QFont
 from PyQt5.QtCore import Qt
 from .Map import Map
@@ -24,7 +24,9 @@ def treeCurrentItemChanged(current, main_exe):
     '''选择的当前操作图层发生变化'''
     layersItem = main_exe.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
     # 点到了layer标签，虽然不会显示被点选状态，但是还是触发该事件，需要引导一下
-    if current is None or current.parent() is None:
+    if current is None:
+        return
+    if current.parent() is None:
         if layersItem.childCount() > 0:
             main_exe.treeWidget.setCurrentItem(layersItem.child(0))
             return
@@ -54,6 +56,31 @@ def TreeView_Init(self):
 
     self.treeWidget.header().setVisible(False)
     self.treeWidget.expandAll()
+
+    # 设置右键菜单
+    self.treeWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+    self.treeWidget.customContextMenuRequested.connect(lambda pos: TreeContextMenu(self, pos))
+
+
+def TreeContextMenu(main_exe, pos):
+    '''添加右键菜单内容，触发函数'''
+    layersItem = main_exe.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+    item = main_exe.treeWidget.itemAt(pos)
+    # 点到了非图层的东西（包括列表外、"Layer"标签、"点""线""面"标签）
+    if item is None or item.parent() is None or item.parent() is not layersItem:
+        return
+    index = item.parent().indexOfChild(item)
+    contextMenu = QMenu(main_exe.treeWidget)
+    # 添加右键菜单的条目
+    a_moveup = contextMenu.addAction(u'上移图层')
+    a_moveup.setEnabled(index > 0)
+    a_movedown = contextMenu.addAction(u'下移图层')
+    a_movedown.setEnabled(index < item.parent().childCount() - 1)
+    a_delLayer = contextMenu.addAction(u'删除该图层')
+    contextMenu.popup(QCursor.pos())
+    # a_moveup.triggered.connect(lambda: del_column(self, layer, col_idx))
+    contextMenu.show()
+
 
 def NewLayer(self):
     txtName = self.Winnewlayer.lineEdit.text()

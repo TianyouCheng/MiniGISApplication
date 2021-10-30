@@ -241,6 +241,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         if not node:
             msgBox = QMessageBox()
             msgBox.setWindowTitle(u'提示')
+            msgBox.setIcon(QMessageBox.Warning)
             msgBox.setText(u"\n请先选择要编辑的图层。\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
             # 隐藏ok按钮
@@ -252,6 +253,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             if self.EditStatus:
                 msgBox = QMessageBox()
                 msgBox.setWindowTitle(u'提示')
+                msgBox.setIcon(QMessageBox.Information)
                 txtname = self.treeWidget.currentItem().text(0)
                 # txttype = self.treeWidget.currentItem().child(0).text(0)
                 # msgBox.setText(u"\n您现在编辑的是：\n" + txtname + txttype + "对象图层。\n")
@@ -265,12 +267,15 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 self.treeWidget.setEnabled(False)
                 map_ = self.map
                 map_.layers[map_.selectedLayer].selectedItems.clear()
+                self.tableWidget.setEditTriggers(QAbstractItemView.SelectedClicked |
+                                                 QAbstractItemView.DoubleClicked)
                 TableUpdate(self)
                 RefreshCanvas(self, use_base=True)
 
             else:
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
                 self.treeWidget.setEnabled(True)
+                self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
     def bt_addfeature_clicked(self):
         if self.EditStatus:
@@ -279,6 +284,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         else:
             msgBox = QMessageBox()
             msgBox.setWindowTitle(u'提示')
+            msgBox.setIcon(QMessageBox.Information)
             msgBox.setText(u"\n请先进入编辑状态。\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
             # 隐藏ok按钮
@@ -292,6 +298,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n请先进入编辑状态。\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
@@ -302,6 +309,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def bt_del_clicked(self):
         if not self.EditStatus:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n请先进入编辑状态。\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
@@ -311,6 +319,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.exec_()
         elif self.MapTool != MapTool.EditGeometry:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n目前为创建要素状态，请先切换到编辑要素状态\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
@@ -320,6 +329,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.exec_()
         elif len(self.CurEditLayer.selectedItems) == 0:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n请先选择要删除的对象\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
@@ -378,6 +388,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         node=self.treeWidget.currentItem()
         if not node:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n请先选择要编辑的图层。\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
@@ -389,6 +400,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             self.dbm.add_layer_from_memory(self.map.layers[self.map.selectedLayer])
             self.map.layers[self.map.selectedLayer].saved_in_dbm=True
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Information)
             msgBox.setWindowTitle(u'提示')
             msgBox.setText(u"\n保存成功\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
@@ -417,6 +429,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         data_source = driver.Open(ofd, 0)
         if data_source is None:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Critical)
             msgBox.setText("未找到符合要求的shp文件")
             msgBox.addButton(QMessageBox.Ok)
             msgBox.exec_()
@@ -452,6 +465,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # 地图中没有图层，需要报信息
         if len(self.map.layers) == 0:
             msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Critical)
             msgBox.setWindowTitle('图层错误')
             msgBox.setText('\n该地图项目中没有图层。\n')
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))

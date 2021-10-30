@@ -27,7 +27,7 @@ def TableView_Init(self,nColumn):
     self.tableWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # 设置只可以单选，可以使用ExtendedSelection进行多选
     self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置不可选择单个单元格，只可选择一行。
     self.tableWidget.setColumnCount(nColumn)  ##设置表格一共有五列
-    # self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
+    self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
     self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 设置第五列宽度自动调整，充满屏幕
     # 设置表头
     self.tableWidget.setHorizontalHeaderLabels(['序号', '姓名', '年龄', '地址', '成绩'])
@@ -48,6 +48,7 @@ def TableContextMenu(self, pos):
         return
     contextMenu=QMenu(self)
     actionA = contextMenu.addAction(u'删除列')
+    actionA.setEnabled(self.EditStatus)
     contextMenu.popup(QCursor.pos())
     col_idx = self.tableWidget.horizontalHeader().logicalIndexAt(pos)
     layer = self.map.layers[self.map.selectedLayer]
@@ -61,6 +62,7 @@ def del_column(main_exe, layer, child):
     msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
     col_name = layer.table.columns[child]
     btn_ok = msgBox.addButton(QMessageBox.Ok)
+    # 选中ID列，是不允许删除的
     if col_name == 'ID':
         msgBox.setIcon(QMessageBox.Critical)
         msgBox.setWindowTitle('删除列错误')
@@ -70,13 +72,12 @@ def del_column(main_exe, layer, child):
         msgBox.setWindowTitle('删除列')
         msgBox.setText(f'\n确认删除"{col_name}"字段吗？\n')
         msgBox.addButton(QMessageBox.Cancel)
-        msgBox.buttonClicked.connect(lambda btn: _del_check(col_name, btn))
+        btn_ok.clicked.connect(lambda: _del_check(col_name))
 
         # 点击OK，确认删除字段
-        def _del_check(name, btn_):
-            if btn_ is btn_ok:
-                layer.del_attr(name)
-                TableUpdate(main_exe)
+        def _del_check(name):
+            layer.del_attr(name)
+            TableUpdate(main_exe)
 
     msgBox.exec_()
 
@@ -84,6 +85,7 @@ def del_column(main_exe, layer, child):
 def TableUpdate(main_exe):
     '''更新属性数据的表格内容'''
     tabWid = main_exe.tableWidget
+    # 先断开表格事件，最后再重连
     tabWid.itemSelectionChanged.disconnect(main_exe.tableSelectionChanged)
     tabWid.itemChanged.disconnect(main_exe.tableItemChanged)
     tabWid.clearContents()
@@ -94,11 +96,13 @@ def TableUpdate(main_exe):
     else:
         layer = main_exe.map.layers[main_exe.map.selectedLayer]
         table = layer.table
+        # 设置表格的行数列数
         tabWid.setColumnCount(table.shape[1])
         tabWid.setRowCount(table.shape[0])
         tabWid.setHorizontalHeaderLabels(table.columns)
         selectedItems = set(layer.selectedItems)
         selected_rows = []
+        # 逐个添加数据
         for row in range(table.shape[0]):
             for col in range(table.shape[1]):
                 item = QTableWidgetItem(str(table.iloc[row, col]))
@@ -151,6 +155,7 @@ def addAttr(main_exe):
     # 运行错误则弹出对话框
     except RuntimeError as e:
         msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Critical)
         msgBox.setWindowTitle(e.args[0])
         msgBox.setText(f'\n{e.args[1]}\n')
         msgBox.addButton(QMessageBox.Ok)
@@ -208,6 +213,7 @@ def selectGeoByStr(main_exe):
             tree.setCurrentItem(topItem.child(index))
     except RuntimeError as e:
         msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Critical)
         msgBox.setWindowTitle(e.args[0])
         msgBox.setText(f'\n{e.args[1]}\n')
         msgBox.addButton(QMessageBox.Ok)
