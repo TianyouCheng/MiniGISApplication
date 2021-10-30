@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from Function.Op_TreeView import DragableTree
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -40,7 +40,7 @@ class Ui_MainWindow(object):
         self.widget_5.setMinimumSize(QtCore.QSize(200, 594))
         self.widget_5.setMaximumSize(QtCore.QSize(200, 16777215))
         self.widget_5.setObjectName("widget_5")
-        self.treeWidget = QtWidgets.QTreeWidget(self.widget_5)
+        self.treeWidget = DragableTree(self.widget_5)
         self.treeWidget.setGeometry(QtCore.QRect(0, 0, 200, 594))
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)

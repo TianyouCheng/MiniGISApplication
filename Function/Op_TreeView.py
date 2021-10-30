@@ -1,7 +1,7 @@
 '''
 树形控件的相关操作函数
 '''
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu,QAbstractItemView
 from PyQt5.QtGui import QIcon, QCursor,QFont
 from PyQt5.QtCore import Qt
 from .Map import Map
@@ -10,6 +10,36 @@ from .Geometry import *
 from .Op_DrawLabel import RefreshCanvas
 from .Op_TableView import TableUpdate
 from .Op_AttributeWin import RefreshAttr
+
+# 定义可拖拽的QTreeWidget
+# 以后每次使用Qt Designer更新界面后，都需要重新在MainGUI.py中导入该类，并将Treewidget用该类初始化！！！
+class DragableTree(QTreeWidget):
+    def __init__(self,parent):
+        super(DragableTree, self).__init__(parent)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QAbstractItemView.InternalMove)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+
+    # https://www.tutorialspoint.com/pyqt/pyqt_drag_and_drop.htm
+    # DragEnterEvent provides an event which is sent to the target widget as dragging action enters it.
+    #
+    # DragMoveEvent is used when the drag and drop action is in progress.
+    #
+    # DragLeaveEvent is generated as the drag and drop action leaves the widget.
+    #
+    # DropEvent, on the other hand, occurs when the drop is completed. The event’s proposed action can be accepted or rejected conditionally.
+
+    # def dragMoveEvent(self,e):
+    #     print(1111)
+
+    # def dragEnterEvent(self,e):
+    #     print(2222)
+
+    # def dragLeaveEvent(self,e):
+    #     print(3333)
+
+    # def dropEvent(self,e):
+    #     print(4444)
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
     '''图层可见性发生变化，即列表勾选改变'''
