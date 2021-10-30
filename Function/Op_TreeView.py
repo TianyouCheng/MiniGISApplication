@@ -19,6 +19,7 @@ class DragableTree(QTreeWidget):
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.InternalMove)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.m_bAdjustPos=True
 
     # https://www.tutorialspoint.com/pyqt/pyqt_drag_and_drop.htm
     # DragEnterEvent provides an event which is sent to the target widget as dragging action enters it.
@@ -29,17 +30,42 @@ class DragableTree(QTreeWidget):
     #
     # DropEvent, on the other hand, occurs when the drop is completed. The event’s proposed action can be accepted or rejected conditionally.
 
+    # def mousePressEvent(self,e):
+    #     layersItem = self.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+    #     curritem = self.itemAt(e.pos())
+    #     if curritem:
+    #         if curritem.parent() is not layersItem:
+    #             self.m_bAdjustPos=False
+    #     return
+        # print(e.pos())
+        # curritem=self.itemAt(e.pos())
+        # print(curritem.text(0))
+
     # def dragMoveEvent(self,e):
     #     print(1111)
 
     # def dragEnterEvent(self,e):
-    #     print(2222)
+    #     layersItem = self.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+    #     curritem = self.itemAt(e.pos())
+    #     if curritem:
+    #         if curritem.parent() is not layersItem:
+    #             self.m_bAdjustPos = False
+    #
+    #     if self.m_bAdjustPos:
+    #         e.acceptProposedAction()
 
-    # def dragLeaveEvent(self,e):
-    #     print(3333)
+    def dragLeaveEvent(self,e):
+        layersItem = self.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
+        curritem = self.itemAt(e.pos())
+        if curritem:
+            if curritem.parent() is not layersItem:
+                self.m_bAdjustPos = False
+
+        if self.m_bAdjustPos:
+            e.acceptProposedAction()
 
     # def dropEvent(self,e):
-    #     print(4444)
+
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
     '''图层可见性发生变化，即列表勾选改变'''
