@@ -1,10 +1,9 @@
 '''
 树形控件的相关操作函数
 '''
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu,QAbstractItemView
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QMenu,QAbstractItemView, QMessageBox
 from PyQt5.QtGui import QIcon, QCursor,QFont
 from PyQt5.QtCore import Qt
-from .Map import Map
 from .Layer import Layer
 from .Geometry import *
 from .Op_DrawLabel import RefreshCanvas
@@ -151,20 +150,76 @@ def TreeContextMenu(main_exe, pos):
     '''添加右键菜单内容，触发函数'''
     layersItem = main_exe.treeWidget.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
     item = main_exe.treeWidget.itemAt(pos)
-    # 点到了非图层的东西（包括列表外、"Layer"标签、"点""线""面"标签）
-    if item is None or item.parent() is None or item.parent() is not layersItem:
-        return
-    index = item.parent().indexOfChild(item)
     contextMenu = QMenu(main_exe.treeWidget)
-    # 添加右键菜单的条目
-    a_moveup = contextMenu.addAction(u'上移图层')
-    a_moveup.setEnabled(index > 0)
-    a_movedown = contextMenu.addAction(u'下移图层')
-    a_movedown.setEnabled(index < item.parent().childCount() - 1)
-    a_delLayer = contextMenu.addAction(u'删除该图层')
+    # 点到了非图层的东西（包括列表外、"Layer"标签、"点""线""面"标签）
+    if not (item is None or item.parent() is None or item.parent() is not layersItem):
+        index = item.parent().indexOfChild(item)
+        # 添加右键菜单的条目
+        a_moveup = contextMenu.addAction(u'上移图层')
+        a_moveup.setEnabled(index > 0)
+        a_moveup.triggered.connect(lambda: move_up(main_exe, index))
+        a_movedown = contextMenu.addAction(u'下移图层')
+        a_movedown.setEnabled(index < item.parent().childCount() - 1)
+        a_movedown.triggered.connect(lambda: move_down(main_exe, index))
+        a_delLayer = contextMenu.addAction(u'删除该图层')
+        a_delLayer.triggered.connect(lambda: check_del_layer(main_exe, index))
+    a_clearLayers = contextMenu.addAction(u'清空所有图层')
+    a_clearLayers.setEnabled(layersItem.childCount() > 0)
+    a_clearLayers.triggered.connect(lambda: check_clear_layer(main_exe))
     contextMenu.popup(QCursor.pos())
-    # a_moveup.triggered.connect(lambda: del_column(self, layer, col_idx))
     contextMenu.show()
+
+    def move_up(main_exe_, layer_index):
+        '''图层上移，然后更新界面'''
+        main_exe_.map.MoveUpLayer(layer_index)
+        TreeViewUpdateList(main_exe_)
+        TableUpdate(main_exe_)
+        RefreshCanvas(main_exe_)
+
+    def move_down(main_exe_, layer_index):
+        '''图层下移，然后更新界面'''
+        main_exe_.map.MoveDownLayer(layer_index)
+        TreeViewUpdateList(main_exe_)
+        TableUpdate(main_exe_)
+        RefreshCanvas(main_exe_)
+
+    def check_del_layer(main_exe_, layer_index):
+        '''弹出消息框，询问是否确定删除图层'''
+        def del_layer(_main_exe, _index_):
+            '''确实删除图层，并更新界面'''
+            _main_exe.map.DelLayer(_index_)
+            TreeViewUpdateList(_main_exe)
+            TableUpdate(_main_exe)
+            RefreshCanvas(_main_exe)
+
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Question)
+        msgBox.setWindowTitle('删除图层')
+        msgBox.setText(f'\n确认删除"{main_exe_.map.layers[layer_index].name}"图层？\n')
+        btn_ok = msgBox.addButton(QMessageBox.Ok)
+        msgBox.addButton(QMessageBox.Cancel)
+        btn_ok.clicked.connect(lambda: del_layer(main_exe_, layer_index))
+        msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+        msgBox.exec_()
+
+    def check_clear_layer(main_exe_):
+        '''弹出消息框，询问是否清空图层'''
+        def clear_layer(_main_exe):
+            '''确实删除图层，并更新界面'''
+            _main_exe.map.ClearLayers()
+            TreeViewUpdateList(_main_exe)
+            TableUpdate(_main_exe)
+            RefreshCanvas(_main_exe)
+
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Question)
+        msgBox.setWindowTitle('清空图层')
+        msgBox.setText(u'\n确认清空所有图层？\n')
+        btn_ok = msgBox.addButton(QMessageBox.Ok)
+        msgBox.addButton(QMessageBox.Cancel)
+        btn_ok.clicked.connect(lambda: clear_layer(main_exe_))
+        msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+        msgBox.exec_()
 
 
 def NewLayer(self):

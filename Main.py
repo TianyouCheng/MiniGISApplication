@@ -235,10 +235,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Drawlabel.setCursor(QCursor())
 
     def bt_edit_clicked(self):
-        if self.StyleOn:
-            EditStack(self)
         node=self.treeWidget.currentItem()
-        if not node:
+        if (not node) or not node.parent():
             msgBox = QMessageBox()
             msgBox.setWindowTitle(u'提示')
             msgBox.setIcon(QMessageBox.Warning)
@@ -249,6 +247,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             # 模态对话框
             msgBox.exec_()
         else:
+            if self.StyleOn:
+                EditStack(self)
             self.EditStatus=not(self.EditStatus)
             if self.EditStatus:
                 msgBox = QMessageBox()
