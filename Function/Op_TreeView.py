@@ -20,6 +20,8 @@ class DragableTree(QTreeWidget):
         self.setDragDropMode(QAbstractItemView.InternalMove)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.m_bAdjustPos=True
+        self.btPressed = False
+        self.firstpt=0
 
     # https://www.tutorialspoint.com/pyqt/pyqt_drag_and_drop.htm
     # DragEnterEvent provides an event which is sent to the target widget as dragging action enters it.
@@ -30,41 +32,68 @@ class DragableTree(QTreeWidget):
     #
     # DropEvent, on the other hand, occurs when the drop is completed. The event’s proposed action can be accepted or rejected conditionally.
 
-    # def mousePressEvent(self,e):
-    #     layersItem = self.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
-    #     curritem = self.itemAt(e.pos())
-    #     if curritem:
-    #         if curritem.parent() is not layersItem:
-    #             self.m_bAdjustPos=False
-    #     return
-        # print(e.pos())
-        # curritem=self.itemAt(e.pos())
-        # print(curritem.text(0))
+    # 不能重写鼠标点击/松开事件，会导致界面的所有按钮都点不动
+    # 所以用moveevent代替点击事件，用dropevent代替松开事件
 
-    # def dragMoveEvent(self,e):
-    #     print(1111)
+    def dragMoveEvent(self,e):
+        # 用firstpt代替点击事件
+        if not self.firstpt:
+            self.firstpt=e.pos()
+            self.btPressed = True
+            self.m_bAdjustPos = True
+            self.m_iLastItemIndex = -1 # 要拖放的点的父节点索引
+            self.m_iCurrItemIndex = -1 # 要拖放的点相对父节点索引
+            self.m_iLastParentIndex = -1 # 要放到的点的父节点索引
+            self.m_iCurrParentIndex = -1 # 要放到的点相对父节点索引
+            pt = e.pos()
+            currItem = self.itemAt(pt)
+            if currItem:
+                parentItem = currItem.parent()
+                if parentItem: # 当前选中的是子节点
+                    self.m_iLastParentIndex = self.indexOfTopLevelItem(parentItem) # 获取父节点和本身相对于父节点的索引
+                    self.m_iLastItemIndex = parentItem.indexOfChild(currItem)
+                else: # 选中的是父节点
+                    self.m_iLastParentIndex = self.indexOfTopLevelItem(currItem) # 对顶级节点的操作
+        e.acceptProposedAction()
 
-    # def dragEnterEvent(self,e):
-    #     layersItem = self.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
-    #     curritem = self.itemAt(e.pos())
-    #     if curritem:
-    #         if curritem.parent() is not layersItem:
-    #             self.m_bAdjustPos = False
-    #
-    #     if self.m_bAdjustPos:
-    #         e.acceptProposedAction()
+    def dropEvent(self,e):
+        if self.btPressed:
+            pt=e.pos()
+            currItem=self.itemAt(pt)
+            if currItem and self.m_bAdjustPos: # 父节点不能调整顺序，即只能调整子节点顺序
+                # 调整子节点顺序分在同一个父节点下不在同一个父节点下
+                parentItem=currItem.parent()
+                if parentItem: # 说明选中的是子节点
+                    self.m_iCurrParentIndex=self.indexOfTopLevelItem(parentItem)
+                    self.m_iCurrItemIndex=parentItem.indexOfChild(currItem)
+                else: # 选中的是父节点
+                    self.m_iCurrParentIndex=self.indexOfTopLevelItem(currItem)
+                self.adjustItemInfo(self.m_iLastParentIndex,self.m_iLastItemIndex,self.m_iCurrParentIndex,self.m_iCurrItemIndex)
+            self.m_bAdjustPos=False
+            self.btPressed=False
+            self.firstpt=0
+            self.expandAll()
+        else:
+            e.ignore()
 
-    def dragLeaveEvent(self,e):
-        layersItem = self.findItems('Layers', Qt.MatchFlag.MatchStartsWith)[0]
-        curritem = self.itemAt(e.pos())
-        if curritem:
-            if curritem.parent() is not layersItem:
-                self.m_bAdjustPos = False
-
-        if self.m_bAdjustPos:
-            e.acceptProposedAction()
-
-    # def dropEvent(self,e):
+    def adjustItemInfo(self,lastParIndex,lastSubIndex,currParIndex,currSubIndex):
+        # print(lastParIndex,lastSubIndex,currParIndex,currSubIndex)
+        if lastParIndex==-1: # 没有选中交换的节点
+            return
+        if lastSubIndex==-1: # 选中的是父节点，不能拖入到其它级别中
+            return
+        if currParIndex==-1: # 要拖入的节点不存在
+            return
+        if lastParIndex==currParIndex and lastSubIndex==currSubIndex:
+            return
+        lastParItem=self.topLevelItem(self.m_iLastParentIndex) # 获取要拖动的节点的父节点
+        lastSubItem=lastParItem.takeChild(self.m_iLastItemIndex) # 获取要拖动的节点并移除
+        currParItem=self.topLevelItem(self.m_iCurrParentIndex) # 在指定位置插入节点
+        if self.m_iCurrItemIndex==-1:
+            self.m_iCurrItemIndex=0
+            currParItem.insertChild(self.m_iCurrItemIndex,lastSubItem)
+        else:
+            currParItem.insertChild(self.m_iCurrItemIndex,lastSubItem)
 
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
