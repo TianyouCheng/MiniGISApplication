@@ -20,7 +20,7 @@ class DragableTree(QTreeWidget):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.m_bAdjustPos=True
         self.btPressed = False
-        self.firstpt=0
+        self.main_exe = None    # 用于指向主程序的指针
 
     # https://www.tutorialspoint.com/pyqt/pyqt_drag_and_drop.htm
     # DragEnterEvent provides an event which is sent to the target widget as dragging action enters it.
@@ -31,13 +31,15 @@ class DragableTree(QTreeWidget):
     #
     # DropEvent, on the other hand, occurs when the drop is completed. The event’s proposed action can be accepted or rejected conditionally.
 
-    # 不能重写鼠标点击/松开事件，会导致界面的所有按钮都点不动
-    # 所以用moveevent代替点击事件，用dropevent代替松开事件
+    # 用dropevent代替松开事件
 
-    def dragMoveEvent(self,e):
-        # 用firstpt代替点击事件
-        if not self.firstpt:
-            self.firstpt=e.pos()
+    def set_exe(self, main_exe):
+        '''在初始化时用，用于回指向Main_exe'''
+        self.main_exe = main_exe
+
+    def mousePressEvent(self, e):
+        super(DragableTree, self).mousePressEvent(e)
+        if e.button() == Qt.LeftButton:
             self.btPressed = True
             self.m_bAdjustPos = True
             self.m_iLastItemIndex = -1 # 要拖放的点的父节点索引
@@ -53,7 +55,6 @@ class DragableTree(QTreeWidget):
                     self.m_iLastItemIndex = parentItem.indexOfChild(currItem)
                 else: # 选中的是父节点
                     self.m_iLastParentIndex = self.indexOfTopLevelItem(currItem) # 对顶级节点的操作
-        e.acceptProposedAction()
 
     def dropEvent(self,e):
         if self.btPressed:
@@ -68,10 +69,11 @@ class DragableTree(QTreeWidget):
                 else: # 选中的是父节点
                     self.m_iCurrParentIndex=self.indexOfTopLevelItem(currItem)
                 self.adjustItemInfo(self.m_iLastParentIndex,self.m_iLastItemIndex,self.m_iCurrParentIndex,self.m_iCurrItemIndex)
+                TreeViewUpdateList(self.main_exe)
+                TableUpdate(self.main_exe)
+                RefreshCanvas(self.main_exe)
             self.m_bAdjustPos=False
             self.btPressed=False
-            self.firstpt=0
-            self.expandAll()
         else:
             e.ignore()
 
@@ -85,14 +87,15 @@ class DragableTree(QTreeWidget):
             return
         if lastParIndex==currParIndex and lastSubIndex==currSubIndex:
             return
-        lastParItem=self.topLevelItem(self.m_iLastParentIndex) # 获取要拖动的节点的父节点
-        lastSubItem=lastParItem.takeChild(self.m_iLastItemIndex) # 获取要拖动的节点并移除
-        currParItem=self.topLevelItem(self.m_iCurrParentIndex) # 在指定位置插入节点
+        # lastParItem=self.topLevelItem(self.m_iLastParentIndex) # 获取要拖动的节点的父节点
+        # lastSubItem=lastParItem.takeChild(self.m_iLastItemIndex) # 获取要拖动的节点并移除
+        # currParItem=self.topLevelItem(self.m_iCurrParentIndex) # 在指定位置插入节点
         if self.m_iCurrItemIndex==-1:
             self.m_iCurrItemIndex=0
-            currParItem.insertChild(self.m_iCurrItemIndex,lastSubItem)
-        else:
-            currParItem.insertChild(self.m_iCurrItemIndex,lastSubItem)
+            # currParItem.insertChild(self.m_iCurrItemIndex,lastSubItem)
+        # else:
+        #     currParItem.insertChild(self.m_iCurrItemIndex,lastSubItem)
+        self.main_exe.map.MoveLayer(self.m_iLastItemIndex, self.m_iCurrItemIndex)
 
 
 def treeCheckedChange(item: QTreeWidgetItem, column, main_exe):
@@ -129,7 +132,7 @@ def treeCurrentItemChanged(current, main_exe):
 def TreeView_Init(self):
     # TREEVIEW
 
-
+    self.treeWidget.set_exe(self)
     pitem1 = QTreeWidgetItem(self.treeWidget, ['Layers'])
     pitem1.setFont(0,QFont("Microsoft YaHei", 11))
     if self.StyleOn:

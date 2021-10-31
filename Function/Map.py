@@ -189,3 +189,11 @@ class Map(object):
                 self.selectedLayer -= 1
         else:
             raise ValueError('已至最底层')
+
+    def MoveLayer(self, start_idx, end_idx):
+        '''将下标为`start_idx`的图层取出，插入至下标为`end_idx`位置'''
+        if start_idx == end_idx:
+            return
+        layer = self.layers.pop(start_idx)
+        self.layers.insert(end_idx, layer)
+        self.selectedLayer = end_idx
