@@ -243,7 +243,7 @@ class Layer(object):
                 lines = list()
                 for i in range(linenum):
                     line = geom.GetGeometryRef(i)
-                    pt_num = ring.GetPointCount()
+                    pt_num = line.GetPointCount()
                     pts = list()
                     for j in range(pt_num):
                         pts.append(PointD(line.GetX(j), line.GetY(j)))
