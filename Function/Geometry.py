@@ -347,6 +347,8 @@ class Polygon(Geometry):
             self.holes=holes
         else:
             self.data=Data
+            if len(holes) > 0 and not isinstance(holes[0], Polygon):
+                holes = [Polygon(part) for part in holes]
             self.holes = holes
         self.RenewBox()
 
@@ -423,6 +425,8 @@ class Polygon(Geometry):
         return PointD((self._box.MaxX+self._box.MinX)/2,(self._box.MaxY+self._box.MinY)/2)
 
     def RenewBox(self):
+        if len(self.data) == 0:
+            return
         MaxXY = self.FindMaxXY(self.data)
         MinXY = self.FindMinXY(self.data)
         self._box.MaxX = MaxXY.X
@@ -503,6 +507,9 @@ class MultiPolyline(Geometry):
             for j in range(len(self.data[i].data)):
                 self.data[i].data[j].X+=deltaX
                 self.data[i].data[j].Y+=deltaY
+
+    def MarkPos(self):
+        return PointD((self._box.MaxX+self._box.MinX)/2,(self._box.MaxY+self._box.MinY)/2)
 
     def RenewBox(self):
         if len(self.data)==0:
@@ -586,6 +593,9 @@ class MultiPolygon(Geometry):
             for j in range(len(self.data[i].data)):
                 self.data[i].data[j].X+=deltaX
                 self.data[i].data[j].Y+=deltaY
+
+    def MarkPos(self):
+        return PointD((self._box.MaxX+self._box.MinX)/2,(self._box.MaxY+self._box.MinY)/2)
 
     def RenewBox(self):
         if len(self.data)==0:

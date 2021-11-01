@@ -213,6 +213,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.widget_4 = QtWidgets.QWidget(self.centralwidget)
         self.widget_4.setMinimumSize(QtCore.QSize(1000, 480))
+        self.widget_4.setMouseTracking(True)
         self.widget_4.setObjectName("widget_4")
         self.Drawlabel = QtWidgets.QLabel(self.widget_4)
         self.Drawlabel.setGeometry(QtCore.QRect(0, 0, 1005, 480))

@@ -67,9 +67,11 @@ class Layer(object):
             if col_name == 'ID':
                 new_row[col_name] = [new_id]
             elif col_name in row:
-                new_row[col_name] = row[col_name] if isinstance(row, pd.DataFrame) else [row[col_name]]
+                new_row[col_name] = row[col_name] if isinstance(row, pd.DataFrame) else row[col_name] \
+                    if isinstance(row[col_name], (tuple, list)) else [row[col_name]]
             else:
-                new_row[col_name] = [default_val[col_type]]
+                new_row[col_name] = default_val[col_type] if isinstance(default_val[col_type], (tuple, list)) \
+                    else [default_val[col_type]]
         self.table = self.table.append(new_row, ignore_index=True)
         self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()
@@ -181,24 +183,24 @@ class Layer(object):
             return result.iloc[0, attr_name]
 
     def import_from_shplayer(self, shplayer):
-        ori_type = shplayer.GetGeomType()
         defn = shplayer.GetLayerDefn()
-        fieldcount = shplayer.GetFieldCount()
+        fieldcount = defn.GetFieldCount()
         fields = list()
         type_dict = {ogr.OFTInteger: 'int',
-                     ogr.OFTString: 'varchar',
+                     ogr.OFTString: 'str',
                      ogr.OFTReal: 'float'
                      }
         for att in range(fieldcount):
             field = defn.GetFieldDefn(att)
             fields.append(field.GetNameRef())
-            self.attr_desp_dict[field.GetNameRef()] = type_dict[field.GetType()]
+            self.add_attr(field.GetNameRef(), type_dict[field.GetType()])
         feat = shplayer.GetNextFeature()
         while feat:
             geom = feat.GetGeometryRef()
-            id = int(feat.GetFieldAsString('FID'))
+            geom_type = geom.GetGeometryType()
+            id = int(feat.GetFieldAsString('FID') if 'FID' in self.attr_desp_dict else 0)
             field_dict = dict()
-            field_dict['ID'] = [0]
+            field_dict['ID'] = [id]
             for name in fields:
                 if self.attr_desp_dict[name] == 'int':
                     field_dict[name] = [int(feat.GetFieldAsString(name))]
@@ -206,15 +208,18 @@ class Layer(object):
                     field_dict[name] = [float(feat.GetFieldAsString(name))]
                 else:
                     field_dict[name] = [feat.GetFieldAsString(name)]
-            if ori_type == ogr.wkbPoint:
+            if geom_type == ogr.wkbPoint:
                 ft = PointD(geom.GetX(), geom.GetY(), id)
-            elif ori_type == ogr.wkbLineString:
+            elif geom_type == ogr.wkbLineString:
                 ptnum = geom.GetPointCount()
                 data = list()
                 for i in range(ptnum):
                     data.append(PointD(geom.GetX(i), geom.GetY(i)))
-                ft = Polyline(data, id)
-            elif ori_type == ogr.wkbPolygon:
+                if self.type == MultiPolyline:
+                    ft = MultiPolyline([Polyline(data)], id)
+                else:
+                    ft = Polyline(data, id)
+            elif geom_type == ogr.wkbPolygon:
                 ringnum = geom.GetGeometryCount()
                 outring = list()
                 inring = list()
@@ -229,8 +234,11 @@ class Layer(object):
                         for j in range(pt_num - 1):
                             insubring.append(PointD(ring.GetX(j), ring.GetY(j)))
                         inring.append(insubring)
-                ft = Polygon(outring, inring, id)
-            elif ori_type == ogr.wkbMultiLineString:
+                if self.type == MultiPolygon:
+                    ft = MultiPolygon([Polygon(outring, inring)], id)
+                else:
+                    ft = Polygon(outring, inring, id)
+            elif geom_type == ogr.wkbMultiLineString:
                 linenum = geom.GetGeometryCount()
                 lines = list()
                 for i in range(linenum):
@@ -241,12 +249,12 @@ class Layer(object):
                         pts.append(PointD(line.GetX(j), line.GetY(j)))
                     lines.append(Polyline(pts))
                 ft = MultiPolyline(lines, id)
-            elif ori_type == ogr.wkbMultiPolygon:
+            elif geom_type == ogr.wkbMultiPolygon:
                 poly_num = geom.GetGeometryCount()
                 polygons = list()
                 for i in range(poly_num):
                     pg = geom.GetGeometryRef(i)
-                    ringnum = pg.GetPointCount()
+                    ringnum = pg.GetGeometryCount()
                     outring = list()
                     inring = list()
                     for j in range(ringnum):
@@ -267,7 +275,7 @@ class Layer(object):
 
     def export_to_shplayer(self, path):
         type_dict = {'int' : ogr.OFTInteger,
-                     'varchar' : ogr.OFTString,
+                     'str' : ogr.OFTString,
                      'float' : ogr.OFTReal
                      }
         geotype_dict = {

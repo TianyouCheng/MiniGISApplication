@@ -11,7 +11,7 @@ from UI import *
 from Function import *
 from unit_test import create_map
 #from Function.Op_DrawLabel import LabelMouseDoubleClick
-import dbm_test
+# import dbm_test
 #endregion
 
 # 主窗体操作
@@ -31,7 +31,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
         self.StyleOn=True    # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
-        self.dbm = DBM()
+        # self.dbm = DBM()
         # self.map = dbm_test.create_map(self.dbm)    # 当前地图
         self.map = create_map()
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
@@ -424,7 +424,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         Switch(self, self.IsAttr, self.StyleOn)
 
     def bt_import_shp_clicked(self):
-        ofd = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'ALL(*.*);;Shapefile文件(*.shp)')
+        ofd, filt = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'Shapefile文件(*.shp);;ALL(*.*)')
         driver = ogr.GetDriverByName('ESRI Shapefile')
         data_source = driver.Open(ofd, 0)
         if data_source is None:
@@ -438,10 +438,27 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         type_dict = {ogr.wkbPoint: PointD, ogr.wkbLineString: Polyline, ogr.wkbPolygon: Polygon, ogr.wkbMultiPolygon : MultiPolygon,
                      ogr.wkbMultiLineString : MultiPolyline}
         layer_name = ofd.split('/')[-1].split('.')[0]
-        geo_type = type_dict[ori_layer.GetGeomType()]
+        geo_type = ori_layer.GetGeomType()
+        # 这里要遍历每个几何体的原因是：虽然图层中描述为“Poly~”，但其实有Multi~，需确定是否为Multi
+        feat = ori_layer.GetNextFeature()
+        while feat:
+            geom = feat.GetGeometryRef()
+            test_type = geom.GetGeometryType()
+            if test_type > geo_type:
+                geo_type = test_type
+                break
+            feat = ori_layer.GetNextFeature()
+        ori_layer.ResetReading()
         # spatial_ref = ori_layer.GetSpatialRef()
-        new_layer = Layer(geo_type, layer_name)
+        new_layer = Layer(type_dict[geo_type], layer_name)
         new_layer.import_from_shplayer(ori_layer)
+        data_source.Release()
+        self.map.AddLayer(new_layer, self.map.selectedLayer if self.map.selectedLayer != -1 else 0)
+        if len(self.map.layers) == 1:
+            self.map.FullScreen(self.Drawlabel.width(), self.Drawlabel.height())
+        TreeViewUpdateList(self)
+        TableUpdate(self)
+        RefreshCanvas(self)
 
     def bt_export_shp_clicked(self):
         sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')
