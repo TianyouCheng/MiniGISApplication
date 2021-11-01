@@ -11,7 +11,7 @@ from UI import *
 from Function import *
 from unit_test import create_map
 #from Function.Op_DrawLabel import LabelMouseDoubleClick
-# import dbm_test
+import dbm_test
 #endregion
 
 # 主窗体操作
@@ -31,7 +31,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
         self.StyleOn=True    # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
-        # self.dbm = DBM()
+        self.dbm = DBM()
         # self.map = dbm_test.create_map(self.dbm)    # 当前地图
         self.map = create_map()
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）

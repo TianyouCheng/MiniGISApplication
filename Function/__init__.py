@@ -8,7 +8,7 @@ from .Op_DrawLabel import RefreshCanvas, LabelMousePress, LabelMouseMove, LabelM
 from .DefaultUI import *
 from .MapTool import MapTool
 from .Animation import *
-# from .DBM import *
+from .DBM import *
 from .EditTools import *
 from .Op_AttributeWin import *
 from .Op_DBLoad import *
