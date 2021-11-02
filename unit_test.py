@@ -14,11 +14,11 @@ def create_map() -> Map:
     layer1.add_attr('name', 'str')
     layer1.add_attr('value', 'float')
     layer1.AddGeometry(Polyline([PointD(1, 1), PointD(2, 2), PointD(2, 4), PointD(4, 6), PointD(6, 6)], id=0),
-                       pd.DataFrame({'ID': [0], 'name': ['aaa'], 'value': [20]}))
+                       pd.DataFrame({'id': [0], 'name': ['aaa'], 'value': [20]}))
     layer1.AddGeometry(Polyline([PointD(0, 6), PointD(1, 3), PointD(2, 5), PointD(3, 3)], id=1),
-                       pd.DataFrame({'ID': [1], 'name': ['bbb'], 'value': [53]}))
+                       pd.DataFrame({'id': [1], 'name': ['bbb'], 'value': [53]}))
     layer1.AddGeometry(Polyline([PointD(-1, 3), PointD(2, 3), PointD(4, 5), PointD(2, 6)], id=2),
-                       pd.DataFrame({'ID': [2], 'name': ['ccc'], 'value': [32]}))
+                       pd.DataFrame({'id': [2], 'name': ['ccc'], 'value': [32]}))
     layer1.selectedItems.extend([0, 1])
     map.AddLayer(layer1)
 

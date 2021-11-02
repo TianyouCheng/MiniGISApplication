@@ -32,8 +32,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.StyleOn=True    # 是否启用样式表
         self.IsAttr=False # 当前界面是否为属性窗体
         self.dbm = DBM()
-        # self.map = dbm_test.create_map(self.dbm)    # 当前地图
-        self.map = create_map()
+        self.map = dbm_test.create_map(self.dbm)    # 当前地图
+        # self.map = create_map()
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例

@@ -42,6 +42,7 @@ class Geometry(ABC):
     def __init__(self, id=-1):
         self._box = RectangleD()
         self.ID=id
+        self.gid=id
         # 轮廓颜色、线性、宽度、填充颜色、无、可见性、绑定字段、水平偏移、垂直偏移、字体大小、字体颜色
         # str/int/float/str/int/int/str/int/int/int/str
         self.StyleList=[
@@ -51,7 +52,7 @@ class Geometry(ABC):
             '#6edda4',
             0,
             0,
-            'ID',
+            'id',
             0,
             0,
             10,
