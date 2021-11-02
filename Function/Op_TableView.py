@@ -10,6 +10,7 @@ from PyQt5.QtCore import Qt as qcq
 import random
 from .MapTool import MapTool
 from .Op_DrawLabel import RefreshCanvas
+import re
 
 def TableView_Init(self,nColumn):
     '''
@@ -27,7 +28,7 @@ def TableView_Init(self,nColumn):
     self.tableWidget.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)  # 设置只可以单选，可以使用ExtendedSelection进行多选
     self.tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)  # 设置不可选择单个单元格，只可选择一行。
     self.tableWidget.setColumnCount(nColumn)  ##设置表格一共有五列
-    self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
+    #self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)  # 设置表格不可更改
     self.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)  # 设置第五列宽度自动调整，充满屏幕
     # 设置表头
     self.tableWidget.setHorizontalHeaderLabels(['序号', '姓名', '年龄', '地址', '成绩'])
@@ -63,7 +64,7 @@ def del_column(main_exe, layer, child):
     col_name = layer.table.columns[child]
     btn_ok = msgBox.addButton(QMessageBox.Ok)
     # 选中ID列，是不允许删除的
-    if col_name == 'ID':
+    if col_name == 'id':
         msgBox.setIcon(QMessageBox.Critical)
         msgBox.setWindowTitle('删除列错误')
         msgBox.setText('\n不能删除"ID"字段！\n')
@@ -77,6 +78,7 @@ def del_column(main_exe, layer, child):
         # 点击OK，确认删除字段
         def _del_check(name):
             layer.del_attr(name)
+            main_exe.dbm.delete_column(layer,name)
             TableUpdate(main_exe)
 
     msgBox.exec_()
@@ -110,7 +112,7 @@ def TableUpdate(main_exe):
                     item.setForeground(QColor(255, 255, 255))
                 tabWid.setItem(row, col, item)
             tabWid.item(row,0).setFlags(qcq.ItemIsSelectable|qcq.ItemIsEnabled)
-            if table.loc[row, 'ID'] in selectedItems:
+            if table.loc[row, 'id'] in selectedItems:
                 selected_rows.append(row)
         # 在表格中选择要素
         for row in selected_rows:
@@ -130,7 +132,7 @@ def TableSelectionChanged(main_exe):
     if not main_exe.EditStatus:
         layer.selectedItems.clear()
         for range_ in tabWid.selectedRanges():
-            ids = layer.table.loc[range(range_.topRow(), range_.bottomRow() + 1), 'ID']
+            ids = layer.table.loc[range(range_.topRow(), range_.bottomRow() + 1), 'id']
             layer.selectedItems.extend(ids)
         RefreshCanvas(main_exe, use_base=True)
 
@@ -147,11 +149,13 @@ def addAttr(main_exe):
         layer = map_.layers[map_.selectedLayer]
         column_name = window.lineEdit.text()
         # TODO 数据库中的列名不支持哪些字符？还没处理
+        column_name=re.sub(r'\t()/\\=<>+-*^"\'[]~#|&%','',column_name).lower()#删除敏感字符，转小写
         # 输入的字段名已经存在，报错
         if column_name.lower() in map(str.lower, layer.table.columns):
             need_close = False
             raise RuntimeError(u'字段错误', f'该图层已经有"{column_name}"字段！')
         layer.add_attr(column_name, window.comboBox.currentText())
+        main_exe.dbm.add_column(layer,column_name,'str')#TODO:没有选择字段类型？
     # 运行错误则弹出对话框
     except RuntimeError as e:
         msgBox = QMessageBox()
@@ -173,7 +177,7 @@ def TableItemChanged(main_exe,item):
     elif item.whatsThis()=='float':
         text=float(text)
     cur_layer=main_exe.map.layers[main_exe.map.selectedLayer]
-    cur_id=int(main_exe.tableWidget.item(item.row(),0).text())
+    cur_id=cur_layer.geometries[int(main_exe.tableWidget.item(item.row(),0).text())].gid
     cur_dict={main_exe.tableWidget.horizontalHeaderItem(item.column()).text():text}
     main_exe.dbm.update_geometry(cur_layer,cur_id,cur_dict)
 

@@ -20,8 +20,8 @@ class Layer(object):
         self.selectedItems = []     # 被选中的几何体ID（为了使选中几何体和属性表结合）
 
         self.srid=srid
-        self.attr_desp_dict = {'ID': 'int'}         # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
-        self.table = pd.DataFrame(columns=['ID'])   # 属性表
+        self.attr_desp_dict = {'id': 'int'}         # 属性表描述，k为属性名称，v为属性类型，k,v均为str类型
+        self.table = pd.DataFrame(columns=['id'])   # 属性表
 
         # TODO 有时间的话增加：绘制属性、按属性条件渲染、注记……
         self.edited_geometry=[]
@@ -55,7 +55,7 @@ class Layer(object):
         if not isinstance(geometry, self.type):
             raise TypeError('添加几何体类型与图层类型不匹配')
         new_id = 0 if self.table.shape[0] == 0 \
-                else self.table['ID'].max() + 1
+                else self.table['id'].max() + 1
         self.geometries.append(geometry)
         geometry.ID = new_id
         new_row = pd.DataFrame(columns=self.table.columns)
@@ -64,7 +64,7 @@ class Layer(object):
         if row is None:
             row = {key: default_val[val] for key, val in self.attr_desp_dict.items()}
         for col_name, col_type in self.attr_desp_dict.items():
-            if col_name == 'ID':
+            if col_name == 'id':
                 new_row[col_name] = [new_id]
             elif col_name in row:
                 new_row[col_name] = row[col_name] if isinstance(row, pd.DataFrame) else row[col_name] \
@@ -84,7 +84,7 @@ class Layer(object):
                 break
         if index is not None:
             self.geometries.pop(index)
-            self.table.drop(index=self.table[self.table['ID'] == _id].index, inplace=True)
+            self.table.drop(index=self.table[self.table['id'] == _id].index, inplace=True)
             self.table.reset_index(drop=True, inplace=True)
         self.RefreshBox()
 
@@ -174,7 +174,7 @@ class Layer(object):
 
     #假设属性表用的pandas，根据geom id查询其属性，一般返回所有属性值构成的列表，当指定name时返回单个属性值构成的列表。也可以是字典
     def get_attr(self,id,attr_name=None):
-        result = self.table[self.table['ID'] == id]
+        result = self.table[self.table['id'] == id]
         if result.shape[0] == 0:
             return []
         if attr_name is None:
@@ -200,7 +200,7 @@ class Layer(object):
             geom_type = geom.GetGeometryType()
             id = int(feat.GetFieldAsString('FID') if 'FID' in self.attr_desp_dict else 0)
             field_dict = dict()
-            field_dict['ID'] = [id]
+            field_dict['id'] = [id]
             for name in fields:
                 if self.attr_desp_dict[name] == 'int':
                     field_dict[name] = [int(feat.GetFieldAsString(name))]

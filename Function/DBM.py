@@ -22,6 +22,7 @@ db_attr_dict={
     'outline_style': 'int',
     'outline_width': 'float',
     'label_color' :'varchar(20)',
+    'nothing':'int',
     'visible' :'int',
     'bind_attr': 'varchar(100)',
     'h_bias': 'int',
@@ -73,6 +74,8 @@ class DBM:
             self.cur.execute(sql)
             layer_list= self.cur.fetchall()
             return [ln[0] for ln in layer_list]
+        else:
+            return []
             
 
     def get_layers_info(self)->Tuple:
@@ -89,12 +92,14 @@ class DBM:
             self.cur.execute(sql)
             layer_info_list=self.cur.fetchall()
             return layer_info_list
+        else:
+            return []
 
     def add_layer_from_memory(self,layer:Layer)->None:
         layer_list=self.get_layers_list()
         if layer_list:
             if layer.name in layer_list:
-                self.cur.execute(f"drop table {layer.name}")
+                self.cur.execute(f"drop table {layer.name};")
         trans_dict={
             PointD:'POINT',
             Polyline:'LINESTRING',
@@ -106,7 +111,6 @@ class DBM:
         self.create_table(layer.name, layer_type, layer.srid, layer.attr_desp_dict)
         for geometry in layer.geometries:
             self.insert_geometry(layer, geometry)
-        self.conn.commit()
 
     def add_layer_from_shp(self, path) -> None:
         os.system(
@@ -165,9 +169,9 @@ class DBM:
         self.cur.execute(sql)
         '''
     def create_table(self,tablename:str,geom_type:str,srid:int,attr_desp_dict:dict)->None:
-        sql_table_attr_list=['gid int primary key',f'geom Geometry({geom_type},{srid})']\
-        +[f'{attr_name} {attr_type}' for attr_name,attr_type in db_attr_dict.items()]\
-        +[f'{attr_name} {attr_type}' for attr_name,attr_type in attr_desp_dict.items()]
+        sql_table_attr_list=['gid serial primary key',f'geom Geometry({geom_type},{srid})']\
+            +[f'{attr_name} {attr_type}' for attr_name,attr_type in db_attr_dict.items()]\
+            +[f'{attr_name} {attr_type_dict[attr_type]}' for attr_name,attr_type in attr_desp_dict.items()]
         sql=f"""
             create table {tablename}(
                 {','.join(sql_table_attr_list)}
@@ -175,17 +179,18 @@ class DBM:
         """
         if self.conn:
             self.cur.execute(sql)
+            self.conn.commit()
         else:
             self.sql_record+=sql
 
     def insert_geometry(self,layer:Layer,geomtry:Geometry)->None:
         wkt=geomtry.ToWkt()
-        attr_name_lst=['gid','geom']+list(db_attr_dict.keys())+list(layer.attr_desp_dict.keys())
+        attr_name_lst=['geom']+list(db_attr_dict.keys())+list(layer.attr_desp_dict.keys())
         attr_str_lst=[str(geomtry.ID),f'st_geometryfromtext(\'{wkt}\',{layer.srid})']
         # if len(geomtry.StyleList)==0:
         #     geomtry.StyleList=[0]*15
         for style_attr in geomtry.StyleList[:len(db_attr_dict)]:
-            if type(attr_str_lst)==str:
+            if type(style_attr)==str:
                 attr_str_lst.append(f'\'{style_attr}\'')
             else:
                 attr_str_lst.append(str(style_attr))
@@ -201,13 +206,15 @@ class DBM:
         """
         if self.conn:
             self.cur.execute(sql)
+            self.conn.commit()
         else:
             self.sql_record+=sql
 
     def delete_geometry(self,layer:Layer,geometry_id):
-        sql=f"delete from {layer.name} where ID={geometry_id};"
+        sql=f"delete from {layer.name} where gid={geometry_id};"
         if self.conn:
             self.cur.execute(sql)
+            self.conn.commit()
         else:
             self.sql_record+=sql
 
@@ -217,15 +224,16 @@ class DBM:
                 info_dict[k]=f'\'{v}\''
         sql=f"""
             update {layer.name} set {','.join([f'{k}={v}' for k,v in info_dict.items()])}
-            where ID={geomery_id};
+            where gid={geomery_id};
         """
         if self.conn:
             self.cur.execute(sql)
+            self.conn.commit()
         else:
             self.sql_record+=sql
 
     def add_column(self,layer:Layer,attr_name:str,attr_type:str):
-        sql=f"alter table {layer.name} add {attr_name} {attr_type} null;"
+        sql=f"alter table {layer.name} add {attr_name} {attr_type_dict[attr_type]} null;"
         if self.conn:
             self.cur.execute(sql)
             self.conn.commit()
@@ -253,6 +261,7 @@ class DBM:
             self.sql_record+=sql
 
     def load_layer(self,layer_name)->Layer:
+        assert self.conn is not None
         self.cur.execute(f"select f_geometry_column,srid,type from geometry_columns where f_table_name=\'{layer_name}\';")
         slct_rslt=self.cur.fetchone()
         col_name,layer_srid,layer_type=slct_rslt
@@ -291,7 +300,10 @@ class DBM:
             where table_schema='public' and table_name='{layer_name}' order by ordinal_position asc
         """)
         slct_rslt=self.cur.fetchall()
-        attr_info=slct_rslt[2+len(db_attr_dict):]
+        attr_infos=slct_rslt[2+len(db_attr_dict):]
+        tradict={'integer':'int','character varying':'str','double precision':'float'}
+        for attr_info in attr_infos[1:]:
+            cur_layer.add_attr(attr_info[1],tradict[attr_info[2]])
         #set layer attr
         # self.cur.execute(f"select * from {layer_name};")#geometry转为其他类型
         # geoms=self.cur.fetchall()
@@ -303,7 +315,7 @@ class DBM:
                 cur_p=PointD(p[0],p[1],p[2])
                 for i in range(len(db_attr_dict)):
                     cur_p.StyleList[i]=p[4+i]
-                cur_layer.AddGeometry(cur_p,dict(zip([attr[0] for attr in attr_info],p[4:])))
+                cur_layer.AddGeometry(cur_p,dict(zip([attr[1] for attr in attr_infos],p[4+len(db_attr_dict):])))
         elif layer_type=='LINESTRING':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             lines=self.cur.fetchall()
@@ -311,7 +323,7 @@ class DBM:
                 cur_l=Polyline(l[0],l[1])
                 for i in range(len(db_attr_dict)):
                     cur_l.StyleList[i]=l[3+i]
-                cur_layer.AddGeometry(cur_l,dict(zip([attr[0] for attr in attr_info],l[3:])))
+                cur_layer.AddGeometry(cur_l,dict(zip([attr[1] for attr in attr_infos],l[3+len(db_attr_dict):])))
         elif layer_type=='POLYGON':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             polygons=self.cur.fetchall()
@@ -319,7 +331,7 @@ class DBM:
                 cur_pg=Polygon(pg[0],pg[1])
                 for i in range(len(db_attr_dict)):
                     cur_pg.StyleList[i]=pg[3+i]
-                cur_layer.AddGeometry(cur_pg,dict(zip([attr[0] for attr in attr_info],pg[3:])))
+                cur_layer.AddGeometry(cur_pg,dict(zip([attr[1] for attr in attr_infos],pg[3+len(db_attr_dict):])))
 
         elif layer_type=='MULTIPOLYGON':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
@@ -328,7 +340,7 @@ class DBM:
                 cur_mpg=MultiPolygon(mpg[0],mpg[1])
                 for i in range(len(db_attr_dict)):
                     cur_mpg.StyleList[i]=mpg[3+i]
-                cur_layer.AddGeometry(cur_mpg,dict(zip([attr[0] for attr in attr_info],mpg[3:])))
+                cur_layer.AddGeometry(cur_mpg,dict(zip([attr[1] for attr in attr_infos],mpg[3+len(db_attr_dict):])))
         elif layer_type=='MULTILINESTRING':
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             mlines=self.cur.fetchall()
@@ -336,7 +348,7 @@ class DBM:
                 cur_ml=MultiPolyline(ml[0],ml[1])
                 for i in range(len(db_attr_dict)):
                     cur_ml.StyleList[i]=ml[3+i]
-                cur_layer.AddGeometry(cur_ml,dict(zip([attr[0] for attr in attr_info],ml[3:])))
+                cur_layer.AddGeometry(cur_ml,dict(zip([attr[1] for attr in attr_infos],ml[3+len(db_attr_dict):])))
         else:
             pass
         cur_layer.saved_in_dbm=True
@@ -368,13 +380,31 @@ class DBM:
         #     insert into test values(2,st_geometryfromtext(\'POINT(1 1)\',3857));
         # """)
         # self.conn.commit()
-        layer_name='polygons'
-        col_name='geom'
-        self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
-        attr_info=self.cur.fetchall()
-        return attr_info
+        layer_name='lines'
+        self.cur.execute(f"""
+            select ordinal_position as Colorder,column_name as ColumnName,data_type as TypeName,
+            coalesce(character_maximum_length,numeric_precision,-1) as Length
+            from information_schema.columns
+            left join (
+            select pg_attr.attname as colname,pg_constraint.conname as pk_name from pg_constraint
+            inner join pg_class on pg_constraint.conrelid = pg_class.oid
+            inner join pg_attribute pg_attr on pg_attr.attrelid = pg_class.oid and pg_attr.attnum = pg_constraint.conkey[1]
+            inner join pg_type on pg_type.oid = pg_attr.atttypid
+            where pg_class.relname = '{layer_name}' and pg_constraint.contype='p'
+            ) b on b.colname = information_schema.columns.column_name
+            left join (
+            select attname,description as DeText from pg_class
+            left join pg_attribute pg_attr on pg_attr.attrelid= pg_class.oid
+            left join pg_description pg_desc on pg_desc.objoid = pg_attr.attrelid and pg_desc.objsubid=pg_attr.attnum
+            where pg_attr.attnum>0 and pg_attr.attrelid=pg_class.oid and pg_class.relname='{layer_name}'
+            )c on c.attname = information_schema.columns.column_name
+            where table_schema='public' and table_name='{layer_name}' order by ordinal_position asc
+        """)
+        slct_rslt=self.cur.fetchall()
+        return slct_rslt
 
 
 if __name__=="__main__":
     dbm=DBM()
+    print(dbm.test())
     # print(dbm.get_layers_list())
