@@ -208,18 +208,20 @@ def LabelMousePress(main_exe, event: QMouseEvent):
                 if len(edit_geom) == 0:
                     edit_geom.append(list())
                     edit_geom[0].append(list())
-                edit_geom[-1][-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
+                edit_geom[-1][-1].append(new_p)
                 RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
     elif event.button() == Qt.MouseButton.RightButton:
         if main_exe.tool == MapTool.AddGeometry:
             edit_layer = main_exe.CurEditLayer
             edit_geom = edit_layer.edited_geometry
             need_save = main_exe.NeedSave
+            new_p = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
             #注意这里右键也有一个新对象
             if edit_layer.type == Polygon or edit_layer.type == MultiPolyline:
-                edit_geom[-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
+                edit_geom[-1].append(new_p)
                 edit_geom.append(list())
             elif edit_layer.type == MultiPolygon:
+                edit_geom[-1][-1].append(new_p)
                 edit_geom.append(list())
         elif main_exe.tool == MapTool.EditGeometry:
             pass
@@ -238,8 +240,8 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
         edit_layer.AddGeometry(Polyline(geo_edit_geom))
         #添加属性表
     elif edit_layer.type == Polygon:
-        outring = [map_.ScreenToGeo(g, (width, height)) for g in edit_geom[0]]
-        inring = [Polygon(map_.ScreenToGeo(g, (width, height))) for g in edit_geom[1:]]
+        outring = edit_geom[0]
+        inring = [Polygon(g) for g in edit_geom[1:]]
         edit_layer.AddGeometry(Polygon(outring, inring))
     elif edit_layer.type == MultiPolyline:
         pass

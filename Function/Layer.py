@@ -223,6 +223,7 @@ class Layer(object):
                 ringnum = geom.GetGeometryCount()
                 outring = list()
                 inring = list()
+                pin = None
                 for i in range(ringnum):
                     ring = geom.GetGeometryRef(i)
                     pt_num = ring.GetPointCount()
@@ -233,7 +234,8 @@ class Layer(object):
                         insubring = list()
                         for j in range(pt_num - 1):
                             insubring.append(PointD(ring.GetX(j), ring.GetY(j)))
-                        inring.append(insubring)
+                        pin = Polygon(insubring)
+                        inring.append(pin)
                 if self.type == MultiPolygon:
                     ft = MultiPolygon([Polygon(outring, inring)], id)
                 else:
