@@ -586,6 +586,9 @@
                 <height>480</height>
                </size>
               </property>
+              <property name="mouseTracking">
+               <bool>true</bool>
+              </property>
               <widget class="QLabel" name="Drawlabel">
                <property name="geometry">
                 <rect>

@@ -266,6 +266,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
                 self.treeWidget.setEnabled(False)
                 map_ = self.map
+                self.CurEditLayer = map_.layers[map_.selectedLayer]
                 map_.layers[map_.selectedLayer].selectedItems.clear()
                 self.tableWidget.setEditTriggers(QAbstractItemView.SelectedClicked |
                                                  QAbstractItemView.DoubleClicked)
@@ -274,12 +275,18 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
             else:
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
+                if self.tool in (MapTool.AddGeometry, MapTool.EditGeometry):
+                    self.tool = MapTool.Null
+                self.CurEditLayer.edited_geometry.clear()
+                self.CurEditLayer.selectedItems.clear()
+                self.CurEditLayer = None
                 self.treeWidget.setEnabled(True)
                 self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+                RefreshCanvas(self, use_base=True)
 
     def bt_addfeature_clicked(self):
         if self.EditStatus:
-            self.MapTool = MapTool.AddGeometry
+            self.tool = MapTool.AddGeometry
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
@@ -294,7 +301,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     def bt_editfeature_clicked(self):
         if self.EditStatus:
-            self.MapTool = MapTool.EditGeometry
+            self.tool = MapTool.EditGeometry
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
@@ -317,7 +324,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.addButton(QMessageBox.Ok)
             # 模态对话框
             msgBox.exec_()
-        elif self.MapTool != MapTool.EditGeometry:
+        elif self.tool != MapTool.EditGeometry:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
@@ -424,7 +431,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         Switch(self, self.IsAttr, self.StyleOn)
 
     def bt_import_shp_clicked(self):
-        ofd = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'ALL(*.*);;Shapefile文件(*.shp)')
+        ofd, filt = QFileDialog.getOpenFileName(self, '选择shapefile文件', './', 'Shapefile文件(*.shp);;ALL(*.*)')
         driver = ogr.GetDriverByName('ESRI Shapefile')
         data_source = driver.Open(ofd, 0)
         if data_source is None:
@@ -438,10 +445,27 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         type_dict = {ogr.wkbPoint: PointD, ogr.wkbLineString: Polyline, ogr.wkbPolygon: Polygon, ogr.wkbMultiPolygon : MultiPolygon,
                      ogr.wkbMultiLineString : MultiPolyline}
         layer_name = ofd.split('/')[-1].split('.')[0]
-        geo_type = type_dict[ori_layer.GetGeomType()]
+        geo_type = ori_layer.GetGeomType()
+        # 这里要遍历每个几何体的原因是：虽然图层中描述为“Poly~”，但其实有Multi~，需确定是否为Multi
+        feat = ori_layer.GetNextFeature()
+        while feat:
+            geom = feat.GetGeometryRef()
+            test_type = geom.GetGeometryType()
+            if test_type > geo_type:
+                geo_type = test_type
+                break
+            feat = ori_layer.GetNextFeature()
+        ori_layer.ResetReading()
         # spatial_ref = ori_layer.GetSpatialRef()
-        new_layer = Layer(geo_type, layer_name)
+        new_layer = Layer(type_dict[geo_type], layer_name)
         new_layer.import_from_shplayer(ori_layer)
+        data_source.Release()
+        self.map.AddLayer(new_layer, self.map.selectedLayer if self.map.selectedLayer != -1 else 0)
+        if len(self.map.layers) == 1:
+            self.map.FullScreen(self.Drawlabel.width(), self.Drawlabel.height())
+        TreeViewUpdateList(self)
+        TableUpdate(self)
+        RefreshCanvas(self)
 
     def bt_export_shp_clicked(self):
         sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')

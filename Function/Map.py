@@ -54,10 +54,10 @@ class Map(object):
             holes = None if geometry.holes is None else \
                 [self.GeoToScreen(geo, screenSize) for geo in geometry.holes]
             return Polygon(data, holes=holes, id=geometry.ID)
-        elif isinstance(geometry, Polyline):
+        elif isinstance(geometry, MultiPolyline):
             data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
             return MultiPolyline(data, id=geometry.ID)
-        elif isinstance(geometry, Polyline):
+        elif isinstance(geometry, MultiPolygon):
             data = [self.GeoToScreen(geo, screenSize) for geo in geometry.data]
             return MultiPolygon(data, id=geometry.ID)
         elif isinstance(geometry, RectangleD):
