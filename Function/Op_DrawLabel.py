@@ -198,16 +198,21 @@ def LabelMousePress(main_exe, event: QMouseEvent):
                 edit_geom[-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
                 RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
             elif edit_layer.type == MultiPolygon:
-                pass
+                if len(edit_geom) == 0:
+                    edit_geom.append(list())
+                    edit_geom[0].append(list())
+                edit_geom[-1][-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
+                RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
     else:
         if main_exe.tool == MapTool.AddGeometry:
             edit_layer = main_exe.CurEditLayer
             edit_geom = edit_layer.edited_geometry
             need_save = main_exe.NeedSave
             #注意这里右键也有一个新对象
-            if edit_layer.type == Polygon:
+            if edit_layer.type == Polygon or edit_layer.type == MultiPolyline:
+                edit_geom[-1].append(PointD(mouse_loc.x(), mouse_loc.y()))
                 edit_geom.append(list())
-            elif edit_layer.type == MultiPolyline:
+            elif edit_layer.type == MultiPolygon:
                 edit_geom.append(list())
         elif main_exe.tool == MapTool.EditGeometry:
             pass
@@ -217,14 +222,23 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     map_ = main_exe.map
     edit_layer = main_exe.map.selectedLayer
     edit_geom = edit_layer.edited_geometry
+    width = main_exe.Drawlabel.pixmap().width()
+    height = main_exe.Drawlabel.pixmap().height()
+    mouse_loc = main_exe.ConvertCor(event)
     if edit_layer.type == Polyline:
-        pass
+        edit_geom.append(PointD(mouse_loc.x(), mouse_loc.y()))
+        geo_edit_geom = [map_.ScreenToGeo(g, (width, height)) for g in edit_geom]
+        edit_layer.AddGeometry(Polyline(geo_edit_geom))
+        #添加属性表
     elif edit_layer.type == Polygon:
-        pass
+        outring = [map_.ScreenToGeo(g, (width, height)) for g in edit_geom[0]]
+        inring = [Polygon(map_.ScreenToGeo(g, (width, height))) for g in edit_geom[1:]]
+        edit_layer.AddGeometry(Polygon(outring, inring))
     elif edit_layer.type == MultiPolyline:
         pass
     elif edit_layer.type == MultiPolygon:
         pass
+
 def LabelMouseMove(main_exe, event : QMouseEvent):
     '''处理鼠标移动，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
