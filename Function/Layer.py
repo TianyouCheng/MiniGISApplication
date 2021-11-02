@@ -262,14 +262,16 @@ class Layer(object):
                         pt_num = ring.GetPointCount()
                         if j == 0:
                             for k in range(pt_num - 1):
-                                outring.append(PointD(ring.GetX(k),ring.GetY(k)))
+                                outring.append(PointD(ring.GetX(k), ring.GetY(k)))
                         else:
                             insubring = list()
                             for k in range(pt_num - 1):
-                                insubring.append(PointD(ring.GetX(k),ring.GetY(k)))
-                            inring.append(insubring)
+                                insubring.append(PointD(ring.GetX(k), ring.GetY(k)))
+                            inring.append(Polygon(insubring))
                     polygons.append(Polygon(outring, inring))
                 ft = MultiPolygon(polygons, id)
+            else:
+                ft = None
             self.AddGeometry(ft, field_dict)
             feat = shplayer.GetNextFeature()
 
