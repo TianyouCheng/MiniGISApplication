@@ -238,11 +238,13 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
         edit_geom.append(PointD(mouse_loc.x(), mouse_loc.y()))
         geo_edit_geom = [map_.ScreenToGeo(g, (width, height)) for g in edit_geom]
         edit_layer.AddGeometry(Polyline(geo_edit_geom))
+        main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1])
         #添加属性表
     elif edit_layer.type == Polygon:
         outring = edit_geom[0]
         inring = [Polygon(g) for g in edit_geom[1:]]
         edit_layer.AddGeometry(Polygon(outring, inring))
+        main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1])
     elif edit_layer.type == MultiPolyline:
         pass
     elif edit_layer.type == MultiPolygon:
