@@ -266,6 +266,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
                 self.treeWidget.setEnabled(False)
                 map_ = self.map
+                self.CurEditLayer = map_.layers[map_.selectedLayer]
                 map_.layers[map_.selectedLayer].selectedItems.clear()
                 self.tableWidget.setEditTriggers(QAbstractItemView.SelectedClicked |
                                                  QAbstractItemView.DoubleClicked)
@@ -274,12 +275,18 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
             else:
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit.png)')
+                if self.tool in (MapTool.AddGeometry, MapTool.EditGeometry):
+                    self.tool = MapTool.Null
+                self.CurEditLayer.edited_geometry.clear()
+                self.CurEditLayer.selectedItems.clear()
+                self.CurEditLayer = None
                 self.treeWidget.setEnabled(True)
                 self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+                RefreshCanvas(self, use_base=True)
 
     def bt_addfeature_clicked(self):
         if self.EditStatus:
-            self.MapTool = MapTool.AddGeometry
+            self.tool = MapTool.AddGeometry
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
@@ -294,7 +301,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
 
     def bt_editfeature_clicked(self):
         if self.EditStatus:
-            self.MapTool = MapTool.EditGeometry
+            self.tool = MapTool.EditGeometry
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
@@ -317,7 +324,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.addButton(QMessageBox.Ok)
             # 模态对话框
             msgBox.exec_()
-        elif self.MapTool != MapTool.EditGeometry:
+        elif self.tool != MapTool.EditGeometry:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
