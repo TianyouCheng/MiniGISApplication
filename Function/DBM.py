@@ -183,7 +183,9 @@ class DBM:
         else:
             self.sql_record+=sql
 
-    def insert_geometry(self,layer:Layer,geomtry:Geometry)->None:
+    def insert_geometry(self,layer:Layer,geomtry:Geometry,create=True)->None:
+        if not create and not layer.saved_in_dbm:
+            return
         wkt=geomtry.ToWkt()
         attr_name_lst=['geom']+list(db_attr_dict.keys())+list(layer.attr_desp_dict.keys())
         attr_str_lst=[str(geomtry.ID),f'st_geometryfromtext(\'{wkt}\',{layer.srid})']
@@ -211,6 +213,8 @@ class DBM:
             self.sql_record+=sql
 
     def delete_geometry(self,layer:Layer,geometry_id):
+        if not layer.saved_in_dbm:
+            return
         sql=f"delete from {layer.name} where gid={geometry_id};"
         if self.conn:
             self.cur.execute(sql)
@@ -219,6 +223,8 @@ class DBM:
             self.sql_record+=sql
 
     def update_geometry(self,layer:Layer,geomery_id,info_dict:Dict):
+        if not layer.saved_in_dbm:
+            return
         for k,v in info_dict.items():
             if type(v)==str:
                 info_dict[k]=f'\'{v}\''
@@ -233,6 +239,8 @@ class DBM:
             self.sql_record+=sql
 
     def add_column(self,layer:Layer,attr_name:str,attr_type:str):
+        if not layer.saved_in_dbm:
+            return
         sql=f"alter table {layer.name} add {attr_name} {attr_type_dict[attr_type]} null;"
         if self.conn:
             self.cur.execute(sql)
@@ -241,6 +249,8 @@ class DBM:
             self.sql_record+=sql
 
     def delete_column(self,layer:Layer,attr_name:str):
+        if not layer.saved_in_dbm:
+            return
         sql=f"alter table {layer.name} drop {attr_name};"
         if self.conn:
             self.cur.execute(sql)
@@ -250,6 +260,8 @@ class DBM:
 
     
     def modify_column(self,layer:Layer,attr_name:str,new_name):
+        if not layer.saved_in_dbm:
+            return
         # if new_type:
         #     sql=f"alter table {layer.name} modify {attr_name} {new_type};"
         #     self.cur.execute(sql)
