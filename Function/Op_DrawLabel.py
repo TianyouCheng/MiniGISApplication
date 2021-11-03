@@ -238,7 +238,7 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
     new_p = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
-    if event.Button == Qt.MouseButton.RightButton:
+    if event.button == Qt.MouseButton.LeftButton:
         if edit_layer.type == Polyline:
             edit_geom.append(new_p)
             edit_layer.AddGeometry(Polyline(edit_geom))
