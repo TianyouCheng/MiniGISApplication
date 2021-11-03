@@ -66,6 +66,9 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, use_base=False, stylelist=[])
                     cur_pg = map.GeoToScreen(cur_pg, (width, height))
                     cur_pg.holes[-1].data.append(cur_mouse)
                 DS.draw(painter, cur_pg)
+            elif edit_layer.type == MultiPolyline:
+                pass
+
         # “编辑几何体”模式，绘制正在编辑的几何体
         elif main_exe.tool == MapTool.EditGeometry:
             pass
@@ -222,7 +225,7 @@ def LabelMousePress(main_exe, event: QMouseEvent):
                 edit_geom.append(list())
             elif edit_layer.type == MultiPolygon:
                 edit_geom[-1][-1].append(new_p)
-                edit_geom.append(list())
+                edit_geom[-1].append(list())
         elif main_exe.tool == MapTool.EditGeometry:
             pass
 
@@ -234,19 +237,33 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
-    if edit_layer.type == Polyline:
-        edit_geom.append(PointD(mouse_loc.x(), mouse_loc.y()))
-        geo_edit_geom = [map_.ScreenToGeo(g, (width, height)) for g in edit_geom]
-        edit_layer.AddGeometry(Polyline(geo_edit_geom))
-        #添加属性表
-    elif edit_layer.type == Polygon:
-        outring = edit_geom[0]
-        inring = [Polygon(g) for g in edit_geom[1:]]
-        edit_layer.AddGeometry(Polygon(outring, inring))
-    elif edit_layer.type == MultiPolyline:
-        pass
-    elif edit_layer.type == MultiPolygon:
-        pass
+    new_p = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
+    if event.Button == Qt.MouseButton.RightButton:
+        if edit_layer.type == Polyline:
+            edit_geom.append(new_p)
+            edit_layer.AddGeometry(Polyline(edit_geom))
+        elif edit_layer.type == Polygon:
+            edit_geom[-1].append(new_p)
+            outring = edit_geom[0]
+            inring = [Polygon(g) for g in edit_geom[1:]]
+            edit_layer.AddGeometry(Polygon(outring, inring))
+        elif edit_layer.type == MultiPolyline:
+            edit_geom[-1].append(new_p)
+            lines_lst = [Polyline(line) for line in edit_geom]
+            edit_layer.AddGeometry(MultiPolyline(lines_lst))
+        elif edit_layer.type == MultiPolygon:
+            edit_geom[-1][-1].append(new_p)
+            pg_lst = list()
+            for pg in edit_geom:
+                outring = pg[0]
+                inring = [Polygon(g) for g in pg[1:]]
+                pg_lst.append(Polygon(outring, inring))
+            edit_layer.AddGeometry(MultiPolygon(pg_lst))
+    else:
+        if edit_layer.type == MultiPolygon:
+            edit_geom[-1][-1].append(new_p)
+            edit_geom.append(list())
+    RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
 
 def LabelMouseMove(main_exe, event : QMouseEvent):
     '''处理鼠标移动，且鼠标位置在画布内的事件'''
@@ -266,19 +283,12 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
         # 鼠标框选移动
         elif main_exe.tool == MapTool.Select:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
-        elif main_exe.tool == MapTool.AddGeometry:
-            edit_layer = map_.layers[map_.selectedLayer]
-            if edit_layer.type == PointD:
-                pass
-            elif edit_layer.type == Polyline:
-                pass
         elif main_exe.tool == MapTool.EditGeometry:
             pass
     # 普通的鼠标移动，橡皮筋效果在这
     else:
         if main_exe.tool == MapTool.AddGeometry:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
-
 
 def LabelMouseRelease(main_exe, event: QMouseEvent):
     '''处理与画布有关的、鼠标松开的事件'''
@@ -312,7 +322,6 @@ def LabelMouseRelease(main_exe, event: QMouseEvent):
         map_.layers[map_.selectedLayer].selectedItems = result
         TableUpdate(main_exe)
         RefreshCanvas(main_exe, mouse_loc, use_base=True)
-
 
 def LabelMouseWheel(main_exe, event: QWheelEvent):
     '''处理画布内的鼠标滚轮事件，可用滚轮放大缩小'''
