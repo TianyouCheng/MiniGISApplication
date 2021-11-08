@@ -188,7 +188,39 @@ def LabelMousePress(main_exe, event: QMouseEvent):
                              map_.scale * main_exe.zoomRatio)
             RefreshCanvas(main_exe, mouse_loc)
         elif main_exe.tool == MapTool.EditGeometry:
-            pass
+            edit_layer = main_exe.CurEditLayer
+            edit_geom = edit_layer.edited_geometry
+            buffer = map_.ScreenDistToGeo(main_exe.bufferRadius)
+            query = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
+            result = map_.layers[map_.selectedLayer].Query(query, buffer)
+            if len(result) == 0:
+                return
+            selected_item = result[0]
+            if edit_layer.type == PointD:
+                main_exe.EditNode = [selected_item]
+            elif edit_layer.type == Polyline:
+                for i, pt in enumerate(edit_layer.geometries[selected_item]):
+                    scr_pt = map_.GeoToScreen(pt, (width, height))
+                    if (scr_pt.X - mouse_loc.x()) ** 2 + (scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
+                        main_exe.EditNode = [selected_item, i]
+                        return
+            elif edit_layer.type == Polygon:
+                for i, pt in enumerate(edit_layer.geometries[selected_item].data):
+                    scr_pt = map_.GeoToScreen(pt, (width, height))
+                    if (scr_pt.X - mouse_loc.x()) ** 2 + (scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
+                        main_exe.EditNode = [selected_item, i]
+                        return
+                for i, ring in enumerate(edit_layer.geometries[selected_item].holes):
+                    for j, pt in ring.data:
+                        scr_pt = map_.GeoToScreen(pt, (width, height))
+                        if (scr_pt.X - mouse_loc.x()) ** 2 + (
+                                scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
+                            main_exe.EditNode = [selected_item, i, j]
+                            return
+            elif edit_layer.type == MultiPolyline:
+                pass
+            else:
+                pass
         elif main_exe.tool == MapTool.AddGeometry:
             edit_layer = main_exe.CurEditLayer
             edit_geom = edit_layer.edited_geometry
@@ -226,9 +258,6 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             elif edit_layer.type == MultiPolygon:
                 edit_geom[-1][-1].append(new_p)
                 edit_geom[-1].append(list())
-        elif main_exe.tool == MapTool.EditGeometry:
-            pass
-
 
 def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     map_ = main_exe.map
@@ -237,6 +266,8 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
+    if main_exe.tool != MapTool.AddGeometry:
+        return
     new_p = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
     if event.button == Qt.MouseButton.LeftButton:
         if edit_layer.type == Polyline:
@@ -273,6 +304,7 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
+    edit_layer = map_.layer[map_.selectedLayer]
     if main_exe.mouseLeftPress:
         # 在“漫游”模式下按住左键拖动
         if main_exe.tool == MapTool.Pan:
@@ -286,7 +318,15 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
         elif main_exe.tool == MapTool.Select:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
         elif main_exe.tool == MapTool.EditGeometry:
-            pass
+            if not main_exe.EditNode:
+                return
+            new_geoloc = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
+            if edit_layer.type == PointD:
+                pass
+            elif edit_layer.type == Polyline:
+                pass
+            elif edit_layer.type == Polygon:
+                pass
     # 普通的鼠标移动，橡皮筋效果在这
     else:
         if main_exe.tool == MapTool.AddGeometry:

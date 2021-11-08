@@ -23,26 +23,27 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         
 
         # 属性
-        self.EditStatus=False # 是否启用编辑
+        self.EditStatus = False # 是否启用编辑
         self.LayerIndex = 1 # 每层的id
         self.mouseDrag = False # 标题栏拖动标识
         self.mouseLeftPress = False     # 鼠标左键是否处于按下状态
         self.mousePressLoc = QPoint()   # 鼠标按下时的位置（相对画布）
         self.mouseLastLoc = QPoint()    # 上一时刻鼠标的位置（用于处理鼠标移动事件）
-        self.StyleOn=True    # 是否启用样式表
-        self.IsAttr=False # 当前界面是否为属性窗体
+        self.StyleOn = True    # 是否启用样式表
+        self.IsAttr = False # 当前界面是否为属性窗体
         self.dbm = DBM()
         self.map = dbm_test.create_map(self.dbm)    # 当前地图
         # self.map = create_map()
         self.tool = MapTool.Null    # 当前使用的工具（鼠标状态）
         self.bufferRadius = 5       # 点选时缓冲区半径（像素）
         self.zoomRatio = 1.5        # 鼠标滚轮、放大缩小时的缩放比例
-        self.StyleList=[0]*15           # 属性样式表
+        self.StyleList = [0]*15           # 属性样式表
         self.CurEditLayer = None        #当前编辑的图层
-        self.IsOperStacked=False      # 判断鼠标图标是否展开
+        self.IsOperStacked = False      # 判断鼠标图标是否展开
         self.IsEditStacked = False  # 判断鼠标图标是否展开
         self.NeedSave = False      #是否需要保存
-        self.IsChart=False         # 当前界面是否为表格窗体
+        self.IsChart = False         # 当前界面是否为表格窗体
+        self.EditNode = None      #当前移动节点
 
         # 初始化属性窗体
         initAttr(self)
