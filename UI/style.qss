@@ -118,6 +118,13 @@ border-image:url(UI/icon/chart.png)
 QPushButton#tsButtonChart:pressed{
 border-image:url(UI/icon/chart_p.png)
 }
+QPushButton#tsButtonMap{
+border-image:url(UI/icon/webmap.png)
+}
+QPushButton#tsButtonMap:pressed{
+border-image:url(UI/icon/webmap_p.png)
+}
+
 
 QMainWindow{
 border:0px;
