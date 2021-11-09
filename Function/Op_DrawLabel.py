@@ -199,7 +199,7 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             if edit_layer.type == PointD:
                 main_exe.EditNode = [selected_item]
             elif edit_layer.type == Polyline:
-                for i, pt in enumerate(edit_layer.geometries[selected_item]):
+                for i, pt in enumerate(edit_layer.geometries[selected_item].data):
                     scr_pt = map_.GeoToScreen(pt, (width, height))
                     if (scr_pt.X - mouse_loc.x()) ** 2 + (scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
                         main_exe.EditNode = [selected_item, i]
@@ -211,16 +211,30 @@ def LabelMousePress(main_exe, event: QMouseEvent):
                         main_exe.EditNode = [selected_item, i]
                         return
                 for i, ring in enumerate(edit_layer.geometries[selected_item].holes):
-                    for j, pt in ring.data:
+                    for j, pt in enumerate(ring.data):
                         scr_pt = map_.GeoToScreen(pt, (width, height))
                         if (scr_pt.X - mouse_loc.x()) ** 2 + (
                                 scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
                             main_exe.EditNode = [selected_item, i, j]
                             return
             elif edit_layer.type == MultiPolyline:
-                pass
+                for i, pl in enumerate(edit_layer.geometries[selected_item].data):
+                    for j, pt in enumerate(pl.data):
+                        scr_pt = map_.GeoToScreen(pt, (width, height))
+                        if (scr_pt.X - mouse_loc.x()) ** 2 + (
+                                scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
+                            main_exe.EditNode = [selected_item, i, j]
+                            return
             else:
-                pass
+                for i, pg in enumerate(edit_layer.geometries[selected_item].data):
+                    for j, ring in enumerate(pg.data):
+                        for k, pt in enumerate(ring.data):
+                            scr_pt = map_.GeoToScreen(pt, (width, height))
+                            if (scr_pt.X - mouse_loc.x()) ** 2 + (
+                                    scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
+                                main_exe.EditNode = [selected_item, i, j, k]
+                                return
+
         elif main_exe.tool == MapTool.AddGeometry:
             edit_layer = main_exe.CurEditLayer
             edit_geom = edit_layer.edited_geometry
@@ -261,7 +275,7 @@ def LabelMousePress(main_exe, event: QMouseEvent):
 
 def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     map_ = main_exe.map
-    edit_layer = map_.layer[map_.selectedLayer]
+    edit_layer = map_.layers[map_.selectedLayer]
     edit_geom = edit_layer.edited_geometry
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
@@ -301,10 +315,12 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
 def LabelMouseMove(main_exe, event : QMouseEvent):
     '''处理鼠标移动，且鼠标位置在画布内的事件'''
     map_ = main_exe.map
+    if map_.selectedLayer == -1:
+        return
     width = main_exe.Drawlabel.pixmap().width()
     height = main_exe.Drawlabel.pixmap().height()
     mouse_loc = main_exe.ConvertCor(event)
-    edit_layer = map_.layer[map_.selectedLayer]
+    edit_layer = map_.layers[map_.selectedLayer]
     if main_exe.mouseLeftPress:
         # 在“漫游”模式下按住左键拖动
         if main_exe.tool == MapTool.Pan:
@@ -313,7 +329,7 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
                                                  main_exe.mouseLastLoc.y()), (width, height))
             map_.offsetX += old_geoloc.X - now_geoloc.X
             map_.offsetY += old_geoloc.Y - now_geoloc.Y
-            RefreshCanvas(main_exe, mouse_loc)
+            RefreshCanvas(main_exe, mouse_loc, use_base=True)
         # 鼠标框选移动
         elif main_exe.tool == MapTool.Select:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
@@ -322,11 +338,22 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
                 return
             new_geoloc = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
             if edit_layer.type == PointD:
-                pass
+                edit_layer.geometries[main_exe.EditNode[0]] = new_geoloc
             elif edit_layer.type == Polyline:
-                pass
+                obj_ord, pt_ord = main_exe.EditNode
+                edit_layer.geometries[obj_ord].data[pt_ord] = new_geoloc
             elif edit_layer.type == Polygon:
+                if len(main_exe.EditNode) == 2:
+                    obj_ord, pt_ord = main_exe.EditNode
+                    edit_layer.geometries[obj_ord].data[pt_ord] = new_geoloc
+                else:
+                    obj_ord, ring_ord, pt_ord = main_exe.EditNode
+                    edit_layer.geometries[obj_ord].holes[ring_ord].data[pt_ord] = new_geoloc
+            elif edit_layer.type == MultiPolyline:
                 pass
+            else:
+                pass
+            RefreshCanvas(main_exe, mouse_loc, use_base=True)
     # 普通的鼠标移动，橡皮筋效果在这
     else:
         if main_exe.tool == MapTool.AddGeometry:
@@ -364,6 +391,8 @@ def LabelMouseRelease(main_exe, event: QMouseEvent):
         map_.layers[map_.selectedLayer].selectedItems = result
         TableUpdate(main_exe)
         RefreshCanvas(main_exe, mouse_loc, use_base=True)
+    elif main_exe.tool == MapTool.EditGeometry and map_.selectedLayer != -1:
+        main_exe.EditNode = None
 
 def LabelMouseWheel(main_exe, event: QWheelEvent):
     '''处理画布内的鼠标滚轮事件，可用滚轮放大缩小'''
