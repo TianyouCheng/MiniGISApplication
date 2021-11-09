@@ -227,7 +227,12 @@ def LabelMousePress(main_exe, event: QMouseEvent):
                             return
             else:
                 for i, pg in enumerate(edit_layer.geometries[selected_item].data):
-                    for j, ring in enumerate(pg.data):
+                    for j, pt in enumerate(pg.data):
+                        scr_pt = map_.GeoToScreen(pt, (width, height))
+                        if (scr_pt.X - mouse_loc.x()) ** 2 + (
+                                scr_pt.Y - mouse_loc.y()) ** 2 < main_exe.bufferRadius ** 2:
+                            main_exe.EditNode = [selected_item, i, j]
+                    for j, ring in enumerate(pg.holes):
                         for k, pt in enumerate(ring.data):
                             scr_pt = map_.GeoToScreen(pt, (width, height))
                             if (scr_pt.X - mouse_loc.x()) ** 2 + (
@@ -350,9 +355,15 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
                     obj_ord, ring_ord, pt_ord = main_exe.EditNode
                     edit_layer.geometries[obj_ord].holes[ring_ord].data[pt_ord] = new_geoloc
             elif edit_layer.type == MultiPolyline:
-                pass
+                obj_ord, line_ord, pt_ord = main_exe.EditNode
+                edit_layer.geometries[obj_ord].data[line_ord].data[pt_ord] = new_geoloc
             else:
-                pass
+                if len(main_exe.EditNode) == 3:
+                    obj_ord, pg_ord, pt_ord = main_exe.EditNode
+                    edit_layer.geometries[obj_ord].data[pg_ord].data[pt_ord] = new_geoloc
+                else:
+                    obj_ord, pg_ord, ring_ord, pt_ord = main_exe.EditNode
+                    edit_layer.geometries[obj_ord].data[pg_ord].holes[ring_ord].data[pt_ord] = new_geoloc
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
     # 普通的鼠标移动，橡皮筋效果在这
     else:
