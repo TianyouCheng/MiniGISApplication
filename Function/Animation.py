@@ -207,7 +207,7 @@ def OperateStack(main_exe,dua=1000):
     # 指针叠起后的8个控件
     bt_OperRest = [main_exe.tsButtonSelect, main_exe.tsButtonSelectByAttr,main_exe.tsButtonNewLayer, main_exe.tsButtonEdit,
                    main_exe.tsButtonAddFeature, main_exe.tsButtonEditFeature, main_exe.tsButtonDel,
-                   main_exe.tsButtonAddAttr, main_exe.tsButtonAttr,main_exe.tsButtonChart]
+                   main_exe.tsButtonAddAttr, main_exe.tsButtonAttr,main_exe.tsButtonChart,main_exe.tsButtonMap]
     bt_OperRest_pos0=[458] # 指针后8控件叠起位置
     bt_OperRest_pos1=[618] # 指针后8控件展开初始位置
     interval_small=38 # 按钮间隔
@@ -272,7 +272,7 @@ def OperateStack(main_exe,dua=1000):
             animition_Widget_on.setStartValue(QPoint(bt_OperRest_pos0[0]+3*interval_small, ypos))
             animition_Widget_on.setEndValue(QPoint(bt_OperRest_pos1[0]+3*interval_small, ypos))
             animation_group.addAnimation(animition_Widget_on)
-        for i in range(8,10):
+        for i in range(8,11):
             animition_Widget_on = QPropertyAnimation(bt_OperRest[i], b'pos')
             animition_Widget_on.setEasingCurve(QEasingCurve.OutExpo)
             animition_Widget_on.setDuration(dua)
@@ -296,7 +296,7 @@ def EditStack(main_exe,dua=1000):
     interval_small = 38  # 按钮间隔
     interval_big = 41  # 叠起按钮与后一按钮间隔
     # 编辑叠起后一控件
-    bt_EditRest=[main_exe.tsButtonAttr,main_exe.tsButtonChart]
+    bt_EditRest=[main_exe.tsButtonAttr,main_exe.tsButtonChart,main_exe.tsButtonMap]
     bt_EditRest_pos0 = [bt_Edit_pos0[0]+interval_big]  # 编辑后一控件叠起位置
     bt_EditRest_pos1 = [bt_Edit_pos1[0]+interval_small*(len(bt_Edit)-1)+interval_big]  # 编辑后一控件展开初始位置
     interval_OperStack=160

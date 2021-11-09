@@ -43,12 +43,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.IsEditStacked = False  # 判断鼠标图标是否展开
         self.NeedSave = False      #是否需要保存
         self.IsChart = False         # 当前界面是否为表格窗体
+        self.IsMap = False  # 当前界面是否为表格窗体
         self.EditNode = None      #当前移动节点
 
         # 初始化属性窗体
         initAttr(self)
         # 初始化表格窗体
         initChart(self)
+        initWebmap(self)
         # 设置属性窗体
         setAttr(self)
         # 叠起控件
@@ -154,6 +156,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonChart.clicked.connect(self.bt_setchart_clicked)
         self.tsButtonAddFeature.clicked.connect(self.bt_addfeature_clicked)
         self.tsButtonEditFeature.clicked.connect(self.bt_editfeature_clicked)
+        self.tsButtonMap.clicked.connect(self.bt_setmap_clicked)
 
     # 坐标转换，将事件E的坐标转换到画布坐标上
     def ConvertCor(self,e):
@@ -545,6 +548,9 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             self.WinChart.bt_Cancel.clicked.connect(self.WinChart.close)
         else:
             SwitchChart(self)
+
+    def bt_setmap_clicked(self):
+        SwitchMap(self)
 
 # region 子窗体
 class WinNewLayer(QWidget,Ui_Win_NewLayer):
