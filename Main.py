@@ -550,7 +550,27 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             SwitchChart(self)
 
     def bt_setmap_clicked(self):
-        SwitchMap(self)
+        if not self.IsMap:
+            msgBox = QMessageBox()
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            msgBox.addButton(QMessageBox.Ok)
+            index=self.map.selectedLayer
+            if index==-1:
+                msgBox.setIcon(QMessageBox.Critical)
+                msgBox.setWindowTitle('未选中图层')
+                msgBox.setText('选择图层为空！')
+                msgBox.exec_()
+            else:
+                layer=self.map.layers[index]
+                if layer.type==Polygon or layer.type==MultiPolygon:
+                    SwitchMap(self)
+                else:
+                    msgBox.setIcon(QMessageBox.Critical)
+                    msgBox.setWindowTitle('非面状图层')
+                    msgBox.setText('暂未处理面状图层外的图层类型。')
+                    msgBox.exec_()
+        else:
+            SwitchMap(self)
 
 # region 子窗体
 class WinNewLayer(QWidget,Ui_Win_NewLayer):

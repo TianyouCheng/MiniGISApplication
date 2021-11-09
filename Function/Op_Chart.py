@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QWidget,QMessageBox
 from PyQt5.QtCore import QSize,QUrl,QPropertyAnimation,QPoint,QEasingCurve,QCoreApplication,QRect
 from PyQt5.QtWebEngineWidgets import QWebEngineSettings,QWebEngineView
+from .Geometry import *
 
 def initChart(main_exe):
     webSettings=QWebEngineSettings.globalSettings()
@@ -140,46 +141,24 @@ def SwitchMap(main_exe):
     main_exe.IsMap = not main_exe.IsMap
 
 def runmapJS(main_exe):
-    '''点击“图标”按钮并OK后'''
     map_ = main_exe.map
     layer = map_.layers[map_.selectedLayer]
-    ptlist=[]
-    # print(layer.geometries[1].data[1])
-    for i in range(len(layer.geometries[1].data[1].data)):
-        ptlist.append([layer.geometries[1].data[1].data[i].X,layer.geometries[1].data[1].data[i].Y])
-    print(ptlist)
-    js = "changesource({})".format(ptlist)
-    main_exe.webViewmap.page().runJavaScript(js)
+    coorlist=[]
 
-    # map_ = main_exe.map
-    # window = main_exe.WinChart
-    # need_close = True
-    # try:
-    #     # 未选择图层直接退出
-    #     if map_.selectedLayer==-1:
-    #         raise RuntimeError(u'图层错误',u'未选择图层！')
-    #     layer=map_.layers[map_.selectedLayer]
-    #     column_name=window.comboBox.currentText()
-    #     mark_name=window.comboBox_2.currentText()
-    #     if type(layer.table[column_name][0])==str:
-    #         need_close = False
-    #         raise RuntimeError(u'类型错误', u'请选择数值类型！')
-    #     IDlist=list(layer.table[mark_name])
-    #     valuelist=list(layer.table[column_name])
-    #     js = "setValue({},{})".format(IDlist, valuelist)
-    #     main_exe.webView.page().runJavaScript(js)
-    # except RuntimeError as e:
-    #     msgBox = QMessageBox()
-    #     msgBox.setWindowTitle(e.args[0])
-    #     msgBox.setText(u'\n{}\n'.format(e.args[1]))
-    #     msgBox.addButton(QMessageBox.Ok)
-    #     msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
-    #     msgBox.exec_()
-    # finally:
-    #     if need_close:
-    #         window.close()
-    #
-    # # js = "setValue({},{})".format([1, 2, 3], [11, 53, 25])
-    # # main_exe.webView.page().runJavaScript(js)
-    #
-    # main_exe.WinChart.close()
+    if layer.type==Polygon:
+        for geometry in layer.geometries:
+            ptlist = []
+            for i in range(len(geometry.data)):
+                ptlist.append([geometry.data[i].X,geometry.data[i].Y])
+            coorlist.append(ptlist)
+    elif layer.type==MultiPolygon:
+        for geometry in layer.geometries:
+            for i in range(len(geometry.data)):
+                ptlist = []
+                for j in range(len(geometry.data[i].data)):
+                    ptlist.append([geometry.data[i].data[j].X,geometry.data[i].data[j].Y])
+                coorlist.append(ptlist)
+
+
+    js = "changesource({})".format(coorlist)
+    main_exe.webViewmap.page().runJavaScript(js)
