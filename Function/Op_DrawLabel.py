@@ -10,6 +10,7 @@ from .Geometry import *
 from .Layer import Layer
 from .Map import Map
 from .MapTool import MapTool
+
 import copy
 
 
@@ -70,8 +71,8 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, use_base=False, stylelist=[])
                 pass
 
         # “编辑几何体”模式，绘制正在编辑的几何体
-        elif main_exe.tool == MapTool.EditGeometry:
-            pass
+        #elif main_exe.tool == MapTool.EditGeometry:
+
         # “选择”模式，绘制选择框
         elif main_exe.tool == MapTool.Select and main_exe.mouseLeftPress:
             pen = QPen(QColor('black'), 1, Qt.PenStyle.DashLine)
@@ -245,19 +246,19 @@ def LabelMousePress(main_exe, event: QMouseEvent):
             edit_geom = edit_layer.edited_geometry
             need_save = main_exe.NeedSave
             new_p = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
+            from .Op_TableView import TableUpdate
             if edit_layer.type == PointD:
                 edit_layer.AddGeometry(new_p)
-                from .Op_TableView import TableUpdate
                 TableUpdate(main_exe)
                 RefreshCanvas(main_exe, mouse_loc)
             elif edit_layer.type == Polyline:
                 edit_geom.append(new_p)
-                RefreshCanvas(main_exe, mouse_loc, True, main_exe.StyleList)
+                RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
             elif edit_layer.type == Polygon or edit_layer.type == MultiPolyline:
                 if len(edit_geom) == 0:
                     edit_geom.append(list())
                 edit_geom[-1].append(new_p)
-                RefreshCanvas(main_exe, mouse_loc, True, main_exe.StyleList)
+                RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
             elif edit_layer.type == MultiPolygon:
                 if len(edit_geom) == 0:
                     edit_geom.append(list())
@@ -288,21 +289,26 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     if main_exe.tool != MapTool.AddGeometry:
         return
     new_p = map_.ScreenToGeo(PointD(mouse_loc.x(), mouse_loc.y()), (width, height))
-    if event.button == Qt.MouseButton.LeftButton:
+    from .Op_TableView import TableUpdate
+    if event.button() == Qt.MouseButton.LeftButton:
         if edit_layer.type == Polyline:
             edit_geom.append(new_p)
             edit_layer.AddGeometry(Polyline(edit_geom))
-            main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1])
+            TableUpdate(main_exe)
+            main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
         elif edit_layer.type == Polygon:
             edit_geom[-1].append(new_p)
             outring = edit_geom[0]
             inring = [Polygon(g) for g in edit_geom[1:]]
             edit_layer.AddGeometry(Polygon(outring, inring))
-            main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1])
+            TableUpdate(main_exe)
+            main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
         elif edit_layer.type == MultiPolyline:
             edit_geom[-1].append(new_p)
             lines_lst = [Polyline(line) for line in edit_geom]
             edit_layer.AddGeometry(MultiPolyline(lines_lst))
+            TableUpdate(main_exe)
+            main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
         elif edit_layer.type == MultiPolygon:
             edit_geom[-1][-1].append(new_p)
             pg_lst = list()
@@ -311,10 +317,13 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
                 inring = [Polygon(g) for g in pg[1:]]
                 pg_lst.append(Polygon(outring, inring))
             edit_layer.AddGeometry(MultiPolygon(pg_lst))
+            TableUpdate(main_exe)
+            main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
     else:
         if edit_layer.type == MultiPolygon:
             edit_geom[-1][-1].append(new_p)
             edit_geom.append(list())
+    edit_layer.edited_geometry = []
     RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
 
 def LabelMouseMove(main_exe, event : QMouseEvent):
@@ -334,7 +343,7 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
                                                  main_exe.mouseLastLoc.y()), (width, height))
             map_.offsetX += old_geoloc.X - now_geoloc.X
             map_.offsetY += old_geoloc.Y - now_geoloc.Y
-            RefreshCanvas(main_exe, mouse_loc, use_base=True)
+            RefreshCanvas(main_exe, mouse_loc)
         # 鼠标框选移动
         elif main_exe.tool == MapTool.Select:
             RefreshCanvas(main_exe, mouse_loc, use_base=True)
@@ -364,7 +373,7 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
                 else:
                     obj_ord, pg_ord, ring_ord, pt_ord = main_exe.EditNode
                     edit_layer.geometries[obj_ord].data[pg_ord].holes[ring_ord].data[pt_ord] = new_geoloc
-            RefreshCanvas(main_exe, mouse_loc, use_base=True)
+            RefreshCanvas(main_exe, mouse_loc, use_base=False)
     # 普通的鼠标移动，橡皮筋效果在这
     else:
         if main_exe.tool == MapTool.AddGeometry:
@@ -372,7 +381,6 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
 
 def LabelMouseRelease(main_exe, event: QMouseEvent):
     '''处理与画布有关的、鼠标松开的事件'''
-    from .Op_TableView import TableUpdate
     edit_layer = main_exe.map.selectedLayer
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
@@ -400,10 +408,12 @@ def LabelMouseRelease(main_exe, event: QMouseEvent):
         result = ConcatSelection(map_.layers[map_.selectedLayer].selectedItems, result,
                                  event.modifiers(), p_select)
         map_.layers[map_.selectedLayer].selectedItems = result
+        from .Op_TableView import TableUpdate
         TableUpdate(main_exe)
         RefreshCanvas(main_exe, mouse_loc, use_base=True)
     elif main_exe.tool == MapTool.EditGeometry and map_.selectedLayer != -1:
         main_exe.EditNode = None
+        RefreshCanvas(main_exe, mouse_loc, use_base=False)
 
 def LabelMouseWheel(main_exe, event: QWheelEvent):
     '''处理画布内的鼠标滚轮事件，可用滚轮放大缩小'''
