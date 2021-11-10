@@ -35,13 +35,14 @@ class DBM:
     def __init__(self):
         self.conn=None
         self.sql_record=''
+        self.closed = False
         thread_connect=threading.Thread(target=self._connect)
         thread_connect.start()
         time.sleep(1)
         # self._connect()
 
     def _connect(self):
-        while True:
+        while not self.closed:
             if self.conn is None:
                 try:
                     self.conn=psycopg2.connect(database="minigis",user="minigiser",password="minigis",host="47.104.149.94",port="5432")

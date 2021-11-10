@@ -104,6 +104,13 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         TreeViewUpdateList(self)
 
     # region 功能函数
+
+    # 关闭窗体事件，DBM线程顺便关了
+    def closeEvent(self, *args, **kwargs):
+        super(Main_exe, self).closeEvent(*args, **kwargs)
+        if self.dbm:
+            self.dbm.closed = True
+
     # 重写鼠标点击事件
     def mousePressEvent(self, event):
         # 在自定义样式中设置移动窗体
@@ -148,6 +155,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.tsButtonAttr.clicked.connect(self.bt_Attr_clicked)
         self.tsButtonImportshp.clicked.connect(self.bt_import_shp_clicked)
         self.tsButtonExportshp.clicked.connect(self.bt_export_shp_clicked)
+        self.tsButtonNew.clicked.connect(self.bt_new_click)
         self.tsButtonSave.clicked.connect(self.bt_save_to_dbm)
         self.tsButtonOpen.clicked.connect(self.bt_open_from_dbm)
         self.tsButtonAddAttr.clicked.connect(self.bt_addattr_clicked)
@@ -239,6 +247,15 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Drawlabel.setCursor(QCursor())
 
     def bt_edit_clicked(self):
+        def set_enable(status):
+            '''设置一系列控件不可操作、恢复操作'''
+            self.treeWidget.setEnabled(status)
+            self.tsButtonNew.setEnabled(status)
+            self.tsButtonOpen.setEnabled(status)
+            self.tsButtonImportshp.setEnabled(status)
+            self.tsButtonExportshp.setEnabled(status)
+            self.tsButtonNewLayer.setEnabled(status)
+
         node=self.treeWidget.currentItem()
         if (not node) or not node.parent():
             msgBox = QMessageBox()
@@ -268,7 +285,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 # 模态对话框
                 msgBox.exec_()
                 # self.tsButtonEdit.setStyleSheet('border-image:url(UI/icon/edit_p.png)')
-                self.treeWidget.setEnabled(False)
+                set_enable(False)
                 map_ = self.map
                 self.CurEditLayer = map_.layers[map_.selectedLayer]
                 map_.layers[map_.selectedLayer].selectedItems.clear()
@@ -284,13 +301,14 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 self.CurEditLayer.edited_geometry.clear()
                 self.CurEditLayer.selectedItems.clear()
                 self.CurEditLayer = None
-                self.treeWidget.setEnabled(True)
+                set_enable(True)
                 self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
                 RefreshCanvas(self, use_base=True)
 
     def bt_addfeature_clicked(self):
         if self.EditStatus:
             self.tool = MapTool.AddGeometry
+            self.Drawlabel.setCursor(QCursor())
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
@@ -306,6 +324,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
     def bt_editfeature_clicked(self):
         if self.EditStatus:
             self.tool = MapTool.EditGeometry
+            self.Drawlabel.setCursor(QCursor())
             self.NeedSave = False
         else:
             msgBox = QMessageBox()
@@ -380,6 +399,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.map.AddLayer(new_layer)
         # 刷新树视图和刷新画布
         TreeViewUpdateList(self)
+        TableUpdate(self)
         RefreshCanvas(self)
         
         self.WinDBLoad.close()
@@ -396,12 +416,12 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         
 
     def bt_save_to_dbm(self):
-        node=self.treeWidget.currentItem()
-        if not node:
+        node = self.map.selectedLayer
+        if node == -1:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Warning)
             msgBox.setWindowTitle(u'提示')
-            msgBox.setText(u"\n请先选择要编辑的图层。\n")
+            msgBox.setText(u"\n请先选择要保存的图层。\n")
             msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
             # 隐藏ok按钮
             msgBox.addButton(QMessageBox.Ok)
@@ -474,8 +494,20 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         RefreshCanvas(self)
 
     def bt_export_shp_clicked(self):
-        sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')
-        self.map_.layers[self.map_.selectedLayer].export_to_shplayer(sfd)
+        node = self.map.selectedLayer
+        if node == -1:
+            msgBox = QMessageBox()
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setWindowTitle(u'提示')
+            msgBox.setText(u"\n请先选择要保存的图层。\n")
+            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+            # 隐藏ok按钮
+            msgBox.addButton(QMessageBox.Ok)
+            # 模态对话框
+            msgBox.exec_()
+        else:
+            sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')
+            self.map.layers[node].export_to_shplayer(sfd)
     # def labelResizeEvent(self, a0: QtGui.QResizeEvent):
         '''画布大小改变'''
         # super(QLabel, self.Drawlabel).resizeEvent(a0)
@@ -483,6 +515,24 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         # canvas.fill(QColor('white'))
         # self.Drawlabel.setPixmap(canvas)
         # Refresh(self, QCursor.pos())
+
+    def bt_new_click(self):
+        '''这个按钮指的是放弃原来的地图，新建地图'''
+        def ok_click():
+            self.map = Map()
+            TreeViewUpdateList(self)
+            TableUpdate(self)
+            RefreshCanvas(self)
+
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Question)
+        msgBox.setWindowTitle('创建新地图')
+        msgBox.setText('\n确定放弃目前的地图和所有图层、创建新地图吗？\n未保存的信息将会丢失。\n')
+        msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
+        ok = msgBox.addButton(QMessageBox.Ok)
+        ok.clicked.connect(ok_click)
+        msgBox.addButton(QMessageBox.Cancel)
+        msgBox.exec_()
 
     def bt_addattr_clicked(self):
         self.WinNewAttr = WinNewAttr()
