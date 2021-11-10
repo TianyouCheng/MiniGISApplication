@@ -148,14 +148,18 @@ def addAttr(main_exe):
             raise RuntimeError(u'图层错误', u'未选择图层！')
         layer = map_.layers[map_.selectedLayer]
         column_name = window.lineEdit.text()
-        # TODO 数据库中的列名不支持哪些字符？还没处理
-        column_name=re.sub(r'\t()/\\=<>+-*^"\'[]~#|&%','',column_name).lower()#删除敏感字符，转小写
+        column_type = window.comboBox.currentText()
+        search_name = re.search(r'[\t()/\\=<>+\-*^"\'\[\]~#|&%]', column_name)
+        if search_name is not None:
+            need_close = False
+            raise RuntimeError(u'字段错误', f'字段名包含非法字符"{search_name[0]}"！')
+        column_name=re.sub(r'\t\(\)/\\=<>+-*^"\'\[]~#|&%','',column_name).lower()#删除敏感字符，转小写
         # 输入的字段名已经存在，报错
         if column_name.lower() in map(str.lower, layer.table.columns):
             need_close = False
             raise RuntimeError(u'字段错误', f'该图层已经有"{column_name}"字段！')
-        layer.add_attr(column_name, window.comboBox.currentText())
-        main_exe.dbm.add_column(layer,column_name,'str')#TODO:没有选择字段类型？
+        layer.add_attr(column_name, column_type)
+        main_exe.dbm.add_column(layer,column_name,'str' if column_type == 'string' else column_type)
     # 运行错误则弹出对话框
     except RuntimeError as e:
         msgBox = QMessageBox()
