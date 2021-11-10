@@ -426,6 +426,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         self.Winnewlayer.comboBox.setItemIcon(0, QIcon('./UI/images/Point.png'))
         self.Winnewlayer.comboBox.setItemIcon(1, QIcon('./UI/images/Line.png'))
         self.Winnewlayer.comboBox.setItemIcon(2, QIcon('./UI/images/Polygon.png'))
+        self.Winnewlayer.comboBox.setItemIcon(3, QIcon('./UI/images/Line.png'))
+        self.Winnewlayer.comboBox.setItemIcon(4, QIcon('./UI/images/Polygon.png'))
         self.Winnewlayer.show()
         self.Winnewlayer.bt_OK.clicked.connect(lambda:NewLayer(self))
         self.Winnewlayer.bt_Cancel.clicked.connect(self.Winnewlayer.close)

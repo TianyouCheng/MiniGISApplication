@@ -237,6 +237,10 @@ def NewLayer(self):
         layer = Layer(Polyline, txtName)
     elif txtType == '面':
         layer = Layer(Polygon, txtName)
+    elif txtType == '多线':
+        layer = Layer(MultiPolyline, txtName)
+    elif txtType == '多面':
+        layer = Layer(MultiPolygon, txtName)
     else:
         raise TypeError('图层类型错误')
     pos = self.map.selectedLayer if self.map.selectedLayer != -1 else 0

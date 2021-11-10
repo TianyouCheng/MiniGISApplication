@@ -68,8 +68,9 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, use_base=False, stylelist=[])
                     cur_pg.holes[-1].data.append(cur_mouse)
                 DS.draw(painter, cur_pg)
             elif edit_layer.type == MultiPolyline:
+                cur_mouse = PointD(mouseLoc.x(), mouseLoc.y())
+            else:
                 pass
-
         # “编辑几何体”模式，绘制正在编辑的几何体
         #elif main_exe.tool == MapTool.EditGeometry:
 
@@ -292,25 +293,25 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
     from .Op_TableView import TableUpdate
     if event.button() == Qt.MouseButton.LeftButton:
         if edit_layer.type == Polyline:
-            edit_geom.append(new_p)
+            #edit_geom.append(new_p)
             edit_layer.AddGeometry(Polyline(edit_geom))
             TableUpdate(main_exe)
             main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
         elif edit_layer.type == Polygon:
-            edit_geom[-1].append(new_p)
+            #edit_geom[-1].append(new_p)
             outring = edit_geom[0]
             inring = [Polygon(g) for g in edit_geom[1:]]
             edit_layer.AddGeometry(Polygon(outring, inring))
             TableUpdate(main_exe)
             main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
         elif edit_layer.type == MultiPolyline:
-            edit_geom[-1].append(new_p)
+            #edit_geom[-1].append(new_p)
             lines_lst = [Polyline(line) for line in edit_geom]
             edit_layer.AddGeometry(MultiPolyline(lines_lst))
             TableUpdate(main_exe)
             main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
         elif edit_layer.type == MultiPolygon:
-            edit_geom[-1][-1].append(new_p)
+            #edit_geom[-1][-1].append(new_p)
             pg_lst = list()
             for pg in edit_geom:
                 outring = pg[0]
@@ -321,7 +322,7 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
             main_exe.dbm.insert_geometry(edit_layer,edit_layer.geometries[-1], False)
     else:
         if edit_layer.type == MultiPolygon:
-            edit_geom[-1][-1].append(new_p)
+            #edit_geom[-1][-1].append(new_p)
             edit_geom.append(list())
     edit_layer.edited_geometry = []
     RefreshCanvas(main_exe, mouse_loc, False, main_exe.StyleList)
