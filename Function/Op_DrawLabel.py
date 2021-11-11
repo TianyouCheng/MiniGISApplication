@@ -63,14 +63,37 @@ def RefreshCanvas(main_exe, mouseLoc: QPoint=None, use_base=False, stylelist=[])
                     cur_pg = map.GeoToScreen(cur_pg, (width, height))
                     cur_pg.data.append(cur_mouse)
                 else:
-                    cur_pg = Polygon(edit_geom[0], edit_geom[1:])
+                    cur_pg = Polygon(edit_geom[0], [Polygon(i) for i in edit_geom[1:]])
                     cur_pg = map.GeoToScreen(cur_pg, (width, height))
                     cur_pg.holes[-1].data.append(cur_mouse)
                 DS.draw(painter, cur_pg)
             elif edit_layer.type == MultiPolyline:
-                cur_mouse = PointD(mouseLoc.x(), mouseLoc.y())
+                cur_multiline = MultiPolyline([Polyline(i) for i in edit_geom if i])
+                cur_multiline = map.GeoToScreen(cur_multiline, (width, height))
+                DS.draw(painter, cur_multiline)
+                if edit_geom[-1]:
+                    tail = Polyline([PointD(mouseLoc.x(), mouseLoc.y()),
+                                    map.GeoToScreen(edit_geom[-1][-1], (width, height))])
+                    DS.draw(painter, tail)
             else:
-                pass
+                cur_mouse = PointD(mouseLoc.x(), mouseLoc.y())
+                pglist = list()
+                for pgl in edit_geom[:-1]:
+                    pg = Polygon(pgl[0], [Polygon(i) for i in pgl[1:]])
+                    pg = map.GeoToScreen(pg, (width, height))
+                    pglist.append(pg)
+                if pglist:
+                    DS.draw(painter, MultiPolygon(pglist))
+                if len(edit_geom[-1]) > 0:
+                    if len(edit_geom[-1]) == 1:
+                        cur_pg = Polygon(edit_geom[-1][0])
+                        cur_pg = map.GeoToScreen(cur_pg, (width, height))
+                        cur_pg.data.append(cur_mouse)
+                    else:
+                        cur_pg = Polygon(edit_geom[-1][0], [Polygon(i) for i in edit_geom[-1][1:] if i])
+                        cur_pg = map.GeoToScreen(cur_pg, (width, height))
+                        cur_pg.holes[-1].data.append(cur_mouse)
+                    DS.draw(painter, cur_pg)
         # “编辑几何体”模式，绘制正在编辑的几何体
         #elif main_exe.tool == MapTool.EditGeometry:
 
