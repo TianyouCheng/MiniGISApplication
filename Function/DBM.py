@@ -119,56 +119,7 @@ class DBM:
             "PostgreSQL" + '"' + ' PG:' + '"' +
             "host=47.104.149.94 user=minigiser dbname=minigis password=minigis" + '"'
             + ' ' + '"' + path + '"')
-        '''
-        driver = ogr.GetDriverByName('ESRI Shapefile')
-        data_source = driver.Open(path, 0)
-        layer_name = path.split('/')[-1].split('.')[0]
-        assert data_source is not None
-        ori_layer = data_source.GetLayer(0)
-        ori_type = ori_layer.GetGeometryType()
-        wkt_list = list()
-        feat = ori_layer.GetNextFeature()
-        while feat:
-            wkt_list.append(feat.geometry().ExportToWkt())
-        geom_type_dict = {
-            ogr.wkbPoint : 'POINT',
-            ogr.wkbLineString : 'LINESTRING',
-            ogr.wkbPolygon : 'POLYGON',
-            ogr.wkbMultiLineString : 'MULTILINESTRING',
-            ogr.wkbMultiPolygon : 'MULTIPOLYGON'
-        }
-        type_dict = {ogr.OFTInteger: 'int',
-                     ogr.OFTString: 'varchar',
-                     ogr.OFTReal: 'float'
-                     }
-        fieldcount = ori_layer.GetFieldCount()
-        defn = ori_layer.GetLayerDefn()
-        fields = list()
-        attr_desp_dict = dict()
-        for att in range(fieldcount):
-            field = defn.GetFieldDefn(att)
-            fields.append(field.GetNameRef())
-            attr_desp_dict[field.GetNameRef()] = type_dict[field.GetType()]
-        sql = f"""
-                     create table {layer_name}(
-                         gid int primary key,
-                         geom Geometry({geom_type_dict[ori_type]},{3857})
-                         {''.join([f',{attr_name} {attr_type}' for attr_name, attr_type in attr_desp_dict.items()])}
-                     );
-                 """
-        self.cur.execute(sql)
-        attr_str_lst = []
-        for attr in layer.get_attr(geomtry.ID):
-            if type(attr) == str:
-                attr_str_lst.append(f'\'{attr}\'')
-            else:
-                attr_str_lst.append(attr)
-        sql = f"""
-                    insert into {layer_name}(gid,geom{''.join([f',{k}' for k in attr_desp_dict.keys()])})
-                    values({geomtry.ID},st_geometryfromtext(\'{wkt}\',{3857}){''.join([f',{attr}' for attr in attr_str_lst])});
-                """
-        self.cur.execute(sql)
-        '''
+
     def create_table(self,tablename:str,geom_type:str,srid:int,attr_desp_dict:dict)->None:
         sql_table_attr_list=['gid serial primary key',f'geom Geometry({geom_type},{srid})']\
             +[f'{attr_name} {attr_type}' for attr_name,attr_type in db_attr_dict.items()]\

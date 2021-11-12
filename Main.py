@@ -288,7 +288,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
                 set_enable(False)
                 map_ = self.map
                 self.CurEditLayer = map_.layers[map_.selectedLayer]
-                map_.layers[map_.selectedLayer].selectedItems.clear()
+                #map_.layers[map_.selectedLayer].selectedItems.clear()
                 self.tableWidget.setEditTriggers(QAbstractItemView.SelectedClicked |
                                                  QAbstractItemView.DoubleClicked)
                 TableUpdate(self)
@@ -347,16 +347,6 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             msgBox.addButton(QMessageBox.Ok)
             # 模态对话框
             msgBox.exec_()
-        elif self.tool != MapTool.EditGeometry:
-            msgBox = QMessageBox()
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setWindowTitle(u'提示')
-            msgBox.setText(u"\n目前为创建要素状态，请先切换到编辑要素状态\n")
-            msgBox.setWindowIcon(QIcon(r'./UI/icon1.png'))
-            # 隐藏ok按钮
-            msgBox.addButton(QMessageBox.Ok)
-            # 模态对话框
-            msgBox.exec_()
         elif len(self.CurEditLayer.selectedItems) == 0:
             msgBox = QMessageBox()
             msgBox.setIcon(QMessageBox.Warning)
@@ -368,7 +358,8 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             # 模态对话框
             msgBox.exec_()
         else:
-            pass
+            LabelDeleteItem(self)
+
     def bt_open_from_dbm(self):
         self.WinDBLoad = WinDBLoad()
         # 设置Table
