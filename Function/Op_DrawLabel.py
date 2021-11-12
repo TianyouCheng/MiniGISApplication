@@ -417,6 +417,8 @@ def LabelMouseMove(main_exe, event : QMouseEvent):
 def LabelMouseRelease(main_exe, event: QMouseEvent):
     '''处理与画布有关的、鼠标松开的事件'''
     map_ = main_exe.map
+    if map_.selectedLayer == -1:
+        return
     edit_layer = map_.layers[map_.selectedLayer]
     map_ = main_exe.map
     width = main_exe.Drawlabel.pixmap().width()
@@ -478,7 +480,9 @@ def LabelDeleteItem(main_exe):
     map_ = main_exe.map
     edit_layer = map_.layers[map_.selectedLayer]
     select_list = edit_layer.selectedItems
-    edit_layer.geometries = [g for g in edit_layer.geometries if g.ID not in select_list]
+    #edit_layer.geometries = [g for g in edit_layer.geometries if g.ID not in select_list]
+    for id in select_list:
+        edit_layer.DelGeometry(id)
     from .Op_TableView import TableUpdate
     TableUpdate(main_exe)
     edit_layer.RefreshBox()
