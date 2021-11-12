@@ -183,6 +183,7 @@ def TableItemChanged(main_exe,item):
     cur_layer=main_exe.map.layers[main_exe.map.selectedLayer]
     cur_id=cur_layer.geometries[int(main_exe.tableWidget.item(item.row(),0).text())].gid
     cur_dict={main_exe.tableWidget.horizontalHeaderItem(item.column()).text():text}
+    cur_layer.table.iloc[item.row(),item.column()]=text
     main_exe.dbm.update_geometry(cur_layer,cur_id,cur_dict)
 
 def selectGeoByStr(main_exe):

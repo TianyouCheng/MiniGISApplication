@@ -177,5 +177,6 @@ def SetStyleList(main_exe,stylelist):
     map_ = main_exe.map
     for geometry in map_.layers[map_.selectedLayer].geometries:
         selected = set(map_.layers[map_.selectedLayer].selectedItems)
+        
         if geometry.ID in selected:
             geometry.StyleList = copy.deepcopy(stylelist)

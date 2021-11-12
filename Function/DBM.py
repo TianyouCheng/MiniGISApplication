@@ -140,7 +140,7 @@ class DBM:
             return
         wkt=geomtry.ToWkt()
         attr_name_lst=['geom']+list(db_attr_dict.keys())+list(layer.attr_desp_dict.keys())
-        attr_str_lst=[str(geomtry.ID),f'st_geometryfromtext(\'{wkt}\',{layer.srid})']
+        attr_str_lst=[f'st_geometryfromtext(\'{wkt}\',{layer.srid})']
         # if len(geomtry.StyleList)==0:
         #     geomtry.StyleList=[0]*15
         for style_attr in geomtry.StyleList[:len(db_attr_dict)]:

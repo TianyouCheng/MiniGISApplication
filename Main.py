@@ -389,6 +389,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
         new_layer=self.dbm.load_layer(layer_name)
         self.map.AddLayer(new_layer)
         # 刷新树视图和刷新画布
+        RefreshAttr(self)
         TreeViewUpdateList(self)
         TableUpdate(self)
         RefreshCanvas(self)
