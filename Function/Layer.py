@@ -165,7 +165,7 @@ class Layer(object):
         :param sql: 文本查询
         :return: 被选中的几何体ID集合（注：未更新self.selectedItems）
         '''
-        return list(self.table.query(sql)['ID'])
+        return list(self.table.query(sql)['id'])
 
     @property
     def Count(self):
