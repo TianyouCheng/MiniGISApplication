@@ -498,7 +498,7 @@ class Main_exe(QMainWindow,Ui_MainWindow):
             # 模态对话框
             msgBox.exec_()
         else:
-            sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')
+            sfd = QFileDialog.getSaveFileName(self, "导出shapefile文件", './', 'Shapefile文件(*.shp)')[0]
             self.map.layers[node].export_to_shplayer(sfd)
     # def labelResizeEvent(self, a0: QtGui.QResizeEvent):
         '''画布大小改变'''

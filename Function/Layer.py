@@ -4,6 +4,7 @@
 from .Geometry import *
 import pandas as pd
 from osgeo import ogr
+from osgeo import osr
 import os
 
 class Layer(object):
@@ -297,7 +298,9 @@ class Layer(object):
         if os.path.exists(path):
             oDriver.DeleteDataSource(file_name)
         fields = self.table.columns.tolist()
-        outlayer = oDs.CreateLayer(file_name.split('.')[0], geom_type=geotype_dict[self.type])
+        dst_osr = osr.SpatialReference()
+        dst_osr.ImportFromEPSG(3857)
+        outlayer = oDs.CreateLayer(file_name.split('.')[0], dst_osr, geom_type=geotype_dict[self.type])
         for f in fields:
             new_field = ogr.FieldDefn(f, type_dict[self.attr_desp_dict[f]])
             outlayer.CreateField(new_field)
@@ -306,7 +309,7 @@ class Layer(object):
             geom = ogr.CreateGeometryFromWkt(g.ToWkt())
             ft = ogr.Feature(featureDefn)
             ft.SetGeometry(geom)
-            values = self.table.iloc[[i]].tolist()
+            values = self.table.iloc[i].tolist()
             for f, v in zip(fields, values):
                 ft.SetField(f, v)
             outlayer.CreateFeature(ft)

@@ -544,7 +544,7 @@ class MultiPolyline(Geometry):
         return s
 
     def ToWkt(self):
-        wkt=f"MULTILINESTRING({','.join([l.ToWKT()[10:] for l in self.data])})"
+        wkt=f"MULTILINESTRING({','.join([l.ToWkt()[10:] for l in self.data])})"
         return wkt
 # endregion
 

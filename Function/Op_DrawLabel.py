@@ -343,7 +343,7 @@ def LabelMouseDoubleClick(main_exe, event : QMouseEvent):
             pg_lst = list()
             for pg in edit_geom:
                 outring = pg[0]
-                inring = [Polygon(g) for g in pg[1:]]
+                inring = [Polygon(g) for g in pg[1:] if g]
                 pg_lst.append(Polygon(outring, inring))
             edit_layer.AddGeometry(MultiPolygon(pg_lst))
             TableUpdate(main_exe)
