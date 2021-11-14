@@ -291,7 +291,7 @@ class DBM:
             self.cur.execute(f"select st_x({col_name}),st_y({col_name}),* from {layer_name};")
             points =self.cur.fetchall()
             for p in points:
-                cur_p=PointD(p[0],p[1],p[2])
+                cur_p=PointD(p[0],p[1],id=p[2])
                 for i in range(len(db_attr_dict)):
                     cur_p.StyleList[i]=p[4+i]
                 cur_layer.AddGeometry(cur_p,dict(zip([attr[1] for attr in attr_infos],p[4+len(db_attr_dict):])))
@@ -299,7 +299,7 @@ class DBM:
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             lines=self.cur.fetchall()
             for l in lines:
-                cur_l=Polyline(l[0],l[1])
+                cur_l=Polyline(l[0],id=l[1])
                 for i in range(len(db_attr_dict)):
                     cur_l.StyleList[i]=l[3+i]
                 cur_layer.AddGeometry(cur_l,dict(zip([attr[1] for attr in attr_infos],l[3+len(db_attr_dict):])))
@@ -307,7 +307,7 @@ class DBM:
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             polygons=self.cur.fetchall()
             for pg in polygons:
-                cur_pg=Polygon(pg[0],pg[1])
+                cur_pg=Polygon(pg[0],id=pg[1])
                 for i in range(len(db_attr_dict)):
                     cur_pg.StyleList[i]=pg[3+i]
                 cur_layer.AddGeometry(cur_pg,dict(zip([attr[1] for attr in attr_infos],pg[3+len(db_attr_dict):])))
@@ -316,7 +316,7 @@ class DBM:
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             mpolygons=self.cur.fetchall()
             for mpg in mpolygons:
-                cur_mpg=MultiPolygon(mpg[0],mpg[1])
+                cur_mpg=MultiPolygon(mpg[0],id=mpg[1])
                 for i in range(len(db_attr_dict)):
                     cur_mpg.StyleList[i]=mpg[3+i]
                 cur_layer.AddGeometry(cur_mpg,dict(zip([attr[1] for attr in attr_infos],mpg[3+len(db_attr_dict):])))
@@ -324,7 +324,7 @@ class DBM:
             self.cur.execute(f"select st_astext({col_name}),* from {layer_name};")
             mlines=self.cur.fetchall()
             for ml in mlines:
-                cur_ml=MultiPolyline(ml[0],ml[1])
+                cur_ml=MultiPolyline(ml[0],id=ml[1])
                 for i in range(len(db_attr_dict)):
                     cur_ml.StyleList[i]=ml[3+i]
                 cur_layer.AddGeometry(cur_ml,dict(zip([attr[1] for attr in attr_infos],ml[3+len(db_attr_dict):])))
