@@ -454,6 +454,7 @@ def LabelMouseRelease(main_exe, event: QMouseEvent):
     elif main_exe.tool == MapTool.EditGeometry and map_.selectedLayer != -1:
         if main_exe.EditNode:
             edit_layer.geometries[main_exe.EditNode[0]].RenewBox()
+            main_exe.dbm.update_geometry(edit_layer,edit_layer.geometries[main_exe.EditNode[0]].gid,{'geom':edit_layer.geometries[main_exe.EditNode[0]].ToWkt()})
         main_exe.EditNode = None
         edit_layer.RefreshBox()
         map_.RefreshBox()
@@ -480,8 +481,10 @@ def LabelDeleteItem(main_exe):
     map_ = main_exe.map
     edit_layer = map_.layers[map_.selectedLayer]
     select_list = edit_layer.selectedItems
+    
     #edit_layer.geometries = [g for g in edit_layer.geometries if g.ID not in select_list]
     for id in select_list:
+        main_exe.dbm.delete_geometry(edit_layer,id)
         edit_layer.DelGeometry(id)
     from .Op_TableView import TableUpdate
     TableUpdate(main_exe)

@@ -180,3 +180,4 @@ def SetStyleList(main_exe,stylelist):
         
         if geometry.ID in selected:
             geometry.StyleList = copy.deepcopy(stylelist)
+            main_exe.dbm.update_style(map_.layers[map_.selectedLayer],geometry.ID,stylelist)

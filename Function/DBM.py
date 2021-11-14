@@ -167,19 +167,28 @@ class DBM:
     def delete_geometry(self,layer:Layer,geometry_id):
         if not layer.saved_in_dbm:
             return
-        sql=f"delete from {layer.name} where gid={geometry_id};"
-        if self.conn:
-            self.cur.execute(sql)
-            self.conn.commit()
-        else:
-            self.sql_record+=sql
+        gid = None
+        for geo in layer.geometries:
+            if geo.ID == geometry_id:
+                gid = geo.gid
+                break
+        if gid is not None:
+            sql=f"delete from {layer.name} where gid={gid};"
+            if self.conn:
+                self.cur.execute(sql)
+                self.conn.commit()
+            else:
+                self.sql_record+=sql
 
     def update_geometry(self,layer:Layer,geomery_id,info_dict:Dict):
         if not layer.saved_in_dbm:
             return
         for k,v in info_dict.items():
-            if type(v)==str:
+            if k=='geom':
+                info_dict[k]=f'st_geometryfromtext(\'{v}\',{layer.srid})'
+            elif type(v)==str:
                 info_dict[k]=f'\'{v}\''
+
         sql=f"""
             update {layer.name} set {','.join([f'{k}={v}' for k,v in info_dict.items()])}
             where gid={geomery_id};
@@ -189,6 +198,12 @@ class DBM:
             self.conn.commit()
         else:
             self.sql_record+=sql
+    
+    def update_style(self,layer:Layer,geometry_id,style_list):
+        if not layer.saved_in_dbm:
+            return
+        style_dict=dict(zip(db_attr_dict.keys(),style_list))
+        self.update_geometry(layer,geometry_id,style_dict)
 
     def add_column(self,layer:Layer,attr_name:str,attr_type:str):
         if not layer.saved_in_dbm:
